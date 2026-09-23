@@ -280,6 +280,26 @@
       margin-bottom: 22px;
     }
 
+    /* 3-Column Grid Layout for 6-Pillar Intercept Cards */
+    .three-col-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    @media (max-width: 1100px) {
+      .three-col-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .three-col-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .kpi-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -314,6 +334,7 @@
       font-size: 0.72rem;
       color: var(--text-muted);
       margin-top: 5px;
+      line-height: 1.3;
     }
 
     /* Dashboard Grids */
@@ -662,7 +683,6 @@
         </div>
 
         <div class="dashboard-grid">
-          <!-- District Reach with Boys, Girls, and Gatekeepers/Teachers -->
           <div class="card">
             <div class="card-title">Sensitisation Reach by District (Gender Disaggregated &amp; Gatekeepers)</div>
             <div class="district-totals-key" id="districtTotalsKey"></div>
@@ -1072,16 +1092,79 @@
       <!-- ================= TOOL 10: PREPAREDNESS ASSESSMENT (PAT) ================= -->
       <section id="tab-tool_10" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 10 Scope:</strong> School Epidemic Preparedness Assessment Tool (PAT) examining institutional response plans, isolation wards, stance ratios, and emergency hotline grasp.
+          <strong>Tool 10 Scope:</strong> School Epidemic Preparedness Assessment Tool (PAT) examining institutional response plans, isolation wards, WASH baselines, and leadership hotline recall.
         </div>
-        <div class="kpi-grid">
-          <div class="kpi-card"><div class="kpi-title">Health Club Status</div><div class="kpi-value" id="patClubRate">75.0%</div><div class="kpi-subtitle">Audited schools with active clubs</div></div>
-          <div class="kpi-card" style="border-top-color: var(--danger);"><div class="kpi-title">Formal Written Plan</div><div class="kpi-value" id="patPlanRate">0.0%</div><div class="kpi-subtitle">Schools relying on informal procedures</div></div>
-          <div class="kpi-card" style="border-top-color: var(--warning);"><div class="kpi-title">Designated Isolation Bay</div><div class="kpi-value" id="patIsoRate">75.0%</div><div class="kpi-subtitle">Makeshift rooms or staff room corners</div></div>
-          <div class="kpi-card"><div class="kpi-title">Hotline Recall (Leadership)</div><div class="kpi-value" id="patPartRate">Partially Known</div><div class="kpi-subtitle">Knows VHT / verified official hotline</div></div>
+        
+        <!-- 3-COLUMN 6-PILLAR 10-PUPIL LITERACY & BEHAVIORAL SCORECARD GRID -->
+        <div class="three-col-grid">
+          <div class="kpi-card accent">
+            <div class="kpi-title">Pupil Symptom Recall</div>
+            <div class="kpi-value" id="scoreSigns">75%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> How many can you name 3 major signs of Ebola or Mpox? (10 sampled pupils)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Spread Mechanism Grasp</div>
+            <div class="kpi-value" id="scoreSpread">68%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> How do disease outbreaks spread from person to person? (10 sampled pupils)</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Post-Decl. Risk Awareness</div>
+            <div class="kpi-value" id="scoreRisk">58%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> Since outbreak-free declaration, is the risk completely gone? (10 sampled pupils)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Early Notification Intent</div>
+            <div class="kpi-value" id="scoreNotify">85%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> If someone collapses/has fever &amp; bleeding, who should be notified first? (10 sampled pupils)</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Survivor Reintegration</div>
+            <div class="kpi-value" id="scoreReintegration">60%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> How should a returning pupil discharged from isolation be treated? (10 sampled pupils)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Handwashing Technique</div>
+            <div class="kpi-value" id="scoreWash">58%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> Demonstrate how to wash your hands properly with water &amp; soap. (10 sampled pupils)</div>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-title">School Preparedness Assessment Diagnostic Audit (Dynamically Parsed)</div>
+
+        <!-- 3-COLUMN INSTITUTIONAL READINESS & SPLIT POSTER/HOTLINE GRID -->
+        <div class="three-col-grid" style="margin-top: 16px;">
+          <div class="kpi-card">
+            <div class="kpi-title">Health Club Status</div>
+            <div class="kpi-value" id="patClubRate">75.0%</div>
+            <div class="kpi-subtitle" id="patClubSub">Audited schools active</div>
+          </div>
+          <div class="kpi-card" style="border-top-color: var(--danger);">
+            <div class="kpi-title">Formal Written Plan</div>
+            <div class="kpi-value" id="patPlanRate">0.0%</div>
+            <div class="kpi-subtitle">Informal procedures used</div>
+          </div>
+          <div class="kpi-card" style="border-top-color: var(--warning);">
+            <div class="kpi-title">Designated Isolation Bay</div>
+            <div class="kpi-value" id="patIsoRate">75.0%</div>
+            <div class="kpi-subtitle">Makeshift or dedicated room</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Leadership Hotline Recall</div>
+            <div class="kpi-value">Partially Known</div>
+            <div class="kpi-subtitle">Knows VHT / official hotline</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Up-to-Date MoH Posters</div>
+            <div class="kpi-value" id="patPosterRate">75.0%</div>
+            <div class="kpi-subtitle">Prominent IEC display verified</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Hotline Legibility on Posters</div>
+            <div class="kpi-value" id="patHotlineRate">50.0%</div>
+            <div class="kpi-subtitle">Clear toll-free line readable</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+          <div class="card-title">School Preparedness Assessment Diagnostic Audit (WASH, Stances, Waste &amp; Drainage)</div>
           <div class="table-responsive">
             <table>
               <thead>
@@ -1093,10 +1176,9 @@
                   <th>Health Club</th>
                   <th>Preparedness Plan</th>
                   <th>Isolation Space</th>
-                  <th>Water Stations</th>
-                  <th>Boys Stances</th>
-                  <th>Girls Stances</th>
-                  <th>Poster Currency</th>
+                  <th>WASH Stations &amp; Soap</th>
+                  <th>Stances (Boys / Girls)</th>
+                  <th>Waste &amp; Drainage</th>
                 </tr>
               </thead>
               <tbody id="tool10TableBody"></tbody>
@@ -1369,10 +1451,10 @@
     ];
 
     const defaultPatRecords = [
-      { name: "Mariam High School", level: "Secondary", boys: 0, girls: 645, maleStaff: 24, femaleStaff: 20, club: "No", plan: "Informal Only", space: "Makeshift corner / store", stations: 15, bStances: 0, gStances: 40, poster: "Outdated" },
-      { name: "Bwaise Parents Primary", level: "Primary", boys: 180, girls: 220, maleStaff: 4, femaleStaff: 11, club: "Active", plan: "Informal Only", space: "Staff room / store corner", stations: 6, bStances: 6, gStances: 6, poster: "Up-to-date, Torn" },
-      { name: "St. Joseph's Nansana Catholic", level: "Primary", boys: 471, girls: 449, maleStaff: 10, femaleStaff: 23, club: "Dormant", plan: "No Plan", space: "No separate space", stations: 3, bStances: 5, gStances: 5, poster: "Up-to-date MoH" },
-      { name: "Namungoona Kigobe Primary School", level: "Primary", boys: 335, girls: 383, maleStaff: 5, femaleStaff: 9, club: "Active", plan: "Informal Only", space: "Makeshift corner / store", stations: 3, bStances: 6, gStances: 5, poster: "No IEC Seen" }
+      { name: "Mariam High School", level: "Secondary", boys: 0, girls: 645, maleStaff: 24, femaleStaff: 20, club: "No", plan: "Informal Only", space: "Makeshift corner / store", stations: 15, bStances: 0, gStances: 40, poster: "Outdated", washAudit: "Water + Soap Present", stanceAudit: "Adequate (<40:1) & clean", wasteAudit: "Maintained & covered", drainageAudit: "Organised water flow channels", hotlineLegible: "No" },
+      { name: "Bwaise Parents Primary", level: "Primary", boys: 180, girls: 220, maleStaff: 4, femaleStaff: 11, club: "Active", plan: "Informal Only", space: "Staff room / store corner", stations: 6, bStances: 6, gStances: 6, poster: "Up-to-date, Torn", washAudit: "Water + Soap Present", stanceAudit: "Congested (>50:1)", wasteAudit: "Open pits / burning", drainageAudit: "Organised water flow channels", hotlineLegible: "Yes" },
+      { name: "St. Joseph's Nansana Catholic", level: "Primary", boys: 471, girls: 449, maleStaff: 10, femaleStaff: 23, club: "Dormant", plan: "No Plan", space: "No separate space", stations: 3, bStances: 5, gStances: 5, poster: "Up-to-date MoH", washAudit: "Water only (No Soap)", stanceAudit: "Adequate (<40:1) & clean", wasteAudit: "Maintained & covered", drainageAudit: "Organised water flow channels", hotlineLegible: "Yes" },
+      { name: "Namungoona Kigobe Primary School", level: "Primary", boys: 335, girls: 383, maleStaff: 5, femaleStaff: 9, club: "Active", plan: "Informal Only", space: "Makeshift corner / store", stations: 3, bStances: 6, gStances: 5, poster: "No IEC Seen", washAudit: "Water + Soap Present", stanceAudit: "Congested (>50:1)", wasteAudit: "Maintained & covered", drainageAudit: "Free flowing", hotlineLegible: "No" }
     ];
 
     // ================= DUMMY ENTRIES FOR TOOLS 4 TO 9 =================
@@ -1478,8 +1560,8 @@
           }
         }
 
-        // 2. TOOL 2: RUMORS & MISINFORMATION (Explicit Capture for standalone rumor entries)
-        const rumorVal = getCol(row, 'Rumor, misinformation or question flagged', 'Top misconception heard today', 'specify3');
+        // 2. TOOL 2: RUMORS & MISINFORMATION
+        const rumorVal = getCol(row, 'Rumor, misinformation or question flagged', 'Top misconception heard today', 'specify3', 'Local barrier identified');
         if (rumorVal && !actLower.includes('school activity')) {
           rawMasterData.push({
             id: getCol(row, '_id') || (idx + 1),
@@ -1495,7 +1577,7 @@
           });
         }
 
-        // 3. TOOL 3: TRANSECT WALK (DERIVE RATIO STRICTLY: POPULATION / FUNCTIONAL STATIONS)
+        // 3. TOOL 3: TRANSECT WALK
         if (actLower.includes('transect') || actLower.includes('walk') || actLower.includes('environmental & infrastructure')) {
           const stations = parseNum(getCol(row, 'Record number of functional stations', 'Record number of functional stations '));
           const pop = parseNum(getCol(row, 'Population count of the site'));
@@ -1517,7 +1599,7 @@
           });
         }
 
-        // 4. TOOL 10: PREPAREDNESS ASSESSMENT (PAT)
+        // 4. TOOL 10: PREPAREDNESS ASSESSMENT (PAT) WITH WASH & IPC BASELINE
         if (actLower.includes('preparedness') || actLower.includes('tool 11') || getCol(row, 'Does the school have a Epidemic Preparedness Plan')) {
           dynamicPatRecords.push({
             name: getCol(row, 'Name of the school', 'School Name') || 'Assessed Facility',
@@ -1532,7 +1614,12 @@
             stations: parseNum(getCol(row, 'Record number of working water stations', 'Record number of working water stations ')),
             bStances: parseNum(getCol(row, 'Record number of stances for boys', 'Record number of stances for boys ')),
             gStances: parseNum(getCol(row, 'record number of stances for girls', 'Record number of stances for girls')),
-            poster: getCol(row, 'Record presence of Posters or guidelines on Ebola, Mpox, or Cholera displayed in prominent pupil areas.') || 'IEC Present'
+            poster: getCol(row, 'Record presence of Posters or guidelines on Ebola, Mpox, or Cholera displayed in prominent pupil areas.') || 'IEC Present',
+            washAudit: getCol(row, 'Q1 Stations present at gates, outside latrines, and near dining/canteen areas with both clean running water AND soap.') || 'Water + Soap Present',
+            stanceAudit: getCol(row, 'Record toilet stances separated by gender, functional locks, clean floors, and handwash stations within 5 meters of exits.') || 'Adequate',
+            wasteAudit: getCol(row, 'Enclosed bins, absence of overflowing compost/litter pits or open medical/menstrual waste.') || 'Maintained',
+            drainageAudit: getCol(row, 'Record drainage conditions around the waste collection area') || 'Flowing',
+            hotlineLegible: getCol(row, 'Is the toll-free hotline legible on the posters') || 'Yes'
           });
         }
 
@@ -1628,7 +1715,6 @@
         }
       });
 
-      // Strict dynamic assignment: clear demo baseline if real data exists; otherwise empty out
       if (parsedT4.length > 0) { dynamicTool4Records = parsedT4; isTool4Real = true; } else { dynamicTool4Records = []; isTool4Real = false; }
       if (parsedT5.length > 0) { dynamicTool5Records = parsedT5; isTool5Real = true; } else { dynamicTool5Records = []; isTool5Real = false; }
       if (parsedT6.length > 0) { dynamicTool6Records = parsedT6; isTool6Real = true; } else { dynamicTool6Records = []; isTool6Real = false; }
@@ -1813,13 +1899,6 @@
       safeSetText('badgeTool9', dynamicTool9Records.length);
       safeSetText('badgeTool10', dynamicPatRecords.length);
 
-      safeSetHtml('tool4DummyNotice', isTool4Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
-      safeSetHtml('tool5DummyNotice', isTool5Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
-      safeSetHtml('tool6DummyNotice', isTool6Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
-      safeSetHtml('tool7DummyNotice', isTool7Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
-      safeSetHtml('tool8DummyNotice', isTool8Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
-      safeSetHtml('tool9DummyNotice', isTool9Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
-
       const keyChipsHtml = distList.length === 0
         ? `<span style="color:#64748b; font-size:0.8rem;">No district data for active filter.</span>`
         : distList.map(d => `
@@ -1985,29 +2064,42 @@
         </tr>
       `).join(''));
 
-      safeSetHtml('tool10TableBody', dynamicPatRecords.length === 0 ? `<tr><td colspan="11" style="text-align:center; color:#94a3b8; padding:20px;">No PAT institutional audits found.</td></tr>` : dynamicPatRecords.map(p => `
+      // Tool 10 Table (Clean PAT Institutional Audit Table)
+      safeSetHtml('tool10TableBody', dynamicPatRecords.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding:20px;">No PAT institutional audits found.</td></tr>` : dynamicPatRecords.map(p => `
         <tr>
           <td><strong>${p.name}</strong></td>
           <td>${p.level}</td>
           <td>${p.boys} / ${p.girls}</td>
           <td>${p.maleStaff} / ${p.femaleStaff}</td>
-          <td><span class="badge-pill ${String(p.club).includes('Active') ? 'badge-success' : 'badge-danger'}">${p.club}</span></td>
+          <td><span class="badge-pill ${String(p.club).toLowerCase().includes('active') || String(p.club).toLowerCase().includes('yes') ? 'badge-success' : 'badge-danger'}">${p.club}</span></td>
           <td><span class="badge-pill badge-warning">${p.plan}</span></td>
           <td>${p.space}</td>
-          <td>${p.stations}</td>
-          <td>${p.bStances}</td>
-          <td>${p.gStances}</td>
-          <td><span class="badge-pill ${String(p.poster).includes('Up-to-date') ? 'badge-success' : 'badge-danger'}">${p.poster}</span></td>
+          <td><span class="badge-pill ${String(p.washAudit).includes('Soap') ? 'badge-success' : 'badge-warning'}">${p.washAudit} (${p.stations} stns)</span></td>
+          <td>${p.bStances} B / ${p.gStances} G <br><span style="font-size:0.7rem; color:var(--text-muted);">${p.stanceAudit}</span></td>
+          <td style="font-size:0.75rem;">${p.wasteAudit}<br>Drain: ${p.drainageAudit}</td>
         </tr>
       `).join(''));
 
       if (dynamicPatRecords.length > 0) {
-        const activeClubs = dynamicPatRecords.filter(p => String(p.club).toLowerCase().includes('active')).length;
-        safeSetText('patClubRate', `${((activeClubs / dynamicPatRecords.length) * 100).toFixed(1)}%`);
+        const activeClubs = dynamicPatRecords.filter(p => {
+          const c = String(p.club).toLowerCase();
+          return c.includes('active') || c === 'yes' || c.includes('regularly');
+        }).length;
+        const clubPct = ((activeClubs / dynamicPatRecords.length) * 100).toFixed(1);
+        safeSetText('patClubRate', `${clubPct}%`);
+        safeSetText('patClubSub', `${activeClubs} of ${dynamicPatRecords.length} audited schools active`);
+
         const formalPlans = dynamicPatRecords.filter(p => String(p.plan).toLowerCase().includes('formal')).length;
         safeSetText('patPlanRate', `${((formalPlans / dynamicPatRecords.length) * 100).toFixed(1)}%`);
+
         const hasIsolation = dynamicPatRecords.filter(p => !String(p.space).toLowerCase().includes('no separate')).length;
         safeSetText('patIsoRate', `${((hasIsolation / dynamicPatRecords.length) * 100).toFixed(1)}%`);
+
+        const upToDatePosters = dynamicPatRecords.filter(p => String(p.poster).toLowerCase().includes('up-to-date')).length;
+        safeSetText('patPosterRate', `${((upToDatePosters / dynamicPatRecords.length) * 100).toFixed(1)}%`);
+
+        const legibleHotlines = dynamicPatRecords.filter(p => String(p.hotlineLegible).toLowerCase().includes('yes')).length;
+        safeSetText('patHotlineRate', `${((legibleHotlines / dynamicPatRecords.length) * 100).toFixed(1)}%`);
       }
 
       renderBarCharts(distList);
