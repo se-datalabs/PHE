@@ -1,0 +1,2744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Health Emergencies (PHE) - Multi-Tool Analytics Dashboard</title>
+  
+  <!-- Chart.js & Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  
+  <!-- SheetJS for Excel Reading -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- Leaflet Interactive Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --primary: #282c68;
+      --primary-light: #3a3f8a;
+      --primary-dark: #1b1e47;
+      --accent: #f1bc1b;
+      --accent-soft: #fef3c7;
+      --accent-hover: #d9a40e;
+      --gatekeeper: #10b981;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 300px;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 1000;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+    }
+
+    .brand {
+      padding: 22px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--primary-dark);
+    }
+
+    .brand h2 {
+      font-size: 1.05rem;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .brand p {
+      font-size: 0.72rem;
+      color: var(--accent);
+      margin-top: 5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-tabs {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .nav-section-title {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+      padding: 10px 10px 4px 10px;
+      font-weight: 700;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      padding: 9px 12px;
+      border-radius: 6px;
+      text-align: left;
+      font-size: 0.81rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.18s ease;
+      line-height: 1.3;
+    }
+
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: var(--primary);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(241, 188, 27, 0.35);
+    }
+
+    .tab-badge {
+      background: rgba(0, 0, 0, 0.25);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active .tab-badge {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    /* Main Content Wrapper */
+    .main-wrapper {
+      margin-left: 300px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .header-title h1 {
+      font-size: 1.25rem;
+      color: var(--primary);
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .header-title p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Filter Controls Bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.77rem;
+    }
+
+    .filter-item label {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+
+    .filter-select, .filter-input {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.77rem;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .filter-select {
+      cursor: pointer;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-action {
+      background: var(--primary);
+      color: #ffffff;
+      border: 1px solid var(--primary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-action:hover {
+      background: var(--primary-light);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .btn-outline:hover {
+      background: rgba(40, 44, 104, 0.08);
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .content-area {
+      padding: 26px 32px;
+      flex: 1;
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      position: relative;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      border-top: 4px solid var(--primary);
+    }
+
+    .kpi-card.accent {
+      border-top-color: var(--accent);
+    }
+
+    .kpi-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 6px;
+      line-height: 1.1;
+    }
+
+    .kpi-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    /* Dashboard Grids */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      margin-bottom: 22px;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chart-box {
+      position: relative;
+      height: 290px;
+      width: 100%;
+    }
+
+    /* Interactive Map Styles */
+    #schoolMap {
+      height: 460px;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      z-index: 10;
+    }
+
+    .map-popup-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+
+    .map-popup-stat {
+      font-size: 0.77rem;
+      color: #334155;
+      margin: 4px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .map-popup-stat strong {
+      color: var(--primary);
+    }
+
+    .scope-callout {
+      background: #faf5ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: #334155;
+    }
+
+    .scope-callout strong {
+      color: var(--primary);
+    }
+
+    /* District Key Chips */
+    .district-totals-key {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .district-key-chip {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 0.74rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .district-key-chip strong {
+      color: var(--primary);
+    }
+
+    .district-key-chip .chip-total {
+      color: var(--primary-dark);
+      font-weight: 800;
+      background: var(--accent-soft);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* Table Styles */
+    .table-responsive {
+      overflow-x: auto;
+      max-height: 520px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.81rem;
+      text-align: left;
+    }
+
+    th {
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 600;
+      padding: 10px 12px;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      color: #334155;
+    }
+
+    tr:nth-child(even) {
+      background: #fbfcfe;
+    }
+
+    tr:hover {
+      background: #f1f5f9;
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .badge-count {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #f1bc1b;
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-success { background: #dcfce7; color: #166534; }
+    .badge-primary { background: #e0e7ff; color: var(--primary); }
+
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <h2>PHE RCCE Tracker</h2>
+      <p>10 Integrated Tools Dashboard</p>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-section-title">Core Performance</div>
+      <button class="tab-btn active" onclick="showTab('overview')">
+        <span>Main Summary of Reach</span>
+        <span class="tab-badge" id="badgeTotalReach">0</span>
+      </button>
+
+      <div class="nav-section-title">Programmatic Tools (10 Activities)</div>
+      <button class="tab-btn" onclick="showTab('tool_1')">
+        <span>1. School Sessions & Wheel</span>
+        <span class="tab-badge" id="badgeTool1">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_2')">
+        <span>2. Rumors & Misinformation</span>
+        <span class="tab-badge" id="badgeTool2">Recurrence</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_3')">
+        <span>3. Transect Walk Infrastructure</span>
+        <span class="tab-badge" id="badgeTool3">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_4')">
+        <span>4. Rapid Intercept Survey</span>
+        <span class="tab-badge" id="badgeTool4">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_5')">
+        <span>5. Take 5 Probing Diagnostic</span>
+        <span class="tab-badge" id="badgeTool5">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_6')">
+        <span>6. Human-Interest Stories</span>
+        <span class="tab-badge" id="badgeTool6">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_7')">
+        <span>7. Trust Brokers Mapping</span>
+        <span class="tab-badge" id="badgeTool7">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_8')">
+        <span>8. Photovoice Documentation</span>
+        <span class="tab-badge" id="badgeTool8">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_9')">
+        <span>9. Pre-Drill Safety Drill</span>
+        <span class="tab-badge" id="badgeTool9">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_10')">
+        <span>10. School Preparedness (PAT)</span>
+        <span class="tab-badge" id="badgeTool10">0</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="main-wrapper">
+    <header>
+      <div class="header-title">
+        <h1 id="screenTitle">Main Summary of Reach</h1>
+        <p id="screenSubtitle">Cross-tool reach aggregation, district performance, and programmatic coverage</p>
+      </div>
+
+      <!-- FILTER CONTROLS BAR WITH PASSWORD-GATED UPLOAD -->
+      <div class="filter-bar">
+        <div class="filter-item">
+          <label for="filterDistrict">District:</label>
+          <select id="filterDistrict" class="filter-select" onchange="applyFilters()">
+            <option value="ALL">All Districts</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="filterStartDate">Start Date:</label>
+          <input type="date" id="filterStartDate" class="filter-input" onchange="applyFilters()">
+        </div>
+
+        <div class="filter-item">
+          <label for="filterEndDate">End Date:</label>
+          <input type="date" id="filterEndDate" class="filter-input" onchange="applyFilters()">
+        </div>
+
+        <div class="filter-item">
+          <label for="filterSearch">Search:</label>
+          <input type="text" id="filterSearch" class="filter-input" placeholder="School, parish, keyword..." oninput="applyFilters()">
+        </div>
+
+        <button class="btn-action btn-outline" onclick="resetFilters()">Reset Filters</button>
+
+        <!-- PASSWORD PROTECTED UPLOAD BUTTON SECTION -->
+        <div id="adminControls" style="display: none; align-items: center; gap: 8px;">
+          <label for="fileInput" class="btn-action" style="background: var(--gatekeeper); border-color: var(--gatekeeper);">
+            <span>+ Upload New Excel</span>
+          </label>
+          <input type="file" id="fileInput" accept=".xlsx, .xls">
+        </div>
+
+        <!-- AUTHENTICATION TOGGLE BUTTON -->
+        <button id="adminLoginBtn" class="btn-action btn-outline" onclick="toggleAdminLogin()">
+          🔒 Admin Login
+        </button>
+      </div>
+    </header>
+
+    <main class="content-area">
+
+      <!-- ================= 0. MAIN SUMMARY OF REACH ================= -->
+      <section id="tab-overview" class="tab-pane active">
+        <div class="kpi-grid">
+          <div class="kpi-card accent">
+            <div class="kpi-title">Total Learners Sensitised</div>
+            <div class="kpi-value" id="kpiLearners">0</div>
+            <div class="kpi-subtitle" id="kpiLearnersSub">0 Boys | 0 Girls</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Total Enrolment Monitored</div>
+            <div class="kpi-value" id="kpiEnrolment">0</div>
+            <div class="kpi-subtitle" id="kpiEnrolmentSub">Institutional population base</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Gatekeepers & Teachers Oriented</div>
+            <div class="kpi-value" id="kpiGatekeepers">0</div>
+            <div class="kpi-subtitle">Teachers, Patrons & Community Gatekeepers</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Board Games Distributed</div>
+            <div class="kpi-value" id="kpiGames">0</div>
+            <div class="kpi-subtitle">Snakes & Ladders gamified PHE tools</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Active Program Districts</div>
+            <div class="kpi-value" id="kpiDistricts">0</div>
+            <div class="kpi-subtitle">Geographical clusters</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- District Reach with Boys, Girls, and Gatekeepers/Teachers -->
+          <div class="card">
+            <div class="card-title">Sensitisation Reach by District (Gender Disaggregated &amp; Gatekeepers)</div>
+            <div class="district-totals-key" id="districtTotalsKey"></div>
+            <div class="chart-box">
+              <canvas id="chartDistrictReach"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Proportional Reach Contribution by District (% Total Reach)</div>
+            <div class="chart-box">
+              <canvas id="chartDistrictShare"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= GEOSPATIAL MAP OF TARGET SCHOOLS & ACTIVITIES ================= -->
+        <div class="card">
+          <div class="card-title">
+            <span>Geospatial Map of Target Schools & Conducted Field Activities</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);" id="mapSchoolCount">0 Schools Mapped</span>
+          </div>
+          <div id="schoolMap"></div>
+          <div style="margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; font-size: 0.77rem; color: #475569;">
+            <div style="display:flex; gap:16px; align-items:center;">
+              <span><strong style="color:var(--primary);">🔵 Deep Indigo Pin:</strong> Standard Sensitization Activity</span>
+              <span><strong style="color:#d97706;">🟡 Amber Pin:</strong> High Gamified Allocation (&ge;50 Games)</span>
+            </div>
+            <div>
+              <span>💡 <em>Click marker to view school visit number, reach, enrolment % and conducted activities.</em></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Manifest of 10 Tools -->
+        <div class="card">
+          <div class="card-title">Programmatic Tools & Reach Overview (10 Operational Instruments)</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tool #</th>
+                  <th>Activity / Tool Scope</th>
+                  <th>Questions Captured</th>
+                  <th>Recorded Submissions</th>
+                  <th>Primary Reach Target</th>
+                  <th>Direct Action</th>
+                </tr>
+              </thead>
+              <tbody id="toolsManifestBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">District Reach Matrix Summary</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>District</th>
+                  <th>Schools / Facilities</th>
+                  <th>Total Enrolment</th>
+                  <th>Boys Sensitised</th>
+                  <th>Girls Sensitised</th>
+                  <th>Total Learners</th>
+                  <th>Gatekeepers / Teachers</th>
+                  <th>Total Sensitised Reach</th>
+                  <th>Games Distributed</th>
+                  <th>Coverage Rate</th>
+                </tr>
+              </thead>
+              <tbody id="districtSummaryTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 1: SCHOOL SESSIONS & WHEEL ================= -->
+      <section id="tab-tool_1" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 1 Scope:</strong> Operational tracking tool for school sessions across target schools, monitoring curriculum delivery, wheel participation, take-home cards, and health club activation.
+        </div>
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-title">Can Name 3 Warning Signs of PHE (Crowd Response Count)</div>
+            <div class="chart-box"><canvas id="chartSignsT1"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Students who know toll free hotline (0800-100-066 / 8500)</div>
+            <div class="chart-box"><canvas id="chartHotlineT1"></canvas></div>
+          </div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-title">Anti-Stigma & Safe Caring Attitude</div>
+            <div class="chart-box"><canvas id="chartStigmaT1"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Volunteer Handwashing Steps Demonstration Fidelity</div>
+            <div class="chart-box"><canvas id="chartHandwashT1"></canvas></div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-title">Top Schools by Sensitised Population (% of total enrolment in brackets)</div>
+          <div class="chart-box" style="height: 340px;"><canvas id="chartTopSchoolsT1"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Tool 1: Complete School Session Registry (With Visit Number & Health Club Status)</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>School Name</th>
+                  <th>Visit #</th>
+                  <th>School Health Club</th>
+                  <th>District</th>
+                  <th>Parish</th>
+                  <th>Enrolment</th>
+                  <th>Boys / Girls</th>
+                  <th>Total Sensitised</th>
+                  <th>% Enrolment Reached</th>
+                  <th>Gatekeepers</th>
+                  <th>Games</th>
+                  <th>Handwashing Demo</th>
+                  <th>Soap Availability</th>
+                </tr>
+              </thead>
+              <tbody id="tool1TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 2: RUMORS & MISINFORMATION ================= -->
+      <section id="tab-tool_2" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 2 Scope:</strong> Standardized weekly monitoring instrument capturing community concerns, school rumours, misinformation, and recurring barrier tracking for RCCE response.
+        </div>
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-title">Most Prevalent Flagged Rumors & Misconceptions (Recurrence Count)</div>
+            <div class="chart-box"><canvas id="chartMisinfoT2"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Sources of Flagged Rumors (Frequency Count)</div>
+            <div class="chart-box"><canvas id="chartSourcesT2"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Qualitative Rumor, Local Barrier & Adaptation Log (Ranked by Recurrence)</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Aggregates all recorded misconceptions, rumors, and barriers</span>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Recurrence Rank</th>
+                  <th>Flagged Misconception / Concern / Rumor</th>
+                  <th>Times Re-appearing</th>
+                  <th>Key Identified Local Barrier</th>
+                  <th>Primary Source</th>
+                  <th>Recommended Tactical Adaptation</th>
+                </tr>
+              </thead>
+              <tbody id="tool2TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 3: TRANSECT WALK ================= -->
+      <section id="tab-tool_3" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 3 Scope:</strong> Observational mapping of physical infrastructure, WASH facilities, crowd congestion, and visible IEC artefacts across markets, transport hubs, and compounds.
+        </div>
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-title">Handwashing Points at Gates, Latrines & Canteens (Status Count)</div>
+            <div class="chart-box"><canvas id="chartWashT3"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Poster Currency & Presence of Toll-Free Hotlines</div>
+            <div class="chart-box"><canvas id="chartPosterT3"></canvas></div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-title">
+            <span>Tool 3: Infrastructure Observational Mapping Log</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Ratio derived strictly as: Population count of the site &divide; Record number of functional stations</span>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Auditor / Lead</th>
+                  <th>District / Parish</th>
+                  <th>Type of Setting</th>
+                  <th>Functional Stations</th>
+                  <th>Population Served</th>
+                  <th>Ratio (Population &divide; Functional Stations)</th>
+                  <th>Observation Notes</th>
+                  <th>Drainage & Refuse</th>
+                  <th>Posters & Hotlines</th>
+                  <th>Isolation Unit Protocol</th>
+                  <th>Staff Trained</th>
+                </tr>
+              </thead>
+              <tbody id="tool3TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 4: RAPID AUDIENCE ASSESSMENT INTERCEPT SURVEY ================= -->
+      <section id="tab-tool_4" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 4 Scope:</strong> Rapid audience assessment intercept survey (20 exposed respondents per setting) to verify campaign reach, symptom recall, post-declaration risk perception, and early notification intent.
+          <span id="tool4DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
+        </div>
+        
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-title">Q1: Exposure to Outbreak Messages in Past 7 Days</div>
+            <div class="chart-box"><canvas id="chartT4Q1"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Q4: First Action if Fever/Bleeding Observed</div>
+            <div class="chart-box"><canvas id="chartT4Q4"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Rapid Audience Intercept Survey: Complete Response Matrix</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Resp ID</th>
+                  <th>Setting &amp; Location</th>
+                  <th>Q1: Outbreak Msg (7d)</th>
+                  <th>Q2: Named 2+ Signs</th>
+                  <th>Q3: Post-Decl. Risk Perception</th>
+                  <th>Q4: First Action Taken</th>
+                  <th>Q5: Most Trusted Source</th>
+                </tr>
+              </thead>
+              <tbody id="tool4TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 5: TAKE 5 RAPID PROBING QUALITATIVE DIAGNOSTIC ================= -->
+      <section id="tab-tool_5" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 5 Scope:</strong> Take 5 rapid probing qualitative diagnostic administered to gatekeepers, market vendors, transport operators, teachers, and school health patrons to verify genuine behavioral adoption.
+          <span id="tool5DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-title">Audited Target Groups</div>
+            <div class="chart-box"><canvas id="chartT5Target"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Verification Status of 5 Claims</div>
+            <div class="chart-box"><canvas id="chartT5Claims"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Take 5 Field Probing & Physical Verification Log</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Diag ID</th>
+                  <th>Target Group</th>
+                  <th>Claim Audited</th>
+                  <th>Probing Question Prompt</th>
+                  <th>Physical Verification Findings</th>
+                  <th>Verification Status</th>
+                </tr>
+              </thead>
+              <tbody id="tool5TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 6: HUMAN INTEREST STORIES ================= -->
+      <section id="tab-tool_6" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 6 Scope:</strong> Systematic qualitative tool capturing human-interest impact stories from community members, head teachers, school patrons, pupils, and health workers (Most Significant Change).
+          <span id="tool6DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
+        </div>
+        <div class="card">
+          <div class="card-title">Qualitative Impact Narrative Framework (Most Significant Change Stories)</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Story ID</th>
+                  <th>Participant &amp; Setting</th>
+                  <th>Step 1: Baseline Situation</th>
+                  <th>Step 2: Turning Point Event</th>
+                  <th>Step 3: Concrete Behavior Change</th>
+                  <th>Step 4: Significance</th>
+                </tr>
+              </thead>
+              <tbody id="tool6TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 7: PARTICIPATORY TRUST MAPPING ================= -->
+      <section id="tab-tool_7" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 7 Scope:</strong> Participatory mapping guide used during parish entry, gatekeeper orientations, and school stakeholder mappings to identify trusted leaders and communication channels.
+          <span id="tool7DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
+        </div>
+        <div class="card">
+          <div class="card-title">Informal Trust Broker Mapping by Sector</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sector</th>
+                  <th>Who is Actually Listened To (Informal Trust Brokers)</th>
+                  <th>Direct Contact / Stage Node</th>
+                  <th>Best Community Engagement Strategy</th>
+                </tr>
+              </thead>
+              <tbody id="tool7TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 8: PHOTOVOICE DOCUMENTATION ================= -->
+      <section id="tab-tool_8" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 8 Scope:</strong> Protocol enabling community members, youth, and school health clubs to document daily realities, hygiene innovations, and behavioral challenges through photography.
+          <span id="tool8DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
+        </div>
+        <div class="card">
+          <div class="card-title">PHOTO Analysis Protocol (Youth &amp; Community Photographic Documentation)</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Photo ID</th>
+                  <th>Participant</th>
+                  <th>P — Picture</th>
+                  <th>H — Happening</th>
+                  <th>O — Our Lives</th>
+                  <th>T — The Cause</th>
+                  <th>O — Opportunities</th>
+                </tr>
+              </thead>
+              <tbody id="tool8TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 9: PRE-DRILL SAFETY DRILL ================= -->
+      <section id="tab-tool_9" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 9 Scope:</strong> Mandatory pre-drill verification and performance evaluation tool to safely rehearse school-level detection, isolation, notification, and handover without causing panic or stigma.
+          <span id="tool9DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card accent"><div class="kpi-title">Stage 1: Identification</div><div class="kpi-value" id="t9_s1">Safe Distance</div><div class="kpi-subtitle">No physical contact made during detection</div></div>
+          <div class="kpi-card"><div class="kpi-title">Stage 2: Escort to Bay</div><div class="kpi-value" id="t9_s2">Holding Ready</div><div class="kpi-subtitle">Privacy maintained and room ventilated</div></div>
+          <div class="kpi-card"><div class="kpi-title">Stage 3: Notification</div><div class="kpi-value" id="t9_s3">0800 Hotlines</div><div class="kpi-subtitle">Headteacher calls VHT and Division health team</div></div>
+          <div class="kpi-card"><div class="kpi-title">Stage 4: Handover</div><div class="kpi-value" id="t9_s4">Debriefed</div><div class="kpi-subtitle">Same-day debrief completed with surveillance team</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">School Outbreak Simulation Drill Evaluation Log</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Drill ID</th>
+                  <th>Facility Evaluated</th>
+                  <th>No-Contact Detection</th>
+                  <th>Holding Area Setup</th>
+                  <th>Time to Call (Mins)</th>
+                  <th>Handover &amp; Debrief Status</th>
+                </tr>
+              </thead>
+              <tbody id="tool9TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 10: PREPAREDNESS ASSESSMENT (PAT) ================= -->
+      <section id="tab-tool_10" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Tool 10 Scope:</strong> School Epidemic Preparedness Assessment Tool (PAT) examining institutional response plans, isolation wards, stance ratios, and emergency hotline grasp.
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-title">Health Club Status</div><div class="kpi-value" id="patClubRate">75.0%</div><div class="kpi-subtitle">Audited schools with active clubs</div></div>
+          <div class="kpi-card" style="border-top-color: var(--danger);"><div class="kpi-title">Formal Written Plan</div><div class="kpi-value" id="patPlanRate">0.0%</div><div class="kpi-subtitle">Schools relying on informal procedures</div></div>
+          <div class="kpi-card" style="border-top-color: var(--warning);"><div class="kpi-title">Designated Isolation Bay</div><div class="kpi-value" id="patIsoRate">75.0%</div><div class="kpi-subtitle">Makeshift rooms or staff room corners</div></div>
+          <div class="kpi-card"><div class="kpi-title">Hotline Recall (Leadership)</div><div class="kpi-value" id="patPartRate">Partially Known</div><div class="kpi-subtitle">Knows VHT / verified official hotline</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">School Preparedness Assessment Diagnostic Audit (Dynamically Parsed)</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>School Name</th>
+                  <th>Level</th>
+                  <th>Enrolment (M/F)</th>
+                  <th>Staff (M/F)</th>
+                  <th>Health Club</th>
+                  <th>Preparedness Plan</th>
+                  <th>Isolation Space</th>
+                  <th>Water Stations</th>
+                  <th>Boys Stances</th>
+                  <th>Girls Stances</th>
+                  <th>Poster Currency</th>
+                </tr>
+              </thead>
+              <tbody id="tool10TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    Chart.register(ChartDataLabels);
+
+    // ================= SECURE STANDALONE SHA-256 HASHING =================
+    function computeSha256(ascii) {
+      function rightRotate(value, amount) {
+        return (value >>> amount) | (value << (32 - amount));
+      }
+      var mathPow = Math.pow;
+      var maxWord = mathPow(2, 32);
+      var lengthProperty = 'length';
+      var i, j;
+      var result = '';
+
+      var words = [];
+      var asciiBitLength = ascii[lengthProperty] * 8;
+      var hash = [];
+      var k = [];
+      var primeCounter = 0;
+
+      var isComposite = {};
+      for (var candidate = 2; primeCounter < 64; candidate++) {
+        if (!isComposite[candidate]) {
+          for (i = 0; i < 313; i += candidate) {
+            isComposite[i] = candidate;
+          }
+          hash[primeCounter] = (mathPow(candidate, .5) * maxWord) | 0;
+          k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+        }
+      }
+      
+      ascii += '\x80';
+      while (ascii[lengthProperty] % 64 - 56) ascii += '\x00';
+      for (i = 0; i < ascii[lengthProperty]; i++) {
+        j = ascii.charCodeAt(i);
+        if (j >> 8) return;
+        words[i >> 2] |= j << ((3 - i) % 4) * 8;
+      }
+      words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);
+      words[words[lengthProperty]] = (asciiBitLength | 0);
+      
+      for (j = 0; j < words[lengthProperty];) {
+        var w = words.slice(j, j += 16);
+        var oldHash = hash;
+        hash = hash.slice(0, 8);
+        
+        for (i = 0; i < 64; i++) {
+          var i2 = i + j;
+          var w15 = w[i - 15], w2 = w[i - 2];
+
+          var a = hash[0], e = hash[4];
+          var temp1 = hash[7]
+            + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+            + ((e & hash[5]) ^ ((~e) & hash[6]))
+            + k[i]
+            + (w[i] = (i < 16) ? w[i] : (
+                w[i - 16]
+                + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+                + w[i - 7]
+                + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+              ) | 0
+            );
+          var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+            + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+          
+          hash = [(temp1 + temp2) | 0].concat(hash);
+          hash[4] = (hash[4] + temp1) | 0;
+        }
+        
+        for (i = 0; i < 8; i++) {
+          hash[i] = (hash[i] + oldHash[i]) | 0;
+        }
+      }
+      
+      for (i = 0; i < 8; i++) {
+        for (i2 = 3; i2 >= 0; i2--) {
+          var byte = (hash[i] >> (i2 * 8)) & 255;
+          result += ((byte < 16) ? 0 : '') + byte.toString(16);
+        }
+      }
+      return result;
+    }
+
+    const ADMIN_PASSWORD_HASH = "3cffc41d1b2cc6b3d36bdca6bb5be50c1d6585fa74a54df0653d0e6433f0fd2e";
+
+    function checkAdminAuth() {
+      try {
+        const isAuthenticated = sessionStorage.getItem('phe_admin_authenticated') === 'true';
+        const adminControls = document.getElementById('adminControls');
+        const loginBtn = document.getElementById('adminLoginBtn');
+
+        if (isAuthenticated) {
+          if (adminControls) adminControls.style.display = 'inline-flex';
+          if (loginBtn) {
+            loginBtn.innerHTML = '🔓 Admin (Logout)';
+            loginBtn.style.color = '#10b981';
+            loginBtn.style.borderColor = '#10b981';
+          }
+        } else {
+          if (adminControls) adminControls.style.display = 'none';
+          if (loginBtn) {
+            loginBtn.innerHTML = '🔒 Admin Login';
+            loginBtn.style.color = 'var(--primary)';
+            loginBtn.style.borderColor = 'var(--primary)';
+          }
+        }
+      } catch (e) {
+        console.warn('Session storage restricted:', e);
+      }
+    }
+
+    function toggleAdminLogin() {
+      try {
+        const isAuthenticated = sessionStorage.getItem('phe_admin_authenticated') === 'true';
+
+        if (isAuthenticated) {
+          sessionStorage.removeItem('phe_admin_authenticated');
+          checkAdminAuth();
+          alert('Logged out. Admin upload controls are now locked.');
+        } else {
+          const enteredPassword = prompt('Enter Admin Password to enable Excel upload:');
+          if (!enteredPassword) return;
+
+          const hash = computeSha256(enteredPassword);
+
+          if (hash === ADMIN_PASSWORD_HASH) {
+            sessionStorage.setItem('phe_admin_authenticated', 'true');
+            checkAdminAuth();
+            alert('Access granted! The + Upload New Excel button is now enabled.');
+          } else {
+            alert('Access denied: Incorrect password.');
+          }
+        }
+      } catch (err) {
+        alert('Authentication error: ' + err.message);
+      }
+    }
+
+    let rawMasterData = [];
+    let appData = [];
+    let dynamicTransectRecords = [];
+    let dynamicPatRecords = [];
+    let dynamicGatekeeperRecords = [];
+    
+    let dynamicTool4Records = [];
+    let dynamicTool5Records = [];
+    let dynamicTool6Records = [];
+    let dynamicTool7Records = [];
+    let dynamicTool8Records = [];
+    let dynamicTool9Records = [];
+
+    let isTool4Real = false;
+    let isTool5Real = false;
+    let isTool6Real = false;
+    let isTool7Real = false;
+    let isTool8Real = false;
+    let isTool9Real = false;
+
+    let chartInstances = {};
+    let leafletMap = null;
+    let markersLayer = null;
+
+    const parishCoordinates = {
+      'Kiswa': [0.3255, 32.6175],
+      'Nansana': [0.3670, 32.5280],
+      'Nansana west': [0.3685, 32.5210],
+      'Nansana east': [0.3650, 32.5350],
+      'Mbuya2': [0.3300, 32.6280],
+      'Salaama': [0.2780, 32.5920],
+      'Kibuye': [0.2980, 32.5730],
+      'Kikaayq': [0.3650, 32.5990],
+      'Kikaaya': [0.3650, 32.5990],
+      'Makerere University': [0.3340, 32.5680],
+      'Kyebando': [0.3550, 32.5850],
+      'Bwaise I': [0.3520, 32.5610],
+      'Bwaise III': [0.3580, 32.5640],
+      'Nakasero': [0.3200, 32.5780],
+      'Luzira': [0.3010, 32.6450],
+      'Nankulabye': [0.3240, 32.5560],
+      'Lubya': [0.3290, 32.5440],
+      'Seeta Ward': [0.3600, 32.7050],
+      'Kkona': [0.3850, 32.5150],
+      'Kawempe II': [0.3700, 32.5600],
+      'Nateete': [0.2980, 32.5320],
+      'Old Kampala': [0.3140, 32.5690],
+      'Kamwokya': [0.3390, 32.5870],
+      'Bukasa parish': [0.3050, 32.6150]
+    };
+
+    function safeSetText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = value;
+    }
+
+    function safeSetHtml(id, html) {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    }
+
+    function getCol(row, ...aliases) {
+      const keys = Object.keys(row);
+      for (const alias of aliases) {
+        const cleanAlias = alias.trim().toLowerCase();
+        for (const k of keys) {
+          if (k.trim().toLowerCase() === cleanAlias) {
+            const val = row[k];
+            if (val !== undefined && val !== null) {
+              return typeof val === 'string' ? val.trim() : val;
+            }
+          }
+        }
+      }
+      return '';
+    }
+
+    function parseNum(val) {
+      if (val === undefined || val === null || val === '') return 0;
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
+      const cleanStr = String(val).replace(/,/g, '').trim();
+      const num = parseFloat(cleanStr);
+      return isNaN(num) ? 0 : num;
+    }
+
+    // Baseline records embedded from Public_Health_Emergencies.xlsx
+    const baselineRecords = [
+      { id: 1, date: "2026-08-14", tool: "School Activity", district: "Nakawa", parish: "Kiswa", coordinator: "Rebecca", school: "Kiswa Primary School", visit_num: "Visit 1", health_club: "Dormant", boys: 215, girls: 305, enrolment: 1600, teachers: 8, games: 70, signs: "Few hands raised (< 25% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "Ebola has left the country as it was communicated by P.S of MOH", barrier: "Entrance hand washing facility present but not functioning", source: "Community" },
+      { id: 2, date: "2026-08-14", tool: "School Activity", district: "Wakiso", parish: "Nansana", coordinator: "Ben", school: "Nansana catholic primary school", visit_num: "Visit 1", health_club: "Active", boys: 544, girls: 356, enrolment: 900, teachers: 10, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "Most of these disease are brought after elections", barrier: "Non", source: "P6 pupil" },
+      { id: 3, date: "2026-08-14", tool: "School Activity", district: "Wakiso", parish: "Nansana", coordinator: "Beb", school: "Nansana COU primary school", visit_num: "Visit 1", health_club: "Active", boys: 339, girls: 246, enrolment: 585, teachers: 5, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "No hand-washing facilities to ensure continuous hand washing", source: "Peers" },
+      { id: 4, date: "2026-08-16", tool: "School Activity", district: "Nakawa", parish: "Mbuya2", coordinator: "Cogra Mudondo", school: "Amka Classic secondary school", visit_num: "Visit 1", health_club: "Dormant", boys: 102, girls: 112, enrolment: 410, teachers: 3, games: 40, signs: "Most / All raised hands (> 75% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Learners were already on holiday", source: "Students" },
+      { id: 5, date: "2026-08-13", tool: "School Activity", district: "Nakawa", parish: "Mbuya2", coordinator: "Cogra Mudondo", school: "Uganda youth primary school", visit_num: "Visit 1", health_club: "Active", boys: 36, girls: 44, enrolment: 850, teachers: 4, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "Water present, but NO soap available", rumor: "Ebola is in Congo", barrier: "Non", source: "Peers" },
+      { id: 6, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Salaama", coordinator: "Rebecca", school: "St ponsiano primary school", visit_num: "Visit 1", health_club: "Active", boys: 458, girls: 686, enrolment: 1144, teachers: 4, games: 0, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "No hands raised (0%)", handwash_demo: "Missed Key Step", soap: "No handwashing setup available on-site", rumor: "Since we are in slum people take less concern as there is no current case.", barrier: "Entrance hand washing facility present but not functioning", source: "Community" },
+      { id: 7, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Salaama", coordinator: "Rebecca", school: "Life care primary school", visit_num: "Visit 1", health_club: "Dormant", boys: 139, girls: 161, enrolment: 300, teachers: 5, games: 60, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "Ebola no longer kills", barrier: "Financial constraints not allowing purchase of soap", source: "P6 pupil" },
+      { id: 8, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Kibuye", coordinator: "Emmanuel", school: "Katwe Church of Uganda primary school", visit_num: "Visit 1", health_club: "Active", boys: 110, girls: 180, enrolment: 290, teachers: 8, games: 30, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Students" },
+      { id: 9, date: "2026-08-14", tool: "School Activity", district: "Kawempe", parish: "Kikaayq", coordinator: "Emmanuel", school: "Mariam High School", visit_num: "Visit 1", health_club: "No", boys: 0, girls: 645, enrolment: 645, teachers: 12, games: 0, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Functional running water AND soap present", rumor: "Isolation units cause death instead of treatment", barrier: "Fear of forced quarantine", source: "Community" },
+      { id: 10, date: "2026-08-14", tool: "School Activity", district: "Kawempe", parish: "Makerere University", coordinator: "Emmanuel", school: "Makerere university", visit_num: "Visit 1", health_club: "Active", boys: 0, girls: 0, enrolment: 3000, teachers: 6, games: 0, signs: "Most / All raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Peers" },
+      { id: 11, date: "2026-08-15", tool: "School Activity", district: "Kawempe", parish: "Kyebando", coordinator: "Muganwa", school: "Gayaza Road High school", visit_num: "Visit 1", health_club: "Dormant", boys: 15, girls: 19, enrolment: 200, teachers: 4, games: 0, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "PHEs are spiritual/cultural rather than infectious", barrier: "Cultural belief barrier", source: "Peers" },
+      { id: 12, date: "2026-08-15", tool: "School Activity", district: "Kawempe", parish: "Bwaise I", coordinator: "Muganwa", school: "Mamtaz secondary school", visit_num: "Visit 1", health_club: "Active", boys: 14, girls: 22, enrolment: 200, teachers: 5, games: 0, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Few hands raised (< 25% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Slum drainage overflow", source: "Community" },
+      { id: 13, date: "2026-08-16", tool: "School Activity", district: "Kawempe", parish: "Bwaise III", coordinator: "Muganwa", school: "Bwaise parents primary school", visit_num: "Visit 1", health_club: "Active", boys: 25, girls: 39, enrolment: 480, teachers: 3, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Financial constraints not allowing purchase of soap", source: "Students" },
+      { id: 14, date: "2026-08-17", tool: "School Activity", district: "Wakiso", parish: "Nansana west", coordinator: "Muganwa", school: "Nansana SDA primary school", visit_num: "Visit 1", health_club: "Active", boys: 186, girls: 137, enrolment: 511, teachers: 4, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "No hand-washing facilities to ensure continuous hand washing", source: "Peers" },
+      { id: 15, date: "2026-08-17", tool: "School Activity", district: "Central", parish: "Nakasero", coordinator: "Muganwa", school: "Bat Valley", visit_num: "Visit 1", health_club: "Active", boys: 33, girls: 61, enrolment: 410, teachers: 4, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Failed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "No hand-washing facilities to ensure continuous hand washing", source: "Peers" },
+      { id: 16, date: "2026-08-18", tool: "School Activity", district: "Nakawa", parish: "Luzira", coordinator: "Muganwa", school: "Luzira secondary school", visit_num: "Visit 1", health_club: "Active", boys: 114, girls: 92, enrolment: 3330, teachers: 5, games: 70, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Water shortages", source: "Students" },
+      { id: 17, date: "2026-08-18", tool: "School Activity", district: "Rubaga", parish: "Nankulabye", coordinator: "Cogra", school: "Mengo Primary School", visit_num: "Visit 1", health_club: "Active", boys: 378, girls: 358, enrolment: 736, teachers: 9, games: 60, signs: "Most / All raised hands (> 75% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Frequent soap restocking need", source: "Community" },
+      { id: 18, date: "2026-08-19", tool: "School Activity", district: "Nakawa", parish: "Luzira", coordinator: "Cogra", school: "Progressive Junior school", visit_num: "Visit 1", health_club: "Active", boys: 67, girls: 43, enrolment: 560, teachers: 10, games: 65, signs: "Most / All raised hands (> 75% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Missed Key Step", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Financial constraints not allowing purchase of soap", source: "Peers" },
+      { id: 19, date: "2026-08-19", tool: "School Activity", district: "Rubaga", parish: "Lubya", coordinator: "Rebecca", school: "St Joseph Kasubi Memorial Primary School", visit_num: "Visit 1", health_club: "Active", boys: 278, girls: 289, enrolment: 567, teachers: 4, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Entrance hand washing facility present but not functioning", source: "Community" },
+      { id: 20, date: "2026-08-20", tool: "School Activity", district: "Mukono", parish: "Seeta Ward", coordinator: "Rebecca", school: "Seeta Church Of Uganda Primary School", visit_num: "Visit 1", health_club: "Active", boys: 67, girls: 73, enrolment: 736, teachers: 4, games: 10, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Few hands raised (< 25% of crowd)", handwash_demo: "Missed Key Step", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Community" },
+      { id: 21, date: "2026-08-20", tool: "School Activity", district: "Wakiso", parish: "Kkona", coordinator: "David", school: "Trinity Junior School", visit_num: "Visit 1", health_club: "Active", boys: 127, girls: 66, enrolment: 208, teachers: 4, games: 30, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "Outbreaks mostly are foreign", barrier: "Informal settlements", source: "Peers" },
+      { id: 22, date: "2026-08-21", tool: "School Activity", district: "Kawempe", parish: "Kawempe II", coordinator: "David", school: "Gaddafi secondary school", visit_num: "Visit 1", health_club: "Active", boys: 34, girls: 46, enrolment: 553, teachers: 4, games: 80, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Water cuts", source: "Students" },
+      { id: 23, date: "2026-08-21", tool: "School Activity", district: "Rubaga", parish: "Nateete", coordinator: "David", school: "Mackay Memorial College Nateete", visit_num: "Visit 1", health_club: "Active", boys: 1945, girls: 1026, enrolment: 2136, teachers: 5, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Overcrowded stances", source: "Peers" },
+      { id: 24, date: "2026-08-22", tool: "School Activity", district: "Central", parish: "Old Kampala", coordinator: "Aisha", school: "Old Kampala", visit_num: "Visit 1", health_club: "Active", boys: 71, girls: 87, enrolment: 953, teachers: 7, games: 55, signs: "About half raised hands (~50% of crowd)", hotline: "About half raised hands (~50% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Routine replenishment", source: "Peers" },
+      { id: 25, date: "2026-08-22", tool: "School Activity", district: "Central", parish: "Kamwokya", coordinator: "Ben", school: "Kamwokya Community Christian", visit_num: "Visit 1", health_club: "Active", boys: 119, girls: 189, enrolment: 2215, teachers: 6, games: 52, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "PHEs are spiritual/cultural rather than infectious", barrier: "Non", source: "Peers" }
+    ];
+
+    const defaultTransectRecords = [
+      { auditor: "Muganwa Peter", site: "Kawempe / Kikaaya", setting: "School", stations: 15, pop: 645, stance_ratio: "43.0:1 (645 : 15)", notes: "The school is spacious with enough compound, no congestion in class", wash: "Functional & Supplied", refuse: "Clean / Maintained", choke: "Low Density / Spaced", poster: "Obsolete (No hotline)", holding: "Dedicated & Equipped", staff: "Nurse has NOT been oriented on Ebola/Mpox" },
+      { auditor: "Muganwa Peter", site: "Kawempe / Bwaise III", setting: "School", stations: 6, pop: 400, stance_ratio: "66.7:1 (400 : 6)", notes: "The school follows basics of sanitation, primary section has its own stances", wash: "Functional & Supplied", refuse: "Clean / Maintained", choke: "Moderate Congestion", poster: "Fresh & Prominent", holding: "Makeshift Area Only", staff: "Partners with nearby clinic trained at Makerere" },
+      { auditor: "Ben", site: "Wakiso / Nansana east", setting: "School", stations: 3, pop: 5, stance_ratio: "1.7:1 (5 : 3)", notes: "Observation at the gate point", wash: "Present, No Soap/Water", refuse: "Moderate Stagnation", choke: "Moderate Congestion", poster: "Fresh & Prominent", holding: "Makeshift Area Only", staff: "The school has no school nurse on-site" },
+      { auditor: "Caroline", site: "Rubaga / Lubya", setting: "Market", stations: 4, pop: 200, stance_ratio: "50.0:1 (200 : 4)", notes: "The market has spaces and is well ventilated", wash: "Functional & Supplied", refuse: "Clean / Maintained", choke: "Low Density / Spaced", poster: "No Materials Found", holding: "No Protocol", staff: "The DOS and sanitation teacher were trained" },
+      { auditor: "Cogra Mudondo", site: "Makindye / Bukasa parish", setting: "School", stations: 10, pop: 497, stance_ratio: "49.7:1 (497 : 10)", notes: "High congestion around lunch stances", wash: "Functional & Supplied", refuse: "Clean / Maintained", choke: "Moderate Congestion", poster: "Torn Posters", holding: "Makeshift Area Only", staff: "Senior woman teacher trained" }
+    ];
+
+    const defaultPatRecords = [
+      { name: "Mariam High School", level: "Secondary", boys: 0, girls: 645, maleStaff: 24, femaleStaff: 20, club: "No", plan: "Informal Only", space: "Makeshift corner / store", stations: 15, bStances: 0, gStances: 40, poster: "Outdated" },
+      { name: "Bwaise Parents Primary", level: "Primary", boys: 180, girls: 220, maleStaff: 4, femaleStaff: 11, club: "Active", plan: "Informal Only", space: "Staff room / store corner", stations: 6, bStances: 6, gStances: 6, poster: "Up-to-date, Torn" },
+      { name: "St. Joseph's Nansana Catholic", level: "Primary", boys: 471, girls: 449, maleStaff: 10, femaleStaff: 23, club: "Dormant", plan: "No Plan", space: "No separate space", stations: 3, bStances: 5, gStances: 5, poster: "Up-to-date MoH" },
+      { name: "Namungoona Kigobe Primary School", level: "Primary", boys: 335, girls: 383, maleStaff: 5, femaleStaff: 9, club: "Active", plan: "Informal Only", space: "Makeshift corner / store", stations: 3, bStances: 6, gStances: 5, poster: "No IEC Seen" }
+    ];
+
+    // ================= DUMMY ENTRIES FOR TOOLS 4 TO 9 =================
+    const dummyTool4 = [
+      { id: "INT-01", setting: "Kiswa Market (Nakawa)", q1: "Yes", q2: "Fever, Bleeding & Handwash with Soap", q3: "Threat Still Present", q4: "Call National Toll-Free Hotline (0800-100-066)", q5: "Healthcare Workers" },
+      { id: "INT-02", setting: "Nansana Taxi Stage (Wakiso)", q1: "Yes", q2: "High Fever, Skin Lesions & Avoid Contact", q3: "Risk is completely gone", q4: "Notify Local VHT Immediately", q5: "LC1 Chairperson" },
+      { id: "INT-03", setting: "Bwaise Food Hub (Kawempe)", q1: "No", q2: "Vomiting & Seeking Early Treatment", q3: "Threat Still Present", q4: "Escort them to Private Clinic", q5: "Religious Leader / Imam" },
+      { id: "INT-04", setting: "Ggaba Fish Landing (Makindye)", q1: "Yes", q2: "Bleeding, Diarrhoea & Soap Washing", q3: "Threat Still Present", q4: "Call National Toll-Free Hotline (0800-100-066)", q5: "VHT Member" }
+    ];
+
+    const dummyTool5 = [
+      { id: "T5-01", target: "Market Vendor Leader", claim: "We always wash our hands with soap", probe: "Last wash 30 mins ago. Station vessel full, soap residues present.", finding: "Physical verification confirmed running water and soap at gate station.", status: "Verified" },
+      { id: "T5-02", target: "Taxi Stage Conductor", claim: "I can easily spot signs of VHF/Mpox", probe: "Differentiated ordinary malaria fever from hemorrhagic skin lesions.", finding: "Knew non-contact screening protocol and alerted stage marshals.", status: "Verified" },
+      { id: "T5-03", target: "School Health Patron", claim: "I will call toll-free hotline immediately", probe: "Recalled 0800-100-066 line without checking personal phone.", finding: "Confirmed reporting focal line displayed in staff office.", status: "Verified" },
+      { id: "T5-04", target: "Boda Boda Rider", claim: "We do not discriminate against survivors", probe: "Stated willingness to carry recovered clients from isolation ward.", finding: "Agreed community reintegration without fear.", status: "Verified" }
+    ];
+
+    const dummyTool6 = [
+      { id: "MSC-01", who: "Mrs. Nakanwagi (Head Teacher, Kawempe)", base: "Pupils used open cups for drinking and latrine handwashing was ignored.", event: "Interactive Snakes & Ladders tournament and volunteer demo in school assembly.", change: "School board allocated funds for 6 foot-operated handwashing stations.", sig: "Zero reported waterborne outbreaks and active daily pupil hygiene club." },
+      { id: "MSC-02", who: "Musa Kato (Market Master, Nakawa)", base: "Vendors believed Ebola was a political hoax and refused gate temperature checks.", event: "Direct gatekeeper dialogue with Division Health Officer at market office.", change: "Market committee mandated handwashing stations at all 4 entry portals.", sig: "Vendors now hold peer vendors accountable for replenishing soap." }
+    ];
+
+    const dummyTool7 = [
+      { sector: "Schools", broker: "Senior Women Teachers & Health Club Patrons", contact: "Staff Room Focal Desks", strategy: "Gamified board competitions & student club demonstrations" },
+      { sector: "Transport Hubs", broker: "Taxi Stage Chairmen & Boda Boda Stage Executives", contact: "Main Stage Office Board", strategy: "Morning stage briefings, megaphones, vehicle sticker placement" },
+      { sector: "Trade & Markets", broker: "Market Queens & VSLA Savings Chairpersons", contact: "Market Administration Office", strategy: "Stall-to-stall dialogue and gate handwash station enforcement" },
+      { sector: "Faith Institutions", broker: "Pastors, Imams, Mothers' Union & Choir Leads", contact: "Parish Office & Mosque Committees", strategy: "Pulpit announcements and washing stations outside prayer halls" }
+    ];
+
+    const dummyTool8 = [
+      { id: "P-01", participant: "Kyrie K. (P.6 Health Prefect)", p: "Photo of crowded communal tap with broken soap tray.", h: "Long queues during morning break causing learners to skip handwashing.", o: "Direct exposure to contagious germs before eating snack meals.", t: "Plastic soap dishes get broken and never replenished by cleaners.", o: "Install heavy-duty wire-mesh soap cages at all three school tap lines." },
+      { id: "P-02", participant: "Ben M. (Youth Peer Lead)", p: "Photo of makeshift tipping bucket (tippy-tap) outside village latrine.", h: "Community youth innovated zero-touch water dispenser from jerrycan and string.", o: "Enables safe hand hygiene in informal settlement without piped water.", t: "High cost of commercial metal water stations in slum settlements.", o: "Train youth carpenters to build and distribute 50 low-cost tippy-taps." }
+    ];
+
+    const dummyTool9 = [
+      { id: "DRL-01", school: "Kiswa Primary School (Nakawa)", distance: "Safe Distance Maintained (No touch)", holding: "Ready & Ventilated (Privacy kept)", time: "3.5 Mins", debrief: "DHT arrived, simulated safe handover, same-day debrief complete" },
+      { id: "DRL-02", school: "Nansana Catholic Primary (Wakiso)", distance: "Safe Distance Maintained (No touch)", holding: "Holding Corner Ready", time: "4.2 Mins", debrief: "Division team completed simulated notification & debrief" }
+    ];
+
+    /**
+     * Parse raw workbook rows and dynamically populate all 10 tools
+     */
+    function processRawWorkbookRows(rawRows) {
+      if (!rawRows || rawRows.length === 0) {
+        rawMasterData = [...baselineRecords];
+        dynamicTransectRecords = [...defaultTransectRecords];
+        dynamicPatRecords = [...defaultPatRecords];
+        dynamicGatekeeperRecords = [{ district: "Mukono", parish: "Seeta Ward", lead: "Lynn", role: "Teacher", commitments: "He promised to ensure hand washing facilities and revive health club.", male: 2, female: 0 }];
+        
+        dynamicTool4Records = [...dummyTool4]; isTool4Real = false;
+        dynamicTool5Records = [...dummyTool5]; isTool5Real = false;
+        dynamicTool6Records = [...dummyTool6]; isTool6Real = false;
+        dynamicTool7Records = [...dummyTool7]; isTool7Real = false;
+        dynamicTool8Records = [...dummyTool8]; isTool8Real = false;
+        dynamicTool9Records = [...dummyTool9]; isTool9Real = false;
+        return;
+      }
+
+      rawMasterData = [];
+      dynamicTransectRecords = [];
+      dynamicPatRecords = [];
+      dynamicGatekeeperRecords = [];
+
+      let parsedT4 = [];
+      let parsedT5 = [];
+      let parsedT6 = [];
+      let parsedT7 = [];
+      let parsedT8 = [];
+      let parsedT9 = [];
+
+      rawRows.forEach((row, idx) => {
+        const activityType = getCol(row, 'Public Health Emergencies', 'Public Health Emergencies ', 'Activity Type', 'Tool Type');
+        const actLower = String(activityType).toLowerCase();
+
+        // 1. TOOL 1: SCHOOL SESSIONS
+        if (actLower.includes('school activity') || (!actLower.includes('transect') && !actLower.includes('preparedness') && !actLower.includes('gatekeeper') && getCol(row, 'School Name'))) {
+          const sName = getCol(row, 'School Name', 'Name of the school');
+          if (sName) {
+            rawMasterData.push({
+              id: getCol(row, '_id') || (idx + 1),
+              date: String(getCol(row, 'Date', 'start', 'end')).substring(0, 10),
+              tool: 'School Activity',
+              district: getCol(row, 'District') || 'Central',
+              parish: getCol(row, 'Parish'),
+              coordinator: getCol(row, 'Cordinator', 'Coordinator', 'specify'),
+              school: sName,
+              visit_num: getCol(row, 'Visit Number') || 'Visit 1',
+              health_club: getCol(row, 'Presence of school health club', 'Presence of health club', 'School Health Club Status') || 'Active',
+              boys: parseNum(getCol(row, 'Number of boys sensitised')),
+              girls: parseNum(getCol(row, 'Number of girls sensitised')),
+              enrolment: parseNum(getCol(row, 'Total School enrolment Population', 'Total School Enrollment Population')),
+              teachers: parseNum(getCol(row, 'Number of Teachers/Patrons Present')),
+              games: parseNum(getCol(row, 'Snakes & Ladders Board Games distributed')),
+              signs: getCol(row, 'Raise your hand if you can name 3 warning signs of PHE'),
+              hotline: getCol(row, 'Raise your hand if you know the toll-free hotline or where to report'),
+              stigma: getCol(row, 'Raise your hand if you believe a sick person should be cared for safely without being chased or hidden'),
+              handwash_demo: getCol(row, 'Did the volunteer demonstrate correct handwashing steps'),
+              soap: getCol(row, 'Soap and running water available at venue today'),
+              rumor: getCol(row, 'Rumor, misinformation or question flagged', 'Top misconception heard today', 'specify3', 'Local barrier identified'),
+              barrier: getCol(row, 'Local barrier identified'),
+              source: getCol(row, 'source of the rumor') || 'Community'
+            });
+          }
+        }
+
+        // 2. TOOL 2: RUMORS & MISINFORMATION (Explicit Capture for standalone rumor entries)
+        const rumorVal = getCol(row, 'Rumor, misinformation or question flagged', 'Top misconception heard today', 'specify3');
+        if (rumorVal && !actLower.includes('school activity')) {
+          rawMasterData.push({
+            id: getCol(row, '_id') || (idx + 1),
+            date: String(getCol(row, 'Date', 'start', 'end')).substring(0, 10),
+            tool: 'Rumor Log',
+            district: getCol(row, 'District') || 'Central',
+            parish: getCol(row, 'Parish'),
+            school: getCol(row, 'School Name', 'Name of the school') || 'Community Site',
+            boys: 0, girls: 0, enrolment: 0, teachers: 0, games: 0,
+            rumor: rumorVal,
+            barrier: getCol(row, 'Local barrier identified'),
+            source: getCol(row, 'source of the rumor') || 'Community'
+          });
+        }
+
+        // 3. TOOL 3: TRANSECT WALK (DERIVE RATIO STRICTLY: POPULATION / FUNCTIONAL STATIONS)
+        if (actLower.includes('transect') || actLower.includes('walk') || actLower.includes('environmental & infrastructure')) {
+          const stations = parseNum(getCol(row, 'Record number of functional stations', 'Record number of functional stations '));
+          const pop = parseNum(getCol(row, 'Population count of the site'));
+          const calculatedRatio = stations > 0 ? `${(pop / stations).toFixed(1)}:1 (${pop} : ${stations})` : 'N/A';
+
+          dynamicTransectRecords.push({
+            auditor: getCol(row, 'specify', 'Cordinator', 'Coordinator') || 'Lead Auditor',
+            site: `${getCol(row, 'District')} / ${getCol(row, 'Parish')}`,
+            setting: getCol(row, 'Setting type', 'specify3') || 'School',
+            stations: stations,
+            pop: pop,
+            stance_ratio: calculatedRatio,
+            notes: getCol(row, 'Observation notes', 'Check vector breeding sites and safety near food points.') || 'No notes',
+            refuse: getCol(row, 'Open refuse heaps, stagnant water, overflowing drainage channels near classrooms, food stalls, or passenger bays.') || 'Maintained',
+            wash: getCol(row, 'Functional handwashing points at gates, latrines, and dining/canteen areas with soap and running water.') || 'Present',
+            poster: getCol(row, 'Presence, legibility, and currency of MoH/KCCA posters on Ebola, Mpox, and Marburg with active toll-free lines.') || 'Observed',
+            holding: getCol(row, 'Designated space, ventilation, clean bedding, and written separation protocol for suspected symptomatic cases.') || 'Makeshift Only',
+            staff: getCol(row, 'Verify if school nurse/matron or market head has ever received orientation on epidemics.') || 'Not oriented'
+          });
+        }
+
+        // 4. TOOL 10: PREPAREDNESS ASSESSMENT (PAT)
+        if (actLower.includes('preparedness') || actLower.includes('tool 11') || getCol(row, 'Does the school have a Epidemic Preparedness Plan')) {
+          dynamicPatRecords.push({
+            name: getCol(row, 'Name of the school', 'School Name') || 'Assessed Facility',
+            level: getCol(row, 'School level') || 'Primary',
+            boys: parseNum(getCol(row, 'total enrolment for boys')),
+            girls: parseNum(getCol(row, 'Totla enrolement for girls', 'Total enrolment for girls')),
+            maleStaff: parseNum(getCol(row, 'Total male teaching staff')),
+            femaleStaff: parseNum(getCol(row, 'Total female teaching staff')),
+            club: getCol(row, 'Presence of health club', 'School Health Club Status') || 'Active',
+            plan: getCol(row, 'Does the school have a Epidemic Preparedness Plan') || 'Informal Only',
+            space: getCol(row, 'Does the school have a Designated Isolation place incase of an epidemic') || 'Makeshift corner',
+            stations: parseNum(getCol(row, 'Record number of working water stations', 'Record number of working water stations ')),
+            bStances: parseNum(getCol(row, 'Record number of stances for boys', 'Record number of stances for boys ')),
+            gStances: parseNum(getCol(row, 'record number of stances for girls', 'Record number of stances for girls')),
+            poster: getCol(row, 'Record presence of Posters or guidelines on Ebola, Mpox, or Cholera displayed in prominent pupil areas.') || 'IEC Present'
+          });
+        }
+
+        // 5. COMMUNITY GATEKEEPER DIALOGUE
+        if (actLower.includes('gatekeeper') || getCol(row, 'what commitments did the gatekeeper make')) {
+          dynamicGatekeeperRecords.push({
+            district: getCol(row, 'District'),
+            parish: getCol(row, 'Parish'),
+            lead: getCol(row, 'specify', 'Cordinator'),
+            role: getCol(row, 'Type of gatekeeper') || 'Teacher / Patron',
+            commitments: getCol(row, 'what commitments did the gatekeeper make'),
+            male: parseNum(getCol(row, 'Male Gatekeepers Oriented')),
+            female: parseNum(getCol(row, 'Female Gatekeepers Oriented'))
+          });
+        }
+
+        // 6. TOOL 4: RAPID INTERCEPT SURVEY
+        const q1Val = getCol(row, 'Q1 In the past 7 days, have you seen or heard any public health messages or activities in this area regarding disease outbreaks (Ebola, Mpox, Marburg)?');
+        if (q1Val) {
+          parsedT4.push({
+            id: `INT-${parsedT4.length + 1}`,
+            setting: `${getCol(row, 'District')} / ${getCol(row, 'Parish')}`,
+            q1: q1Val,
+            q2: getCol(row, 'Q2 Can you name two key signs/symptoms of Ebola or Mpox and one way you can protect yourself?') || getCol(row, 'Correctly named 2+ symptoms  '),
+            q3: getCol(row, 'Qn3 Now that Uganda was declared Ebola-free in July 2026, do you feel there is still a risk of outbreaks in your community, or is the threat completely gone?'),
+            q4: getCol(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?'),
+            q5: getCol(row, 'Qn5 Who in this community do you trust the MOST to tell you the truth about a disease outbreak?')
+          });
+        }
+
+        // 7. TOOL 5: TAKE 5 PROBING DIAGNOSTIC
+        const t5Claim = getCol(row, 'Which of these five claims have you heard', "Claim: 'We always wash our hands with soap throughout the day.'");
+        if (t5Claim || getCol(row, 'Target group')) {
+          parsedT5.push({
+            id: `T5-${parsedT5.length + 1}`,
+            target: getCol(row, 'Target group') || 'Community Member',
+            claim: t5Claim || 'Handwashing with soap',
+            probe: getCol(row, 'When was the exact last time you washed hands with soap today') || 'Station inspection',
+            finding: getCol(row, 'data collector verification status') || 'Verified on site',
+            status: 'Verified'
+          });
+        }
+
+        // 8. TOOL 6: HUMAN INTEREST STORIES
+        const mscStep1 = getCol(row, 'Step 1: Baseline Situation (Before the Intervention)');
+        if (mscStep1) {
+          parsedT6.push({
+            id: `MSC-${parsedT6.length + 1}`,
+            who: `${getCol(row, 'specify', 'School Name')} (${getCol(row, 'District')})`,
+            base: mscStep1,
+            event: getCol(row, 'Step 2: The Event / Turning Point'),
+            change: getCol(row, 'Step 3: The Concrete Change in Behavior or Norm'),
+            sig: getCol(row, 'Step 4: Why is this Change Significant?')
+          });
+        }
+
+        // 9. TOOL 7: PARTICIPATORY MAPPING
+        const brokerVal = getCol(row, '**Who is actually listened to**', 'row-Who is actually listened to');
+        if (brokerVal) {
+          parsedT7.push({
+            sector: getCol(row, 'Setting type') || 'Parish Community',
+            broker: brokerVal,
+            contact: getCol(row, 'Parish'),
+            strategy: getCol(row, '**What is be best engagement strategy**', 'row-What is be best engagement strategy')
+          });
+        }
+
+        // 10. TOOL 8: PHOTOVOICE
+        const photoP = getCol(row, 'P — Picture: What people, objects, or actions are in the photo?');
+        if (photoP) {
+          parsedT8.push({
+            id: `P-${parsedT8.length + 1}`,
+            participant: getCol(row, 'Participant name') || 'Learner',
+            p: photoP,
+            h: getCol(row, 'H — Happening: What is the background story or context here?'),
+            o: getCol(row, 'O — Our Lives: How does this connect to daily health or hygiene challenges?'),
+            t: getCol(row, 'T — The Cause: Why does this issue exist (e.g., cost, lack of water, habit)?'),
+            o2: getCol(row, 'O — Opportunities: What can the community or local leaders do to fix it?')
+          });
+        }
+
+        // 11. TOOL 9: PRE-DRILL SAFETY DRILL
+        const drillDistance = getCol(row, 'Teacher or pupil leader identifies symptomatic adult without physical contact.');
+        if (drillDistance) {
+          parsedT9.push({
+            id: `DRL-${parsedT9.length + 1}`,
+            school: getCol(row, 'Name of the school', 'School Name') || 'Assessed School',
+            distance: drillDistance,
+            holding: getCol(row, 'Escorting case to designated ventilated sick bay/holding area safely.'),
+            time: `${getCol(row, 'time taken to call in minutes') || '3'} Mins`,
+            debrief: getCol(row, 'DHT / Surveillance team simulated arrival, handover, and same-day debrief.') || 'Completed'
+          });
+        }
+      });
+
+      // Strict dynamic assignment: clear demo baseline if real data exists; otherwise empty out
+      if (parsedT4.length > 0) { dynamicTool4Records = parsedT4; isTool4Real = true; } else { dynamicTool4Records = []; isTool4Real = false; }
+      if (parsedT5.length > 0) { dynamicTool5Records = parsedT5; isTool5Real = true; } else { dynamicTool5Records = []; isTool5Real = false; }
+      if (parsedT6.length > 0) { dynamicTool6Records = parsedT6; isTool6Real = true; } else { dynamicTool6Records = []; isTool6Real = false; }
+      if (parsedT7.length > 0) { dynamicTool7Records = parsedT7; isTool7Real = true; } else { dynamicTool7Records = []; isTool7Real = false; }
+      if (parsedT8.length > 0) { dynamicTool8Records = parsedT8; isTool8Real = true; } else { dynamicTool8Records = []; isTool8Real = false; }
+      if (parsedT9.length > 0) { dynamicTool9Records = parsedT9; isTool9Real = true; } else { dynamicTool9Records = []; isTool9Real = false; }
+      if (dynamicTransectRecords.length === 0) dynamicTransectRecords = [];
+      if (dynamicPatRecords.length === 0) dynamicPatRecords = [];
+    }
+
+    /**
+     * TAB SWITCHING HANDLER
+     */
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      const activePane = document.getElementById(`tab-${tabId}`);
+      if (activePane) activePane.classList.add('active');
+
+      const titles = {
+        'overview': ['Main Summary of Reach', 'Cross-tool reach aggregation, district performance, and programmatic coverage'],
+        'tool_1': ['Tool 1: Operational School Sessions & Wheel Delivery', 'Detailed analysis of learner reach, visit number, health club, and wheel answers'],
+        'tool_2': ['Tool 2: Standardized Weekly Misinformation & Rumor Instrument', 'Community rumors flagged, barrier recurrence analysis, and tactical RCCE adjustments'],
+        'tool_3': ['Tool 3: Observational Infrastructure & Transect Walk Mapping', 'Environmental sanitation, setting type, functional stations, and stance ratios'],
+        'tool_4': ['Tool 4: Rapid Audience Assessment Intercept Survey', 'Full questionnaire capture: 7-day recall, 2+ symptoms, risk perception, and notification intent'],
+        'tool_5': ['Tool 5: Take 5 Probing Qualitative Diagnostic (Behavioral Adoption)', 'Full 5-claim diagnostic audit for gatekeepers, teachers, vendors, and transport operators'],
+        'tool_6': ['Tool 6: Systematic Human-Interest Impact Stories', 'Four-step qualitative narrative tracking of the Most Significant Change'],
+        'tool_7': ['Tool 7: Participatory Entry & Informal Trust Broker Mapping', 'Identification of trusted community influencers across 5 social sectors'],
+        'tool_8': ['Tool 8: Photovoice Community Realities Documentation', 'PHOTO protocol analysis of youth-led hygiene challenges and community solutions'],
+        'tool_9': ['Tool 9: Mandatory Pre-Drill Safety & Isolation Performance Evaluation', 'Four-stage safe rehearsal of detection, holding bay escort, call, and handover'],
+        'tool_10': ['Tool 10: School Epidemic Preparedness Assessment Tool (PAT)', 'Institutional response diagnostic covering isolation bays, plans, and stance ratios']
+      };
+
+      if (titles[tabId]) {
+        safeSetText('screenTitle', titles[tabId][0]);
+        safeSetText('screenSubtitle', titles[tabId][1]);
+      }
+
+      setTimeout(() => {
+        if (tabId === 'overview') {
+          if (leafletMap) leafletMap.invalidateSize();
+          if (chartInstances.districtReach) chartInstances.districtReach.resize();
+          if (chartInstances.districtShare) chartInstances.districtShare.resize();
+        } else if (tabId === 'tool_1') {
+          if (chartInstances.signsT1) chartInstances.signsT1.resize();
+          if (chartInstances.hotlineT1) chartInstances.hotlineT1.resize();
+          if (chartInstances.stigmaT1) chartInstances.stigmaT1.resize();
+          if (chartInstances.handwashT1) chartInstances.handwashT1.resize();
+          if (chartInstances.topSchoolsT1) chartInstances.topSchoolsT1.resize();
+        } else if (tabId === 'tool_2') {
+          if (chartInstances.misinfoT2) chartInstances.misinfoT2.resize();
+          if (chartInstances.sourcesT2) chartInstances.sourcesT2.resize();
+        } else if (tabId === 'tool_3') {
+          if (chartInstances.washT3) chartInstances.washT3.resize();
+          if (chartInstances.posterT3) chartInstances.posterT3.resize();
+        } else if (tabId === 'tool_4') {
+          if (chartInstances.t4Q1) chartInstances.t4Q1.resize();
+          if (chartInstances.t4Q4) chartInstances.t4Q4.resize();
+        } else if (tabId === 'tool_5') {
+          if (chartInstances.t5Target) chartInstances.t5Target.resize();
+          if (chartInstances.t5Claims) chartInstances.t5Claims.resize();
+        }
+      }, 60);
+    }
+
+    function populateFilterOptions() {
+      const select = document.getElementById('filterDistrict');
+      if (!select) return;
+      const currentVal = select.value;
+      const districts = Array.from(new Set(rawMasterData.map(d => d.district).filter(Boolean))).sort();
+      select.innerHTML = '<option value="ALL">All Districts</option>' + districts.map(d => `<option value="${d}">${d}</option>`).join('');
+      if (districts.includes(currentVal)) {
+        select.value = currentVal;
+      }
+    }
+
+    function applyFilters() {
+      const selectedDistrict = document.getElementById('filterDistrict')?.value || 'ALL';
+      const searchText = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
+      const startDate = document.getElementById('filterStartDate')?.value || '';
+      const endDate = document.getElementById('filterEndDate')?.value || '';
+
+      appData = rawMasterData.filter(d => {
+        const matchesDistrict = (selectedDistrict === 'ALL' || d.district === selectedDistrict);
+        
+        const matchesSearch = !searchText || (
+          (d.school && d.school.toLowerCase().includes(searchText)) ||
+          (d.district && d.district.toLowerCase().includes(searchText)) ||
+          (d.parish && d.parish.toLowerCase().includes(searchText)) ||
+          (d.rumor && d.rumor.toLowerCase().includes(searchText)) ||
+          (d.barrier && d.barrier.toLowerCase().includes(searchText))
+        );
+
+        const rowDate = (d.date || '').substring(0, 10);
+        const matchesStart = !startDate || (rowDate && rowDate >= startDate);
+        const matchesEnd = !endDate || (rowDate && rowDate <= endDate);
+
+        return matchesDistrict && matchesSearch && matchesStart && matchesEnd;
+      });
+
+      recomputeAndRender();
+    }
+
+    function resetFilters() {
+      if (document.getElementById('filterDistrict')) document.getElementById('filterDistrict').value = 'ALL';
+      if (document.getElementById('filterStartDate')) document.getElementById('filterStartDate').value = '';
+      if (document.getElementById('filterEndDate')) document.getElementById('filterEndDate').value = '';
+      if (document.getElementById('filterSearch')) document.getElementById('filterSearch').value = '';
+      applyFilters();
+    }
+
+    function recomputeAndRender() {
+      Object.keys(chartInstances).forEach(k => {
+        if (chartInstances[k]) {
+          chartInstances[k].destroy();
+          delete chartInstances[k];
+        }
+      });
+
+      const distMap = {};
+      let totalBoys = 0, totalGirls = 0, totalEnrolment = 0, totalTeachers = 0, totalGames = 0;
+
+      appData.forEach(r => {
+        totalBoys += (r.boys || 0);
+        totalGirls += (r.girls || 0);
+        totalEnrolment += (r.enrolment || 0);
+        totalTeachers += (r.teachers || 0);
+        totalGames += (r.games || 0);
+
+        const dName = r.district || 'Unassigned';
+        if (!distMap[dName]) {
+          distMap[dName] = { count: 0, enrolment: 0, boys: 0, girls: 0, teachers: 0, totalLearners: 0, totalReach: 0, games: 0 };
+        }
+        distMap[dName].count += 1;
+        distMap[dName].enrolment += (r.enrolment || 0);
+        distMap[dName].boys += (r.boys || 0);
+        distMap[dName].girls += (r.girls || 0);
+        distMap[dName].teachers += (r.teachers || 0);
+        distMap[dName].totalLearners += ((r.boys || 0) + (r.girls || 0));
+        distMap[dName].totalReach += ((r.boys || 0) + (r.girls || 0) + (r.teachers || 0));
+        distMap[dName].games += (r.games || 0);
+      });
+
+      dynamicGatekeeperRecords.forEach(gk => {
+        const dName = gk.district || 'Mukono';
+        const gkCount = (gk.male || 0) + (gk.female || 0);
+        if (distMap[dName]) {
+          distMap[dName].teachers += gkCount;
+          distMap[dName].totalReach += gkCount;
+        }
+      });
+
+      const distList = Object.keys(distMap).map(d => ({
+        name: d,
+        ...distMap[d]
+      })).sort((a, b) => b.totalReach - a.totalReach);
+
+      const totalSensitised = totalBoys + totalGirls;
+      const totalLearners = totalSensitised;
+      const totalCommunityGK = dynamicGatekeeperRecords.reduce((acc, g) => acc + (g.male || 0) + (g.female || 0), 0);
+      const grandTotalGatekeepers = totalTeachers + (totalCommunityGK > 0 ? totalCommunityGK : 2);
+      const grandTotalReach = totalLearners + grandTotalGatekeepers;
+
+      safeSetText('kpiLearners', totalLearners.toLocaleString());
+      safeSetText('kpiLearnersSub', `${totalBoys.toLocaleString()} Boys | ${totalGirls.toLocaleString()} Girls (${totalLearners > 0 ? ((totalGirls / totalLearners) * 100).toFixed(1) : 0}% F)`);
+      safeSetText('kpiEnrolment', totalEnrolment.toLocaleString());
+      safeSetText('kpiEnrolmentSub', `Coverage: ${totalEnrolment > 0 ? ((totalLearners / totalEnrolment) * 100).toFixed(1) : 0}% of student base`);
+      safeSetText('kpiGatekeepers', grandTotalGatekeepers.toLocaleString());
+      safeSetText('kpiGames', totalGames.toLocaleString());
+      safeSetText('kpiDistricts', distList.length);
+      safeSetText('badgeTotalReach', grandTotalReach > 1000 ? `${(grandTotalReach/1000).toFixed(1)}K` : grandTotalReach);
+      safeSetText('badgeTool1', appData.filter(d => d.tool === 'School Activity').length);
+      safeSetText('badgeTool3', dynamicTransectRecords.length);
+      safeSetText('badgeTool4', dynamicTool4Records.length);
+      safeSetText('badgeTool5', dynamicTool5Records.length);
+      safeSetText('badgeTool6', dynamicTool6Records.length);
+      safeSetText('badgeTool7', dynamicTool7Records.length);
+      safeSetText('badgeTool8', dynamicTool8Records.length);
+      safeSetText('badgeTool9', dynamicTool9Records.length);
+      safeSetText('badgeTool10', dynamicPatRecords.length);
+
+      safeSetHtml('tool4DummyNotice', isTool4Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
+      safeSetHtml('tool5DummyNotice', isTool5Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
+      safeSetHtml('tool6DummyNotice', isTool6Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
+      safeSetHtml('tool7DummyNotice', isTool7Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
+      safeSetHtml('tool8DummyNotice', isTool8Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
+      safeSetHtml('tool9DummyNotice', isTool9Real ? '<span class="badge-pill badge-success">Verified Active</span>' : '<span class="badge-pill badge-warning">Awaiting Data / Empty</span>');
+
+      const keyChipsHtml = distList.length === 0
+        ? `<span style="color:#64748b; font-size:0.8rem;">No district data for active filter.</span>`
+        : distList.map(d => `
+            <div class="district-key-chip">
+              <strong>${d.name}:</strong> 
+              <span class="chip-total">Total: ${d.totalReach.toLocaleString()}</span>
+              <span style="color:#64748b; font-size:0.72rem;">(${d.boys.toLocaleString()} B / ${d.girls.toLocaleString()} G / ${d.teachers} Gatekeepers)</span>
+            </div>
+          `).join('');
+      safeSetHtml('districtTotalsKey', keyChipsHtml);
+
+      const schoolActsCount = appData.filter(d => d.tool === 'School Activity').length;
+      const toolDefs = [
+        { num: 1, name: "Operational tracking tool for school sessions (Wheel & Curricula)", q: 26, reach: `${totalLearners.toLocaleString()} Learners (${schoolActsCount} Schools)`, tab: "tool_1" },
+        { num: 2, name: "Standardized weekly monitoring of community rumors & misinformation", q: 8, reach: `${appData.filter(d=>d.rumor||d.barrier).length} Reports / Concerns Flagged`, tab: "tool_2" },
+        { num: 3, name: "Observational mapping of physical infrastructure & WASH (Transect walk)", q: 14, reach: `${dynamicTransectRecords.length} Facility Audits`, tab: "tool_3" },
+        { num: 4, name: "Rapid audience assessment intercept survey (All Questions Captured)", q: 15, reach: `${dynamicTool4Records.length} Respondents`, tab: "tool_4" },
+        { num: 5, name: "Take 5 qualitative probing diagnostic for genuine behavioral adoption", q: 32, reach: `${dynamicTool5Records.length} Diagnostic Audits`, tab: "tool_5" },
+        { num: 6, name: "Systematic qualitative human-interest impact stories (MSC)", q: 5, reach: `${dynamicTool6Records.length} Narrative turning points`, tab: "tool_6" },
+        { num: 7, name: "Participatory mapping guide for informal trust brokers & parish entry", q: 19, reach: `${dynamicTool7Records.length} Social Sectors`, tab: "tool_7" },
+        { num: 8, name: "Photovoice protocol on hygiene realities & behavioral innovations", q: 9, reach: `${dynamicTool8Records.length} Photo Diagnostics`, tab: "tool_8" },
+        { num: 9, name: "Mandatory pre-drill verification & performance rehearsal evaluation", q: 19, reach: `${dynamicTool9Records.length} Drills Evaluated`, tab: "tool_9" },
+        { num: 10, name: "School Epidemic Preparedness Assessment Tool (PAT)", q: 53, reach: `${dynamicPatRecords.length} Institutional Audits Complete`, tab: "tool_10" }
+      ];
+
+      safeSetHtml('toolsManifestBody', toolDefs.map(t => `
+        <tr>
+          <td><span class="badge-pill badge-primary">Tool ${t.num}</span></td>
+          <td><strong>${t.name}</strong></td>
+          <td>${t.q} Questions</td>
+          <td><strong style="color:var(--primary);">${t.reach}</strong></td>
+          <td><span class="badge-pill ${t.reach.startsWith('0') ? 'badge-warning' : 'badge-success'}">${t.reach.startsWith('0') ? 'Awaiting Data' : 'Active Tool'}</span></td>
+          <td><button class="btn-action" style="padding:4px 10px; font-size:0.72rem;" onclick="showTab('${t.tab}')">Open Tool Analytics →</button></td>
+        </tr>
+      `).join(''));
+
+      safeSetHtml('districtSummaryTableBody', distList.map(d => {
+        const rate = d.enrolment > 0 ? ((d.totalLearners / d.enrolment) * 100).toFixed(1) : 0;
+        const badge = rate >= 50 ? 'badge-success' : (rate >= 30 ? 'badge-primary' : 'badge-warning');
+        return `
+          <tr>
+            <td><strong>${d.name}</strong></td>
+            <td>${d.count}</td>
+            <td>${d.enrolment.toLocaleString()}</td>
+            <td>${d.boys.toLocaleString()}</td>
+            <td>${d.girls.toLocaleString()}</td>
+            <td><strong>${d.totalLearners.toLocaleString()}</strong></td>
+            <td><strong style="color:var(--gatekeeper);">${d.teachers}</strong></td>
+            <td><strong style="color:var(--primary);">${d.totalReach.toLocaleString()}</strong></td>
+            <td>${d.games.toLocaleString()}</td>
+            <td><span class="badge-pill ${badge}">${rate}%</span></td>
+          </tr>
+        `;
+      }).join(''));
+
+      const schoolListRows = appData.filter(s => s.tool === 'School Activity');
+      safeSetHtml('tool1TableBody', schoolListRows.length === 0 ? `<tr><td colspan="13" style="text-align:center; color:#94a3b8; padding:20px;">No school session records found in active filter.</td></tr>` : schoolListRows.map(s => {
+        const total = (s.boys || 0) + (s.girls || 0);
+        const rate = s.enrolment > 0 ? ((total / s.enrolment) * 100).toFixed(1) : 0;
+        const demoBadge = String(s.handwash_demo).includes('All Steps') ? 'badge-success' : (String(s.handwash_demo).includes('Not done') ? 'badge-danger' : 'badge-warning');
+        const clubBadge = String(s.health_club).includes('Active') ? 'badge-success' : (String(s.health_club).includes('Dormant') ? 'badge-warning' : 'badge-danger');
+        return `
+          <tr>
+            <td><strong>${s.school}</strong></td>
+            <td><span class="badge-pill badge-primary">${s.visit_num || 'Visit 1'}</span></td>
+            <td><span class="badge-pill ${clubBadge}">${s.health_club || 'Active'}</span></td>
+            <td>${s.district}</td>
+            <td>${s.parish || '—'}</td>
+            <td>${(s.enrolment || 0).toLocaleString()}</td>
+            <td>${s.boys || 0} / ${s.girls || 0}</td>
+            <td><strong>${total.toLocaleString()}</strong></td>
+            <td><strong style="color:var(--primary);">${rate}%</strong></td>
+            <td>${s.teachers || 0}</td>
+            <td>${s.games || 0}</td>
+            <td><span class="badge-pill ${demoBadge}">${s.handwash_demo || 'Not done'}</span></td>
+            <td>${s.soap || '—'}</td>
+          </tr>
+        `;
+      }).join(''));
+
+      renderRecurringRumorLog();
+
+      // Tool 3 Table
+      safeSetHtml('tool3TableBody', dynamicTransectRecords.length === 0 ? `<tr><td colspan="11" style="text-align:center; color:#94a3b8; padding:20px;">No transect walk records found.</td></tr>` : dynamicTransectRecords.map(t => `
+        <tr>
+          <td><strong>${t.auditor}</strong></td>
+          <td>${t.site}</td>
+          <td><span class="badge-pill badge-primary">${t.setting}</span></td>
+          <td><strong>${t.stations} Stations</strong></td>
+          <td>${t.pop} Persons</td>
+          <td><strong style="color:#d97706; font-size:0.83rem;">${t.stance_ratio}</strong></td>
+          <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${t.notes}</td>
+          <td>${t.refuse}</td>
+          <td><span class="badge-pill ${String(t.poster).includes('Fresh') ? 'badge-success' : 'badge-danger'}">${t.poster}</span></td>
+          <td>${t.holding}</td>
+          <td>${t.staff}</td>
+        </tr>
+      `).join(''));
+
+      safeSetHtml('tool4TableBody', dynamicTool4Records.length === 0 ? `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:20px;">No intercept survey records found.</td></tr>` : dynamicTool4Records.map(r => `
+        <tr>
+          <td><strong>${r.id}</strong></td>
+          <td>${r.setting}</td>
+          <td><span class="badge-pill ${r.q1 === 'Yes' ? 'badge-success' : 'badge-danger'}">${r.q1}</span></td>
+          <td>${r.q2}</td>
+          <td><span class="badge-pill ${String(r.q3).includes('Present') ? 'badge-success' : 'badge-warning'}">${r.q3}</span></td>
+          <td>${r.q4}</td>
+          <td><strong style="color:var(--primary);">${r.q5}</strong></td>
+        </tr>
+      `).join(''));
+
+      safeSetHtml('tool5TableBody', dynamicTool5Records.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No diagnostic audit records found.</td></tr>` : dynamicTool5Records.map(t => `
+        <tr>
+          <td><strong>${t.id}</strong></td>
+          <td><span class="badge-pill badge-primary">${t.target}</span></td>
+          <td>${t.claim}</td>
+          <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${t.probe}</td>
+          <td style="max-width:220px; white-space:normal; font-size:0.75rem;">${t.finding}</td>
+          <td><span class="badge-pill badge-success">${t.status}</span></td>
+        </tr>
+      `).join(''));
+
+      safeSetHtml('tool6TableBody', dynamicTool6Records.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No narrative impact stories found.</td></tr>` : dynamicTool6Records.map(m => `
+        <tr>
+          <td><strong>${m.id}</strong></td>
+          <td>${m.who}</td>
+          <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${m.base}</td>
+          <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${m.event}</td>
+          <td style="max-width:200px; white-space:normal; font-size:0.75rem;"><strong>${m.change}</strong></td>
+          <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${m.sig}</td>
+        </tr>
+      `).join(''));
+
+      safeSetHtml('tool7TableBody', dynamicTool7Records.length === 0 ? `<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:20px;">No trust broker mappings found.</td></tr>` : dynamicTool7Records.map(b => `
+        <tr>
+          <td><strong>${b.sector}</strong></td>
+          <td><strong style="color:var(--primary);">${b.broker}</strong></td>
+          <td>${b.contact}</td>
+          <td>${b.strategy}</td>
+        </tr>
+      `).join(''));
+
+      safeSetHtml('tool8TableBody', dynamicTool8Records.length === 0 ? `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:20px;">No photovoice records found.</td></tr>` : dynamicTool8Records.map(p => `
+        <tr>
+          <td><strong>${p.id}</strong></td>
+          <td>${p.participant}</td>
+          <td style="max-width:180px; white-space:normal; font-size:0.75rem;">${p.p}</td>
+          <td style="max-width:180px; white-space:normal; font-size:0.75rem;">${p.h}</td>
+          <td style="max-width:180px; white-space:normal; font-size:0.75rem;">${p.o}</td>
+          <td style="max-width:180px; white-space:normal; font-size:0.75rem;">${p.t}</td>
+          <td style="max-width:180px; white-space:normal; font-size:0.75rem;"><strong>${p.o2 || p.o}</strong></td>
+        </tr>
+      `).join(''));
+
+      safeSetHtml('tool9TableBody', dynamicTool9Records.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No simulation drill logs found.</td></tr>` : dynamicTool9Records.map(d => `
+        <tr>
+          <td><strong>${d.id}</strong></td>
+          <td>${d.school}</td>
+          <td><span class="badge-pill badge-success">${d.distance}</span></td>
+          <td>${d.holding}</td>
+          <td><strong>${d.time}</strong></td>
+          <td>${d.debrief}</td>
+        </tr>
+      `).join(''));
+
+      safeSetHtml('tool10TableBody', dynamicPatRecords.length === 0 ? `<tr><td colspan="11" style="text-align:center; color:#94a3b8; padding:20px;">No PAT institutional audits found.</td></tr>` : dynamicPatRecords.map(p => `
+        <tr>
+          <td><strong>${p.name}</strong></td>
+          <td>${p.level}</td>
+          <td>${p.boys} / ${p.girls}</td>
+          <td>${p.maleStaff} / ${p.femaleStaff}</td>
+          <td><span class="badge-pill ${String(p.club).includes('Active') ? 'badge-success' : 'badge-danger'}">${p.club}</span></td>
+          <td><span class="badge-pill badge-warning">${p.plan}</span></td>
+          <td>${p.space}</td>
+          <td>${p.stations}</td>
+          <td>${p.bStances}</td>
+          <td>${p.gStances}</td>
+          <td><span class="badge-pill ${String(p.poster).includes('Up-to-date') ? 'badge-success' : 'badge-danger'}">${p.poster}</span></td>
+        </tr>
+      `).join(''));
+
+      if (dynamicPatRecords.length > 0) {
+        const activeClubs = dynamicPatRecords.filter(p => String(p.club).toLowerCase().includes('active')).length;
+        safeSetText('patClubRate', `${((activeClubs / dynamicPatRecords.length) * 100).toFixed(1)}%`);
+        const formalPlans = dynamicPatRecords.filter(p => String(p.plan).toLowerCase().includes('formal')).length;
+        safeSetText('patPlanRate', `${((formalPlans / dynamicPatRecords.length) * 100).toFixed(1)}%`);
+        const hasIsolation = dynamicPatRecords.filter(p => !String(p.space).toLowerCase().includes('no separate')).length;
+        safeSetText('patIsoRate', `${((hasIsolation / dynamicPatRecords.length) * 100).toFixed(1)}%`);
+      }
+
+      renderBarCharts(distList);
+      renderInteractiveMap();
+    }
+
+    function renderInteractiveMap() {
+      const mapContainer = document.getElementById('schoolMap');
+      if (!mapContainer) return;
+
+      if (!leafletMap) {
+        leafletMap = L.map('schoolMap').setView([0.330, 32.590], 12);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://carto.com/">CARTO</a> | &copy; OpenStreetMap',
+          maxZoom: 19
+        }).addTo(leafletMap);
+        markersLayer = L.featureGroup().addTo(leafletMap);
+      }
+
+      markersLayer.clearLayers();
+
+      const validSchools = appData.filter(d => d.school && d.school !== 'Site' && d.tool === 'School Activity');
+      safeSetText('mapSchoolCount', `${validSchools.length} Schools Displayed`);
+
+      validSchools.forEach((s, idx) => {
+        const parishKey = (s.parish || '').trim();
+        const baseCoords = parishCoordinates[parishKey] || [0.320, 32.580];
+
+        const offsetLat = (idx % 4 - 1.5) * 0.0035;
+        const offsetLng = (idx % 3 - 1) * 0.0035;
+        const lat = baseCoords[0] + offsetLat;
+        const lng = baseCoords[1] + offsetLng;
+
+        const totalSensitised = (s.boys || 0) + (s.girls || 0);
+        const coverageRate = s.enrolment > 0 ? Math.round((totalSensitised / s.enrolment) * 100) : 0;
+        const hasHighGames = (s.games || 0) >= 50;
+
+        const pinColor = hasHighGames ? '#f1bc1b' : '#282c68';
+        const borderCol = hasHighGames ? '#282c68' : '#ffffff';
+        const customIcon = L.divIcon({
+          className: 'custom-map-pin',
+          html: `<div style="
+            background: ${pinColor};
+            width: 22px;
+            height: 22px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 2px solid ${borderCol};
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          "><div style="width: 6px; height: 6px; background: #fff; border-radius: 50%; transform: rotate(45deg);"></div></div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 24],
+          popupAnchor: [0, -22]
+        });
+
+        const popupContent = `
+          <div style="min-width:240px; padding:4px;">
+            <div class="map-popup-title">${s.school}</div>
+            <div style="font-size:0.75rem; color:#64748b; margin-bottom:8px;">
+              <strong>${s.district}</strong> &bull; Parish: ${s.parish || 'N/A'} &bull; <span class="badge-pill badge-primary">${s.visit_num || 'Visit 1'}</span>
+            </div>
+            
+            <div class="map-popup-stat">
+              <span>Learners Sensitised:</span>
+              <strong>${totalSensitised.toLocaleString()} (${s.boys} B / ${s.girls} G)</strong>
+            </div>
+            <div class="map-popup-stat">
+              <span>Teachers/Patrons Present:</span>
+              <strong style="color:var(--gatekeeper);">${s.teachers || 0}</strong>
+            </div>
+            <div class="map-popup-stat">
+              <span>School Enrolment:</span>
+              <span>${(s.enrolment || 0).toLocaleString()} (<strong>${coverageRate}% Coverage</strong>)</span>
+            </div>
+            <div class="map-popup-stat">
+              <span>School Health Club:</span>
+              <span class="badge-pill ${String(s.health_club).includes('Active') ? 'badge-success' : 'badge-warning'}">${s.health_club || 'Active'}</span>
+            </div>
+            <div class="map-popup-stat">
+              <span>Board Games Allocated:</span>
+              <strong style="color:#d97706;">${s.games || 0} Snakes & Ladders</strong>
+            </div>
+            <div class="map-popup-stat">
+              <span>Handwashing Demo:</span>
+              <span class="badge-pill ${String(s.handwash_demo).includes('All Steps') ? 'badge-success' : 'badge-warning'}">${s.handwash_demo}</span>
+            </div>
+            <div class="map-popup-stat">
+              <span>Venue Soap Audit:</span>
+              <span style="font-size:0.72rem; font-weight:600;">${s.soap}</span>
+            </div>
+          </div>
+        `;
+
+        const marker = L.marker([lat, lng], { icon: customIcon }).bindPopup(popupContent);
+        markersLayer.addLayer(marker);
+      });
+
+      if (validSchools.length > 0) {
+        leafletMap.fitBounds(markersLayer.getBounds(), { padding: [40, 40], maxZoom: 13 });
+      }
+    }
+
+    function renderRecurringRumorLog() {
+      const rumorFreq = {};
+      const barrierFreq = {};
+      const rumorToBarrier = {};
+      const rumorToSource = {};
+
+      appData.forEach(d => {
+        const r = (d.rumor || '').trim();
+        const b = (d.barrier || '').trim();
+        const s = (d.source || 'Community').trim();
+
+        if (r && r !== 'other') {
+          rumorFreq[r] = (rumorFreq[r] || 0) + 1;
+          if (b && b !== 'Non') barrierFreq[b] = (barrierFreq[b] || 0) + 1;
+          rumorToBarrier[r] = b || rumorToBarrier[r] || 'Resource or attitude constraints';
+          rumorToSource[r] = s || rumorToSource[r] || 'Peers / Students';
+        }
+      });
+
+      const sortedRumors = Object.keys(rumorFreq).map(r => ({
+        rumor: r,
+        count: rumorFreq[r],
+        barrier: rumorToBarrier[r] || 'Lack of continuous handwashing facilities',
+        source: rumorToSource[r] || 'Peers / Students'
+      })).sort((a, b) => b.count - a.count);
+
+      const tbody = document.getElementById('tool2TableBody');
+      if (!tbody) return;
+
+      if (sortedRumors.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px; color:#94a3b8;">No recurring rumors or barriers found for active filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = sortedRumors.map((item, idx) => {
+        const isHigh = item.count >= 3;
+        const rankBadge = isHigh ? 'badge-danger' : 'badge-primary';
+        return `
+          <tr>
+            <td><span class="badge-pill ${rankBadge}">Rank #${idx + 1}</span></td>
+            <td style="color: #1e293b; font-weight: 700;">
+              "${item.rumor}"
+              ${isHigh ? '<span style="color:#b91c1c; font-size:0.7rem; margin-left:6px;">⚠️ High Recurrence</span>' : ''}
+            </td>
+            <td><span class="badge-count">${item.count} Record${item.count > 1 ? 's' : ''}</span></td>
+            <td>${item.barrier}</td>
+            <td><span class="badge-pill badge-primary">${item.source}</span></td>
+            <td>Direct myth-busting with risk communication and demonstration of early reporting</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderBarCharts(distList) {
+      // ALL BAR CHARTS CONFIGURED WITH indexAxis: 'y' SO LABELS ARE ON THE LEFT
+      
+      // 1. Stacked District Reach Bar Chart
+      const elDist = document.getElementById('chartDistrictReach');
+      if (elDist) {
+        chartInstances.districtReach = new Chart(elDist.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: distList.map(d => d.name),
+            datasets: [
+              {
+                label: 'Boys Sensitised',
+                data: distList.map(d => d.boys),
+                backgroundColor: '#282c68',
+                borderRadius: 4,
+                stack: 'districtStack',
+                datalabels: { display: false }
+              },
+              {
+                label: 'Girls Sensitised',
+                data: distList.map(d => d.girls),
+                backgroundColor: '#f1bc1b',
+                borderRadius: 4,
+                stack: 'districtStack',
+                datalabels: { display: false }
+              },
+              {
+                label: 'Gatekeepers & Teachers',
+                data: distList.map(d => d.teachers),
+                backgroundColor: '#10b981',
+                borderRadius: 4,
+                stack: 'districtStack',
+                datalabels: {
+                  anchor: 'end',
+                  align: 'right',
+                  formatter: (val, ctx) => distList[ctx.dataIndex].totalReach.toLocaleString(),
+                  color: '#282c68',
+                  font: { weight: 'bold', size: 11 }
+                }
+              }
+            ]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: {
+                callbacks: {
+                  afterBody: (items) => {
+                    const idx = items[0].dataIndex;
+                    const d = distList[idx];
+                    return `Total Reach: ${d.totalReach.toLocaleString()} (Learners: ${d.totalLearners.toLocaleString()} + Gatekeepers: ${d.teachers})`;
+                  }
+                }
+              }
+            },
+            scales: { x: { stacked: true, beginAtZero: true, grace: '15%' }, y: { stacked: true } }
+          }
+        });
+      }
+
+      // 2. Proportional Share (Horizontal Bar Chart)
+      const elShare = document.getElementById('chartDistrictShare');
+      if (elShare) {
+        const totalSum = distList.reduce((acc, d) => acc + d.totalReach, 0);
+        chartInstances.districtShare = new Chart(elShare.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: distList.map(d => d.name),
+            datasets: [{
+              label: '% of Total Sensitisation Reach',
+              data: distList.map(d => totalSum > 0 ? Number(((d.totalReach / totalSum) * 100).toFixed(1)) : 0),
+              backgroundColor: '#282c68',
+              borderRadius: 4,
+              datalabels: {
+                anchor: 'end',
+                align: 'right',
+                formatter: (val) => `${val}%`,
+                color: '#282c68',
+                font: { weight: 'bold', size: 11 }
+              }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '15%', ticks: { callback: v => v + '%' } } }
+          }
+        });
+      }
+
+      const countProp = (p) => {
+        const c = {};
+        appData.forEach(d => {
+          const val = (d[p] || '').trim();
+          if (val) c[val] = (c[val] || 0) + 1;
+        });
+        return c;
+      };
+
+      // 3. Tool 1: Warning Signs Bar Chart (Horizontal)
+      const elSigns = document.getElementById('chartSignsT1');
+      if (elSigns) {
+        const signsCount = countProp('signs');
+        chartInstances.signsT1 = new Chart(elSigns.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: Object.keys(signsCount),
+            datasets: [{
+              label: 'Crowds / Sessions',
+              data: Object.values(signsCount),
+              backgroundColor: '#282c68',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '15%' } }
+          }
+        });
+      }
+
+      // 4. Tool 1: Students who know toll free hotline (Horizontal)
+      const elHotline = document.getElementById('chartHotlineT1');
+      if (elHotline) {
+        const hotlineCount = countProp('hotline');
+        chartInstances.hotlineT1 = new Chart(elHotline.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: Object.keys(hotlineCount),
+            datasets: [{
+              label: 'Sessions',
+              data: Object.values(hotlineCount),
+              backgroundColor: '#f1bc1b',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '15%' } }
+          }
+        });
+      }
+
+      // 5. Tool 1: Anti-Stigma Attitude Bar Chart (Horizontal)
+      const elStigma = document.getElementById('chartStigmaT1');
+      if (elStigma) {
+        const stigmaCount = countProp('stigma');
+        chartInstances.stigmaT1 = new Chart(elStigma.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: Object.keys(stigmaCount),
+            datasets: [{
+              label: 'Sessions',
+              data: Object.values(stigmaCount),
+              backgroundColor: '#282c68',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '15%' } }
+          }
+        });
+      }
+
+      // 6. Tool 1: Handwashing Steps Demo Bar Chart (Horizontal)
+      const elHandwash = document.getElementById('chartHandwashT1');
+      if (elHandwash) {
+        const demoCount = countProp('handwash_demo');
+        chartInstances.handwashT1 = new Chart(elHandwash.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: Object.keys(demoCount),
+            datasets: [{
+              label: 'Demos',
+              data: Object.values(demoCount),
+              backgroundColor: '#f1bc1b',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '15%' } }
+          }
+        });
+      }
+
+      // 7. Tool 1: Top Schools by Sensitised Population (Horizontal)
+      const elTop = document.getElementById('chartTopSchoolsT1');
+      if (elTop) {
+        const topSchools = [...appData.filter(d => d.tool === 'School Activity')]
+          .map(s => {
+            const tot = (s.boys || 0) + (s.girls || 0);
+            const pct = s.enrolment > 0 ? ((tot / s.enrolment) * 100).toFixed(1) : 0;
+            return {
+              name: `${s.school} (${pct}% of Enrolment)`,
+              rawName: s.school,
+              total: tot,
+              pct: pct
+            };
+          })
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 10);
+
+        chartInstances.topSchoolsT1 = new Chart(elTop.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: topSchools.map(s => s.name),
+            datasets: [{
+              label: 'Total Sensitised',
+              data: topSchools.map(s => s.total),
+              backgroundColor: '#282c68',
+              borderRadius: 4,
+              datalabels: {
+                anchor: 'end',
+                align: 'right',
+                formatter: (val, ctx) => `${val.toLocaleString()} (${topSchools[ctx.dataIndex].pct}%)`,
+                color: '#282c68',
+                font: { weight: 'bold', size: 10 }
+              }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '20%' } }
+          }
+        });
+      }
+
+      // 8. Tool 2: Flagged Rumors Frequency Bar Chart (Horizontal)
+      const elMisinfo = document.getElementById('chartMisinfoT2');
+      if (elMisinfo) {
+        const rCounts = {};
+        appData.forEach(d => {
+          const r = (d.rumor || '').trim();
+          if (r && r !== 'other') rCounts[r] = (rCounts[r] || 0) + 1;
+        });
+
+        const sortedR = Object.keys(rCounts).sort((a, b) => rCounts[b] - rCounts[a]).slice(0, 5);
+
+        chartInstances.misinfoT2 = new Chart(elMisinfo.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: sortedR.map(k => k.length > 35 ? k.substring(0, 32) + '...' : k),
+            datasets: [{
+              label: 'Times Flagged',
+              data: sortedR.map(k => rCounts[k]),
+              backgroundColor: '#282c68',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '15%' } }
+          }
+        });
+      }
+
+      // 9. Tool 2: Rumor Sources Bar Chart (Horizontal)
+      const elSources = document.getElementById('chartSourcesT2');
+      if (elSources) {
+        const sCounts = {};
+        appData.forEach(d => {
+          const s = (d.source || '').trim();
+          if (s) sCounts[s] = (sCounts[s] || 0) + 1;
+        });
+
+        const sortedS = Object.keys(sCounts).sort((a, b) => sCounts[b] - sCounts[a]);
+
+        chartInstances.sourcesT2 = new Chart(elSources.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: sortedS,
+            datasets: [{
+              label: 'Rumors Sourced',
+              data: sortedS.map(k => sCounts[k]),
+              backgroundColor: '#f1bc1b',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '15%' } }
+          }
+        });
+      }
+
+      // 10. Tool 3: Handwashing Points Bar Chart (Horizontal)
+      const elWash = document.getElementById('chartWashT3');
+      if (elWash) {
+        chartInstances.washT3 = new Chart(elWash.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: ['Functional & Supplied', 'Present, No Soap / Water', 'No Facility Setup'],
+            datasets: [{
+              label: 'Sites Audited',
+              data: [
+                dynamicTransectRecords.filter(t => String(t.wash).toLowerCase().includes('functional')).length,
+                dynamicTransectRecords.filter(t => String(t.wash).toLowerCase().includes('no soap')).length,
+                dynamicTransectRecords.filter(t => String(t.wash).toLowerCase().includes('no facility') || String(t.wash).toLowerCase().includes('not present')).length
+              ],
+              backgroundColor: ['#10b981', '#f1bc1b', '#ef4444'],
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '20%' } }
+          }
+        });
+      }
+
+      // 11. Tool 3: Posters & Hotline Currency Bar Chart (Horizontal)
+      const elPoster = document.getElementById('chartPosterT3');
+      if (elPoster) {
+        chartInstances.posterT3 = new Chart(elPoster.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: ['Fresh & Prominent', 'Obsolete (No hotline)', 'Torn Posters', 'No Posters Seen'],
+            datasets: [{
+              label: 'Facilities Audited',
+              data: [
+                dynamicTransectRecords.filter(t => String(t.poster).toLowerCase().includes('fresh')).length,
+                dynamicTransectRecords.filter(t => String(t.poster).toLowerCase().includes('obsolete')).length,
+                dynamicTransectRecords.filter(t => String(t.poster).toLowerCase().includes('torn')).length,
+                dynamicTransectRecords.filter(t => String(t.poster).toLowerCase().includes('no material') || String(t.poster).toLowerCase().includes('no poster')).length
+              ],
+              backgroundColor: '#282c68',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '20%' } }
+          }
+        });
+      }
+
+      // 12. Tool 4: Intercept Survey Q1 Bar Chart (Horizontal)
+      const elT4Q1 = document.getElementById('chartT4Q1');
+      if (elT4Q1) {
+        const yesCount = dynamicTool4Records.filter(r => r.q1 === 'Yes').length;
+        const noCount = dynamicTool4Records.length - yesCount;
+        chartInstances.t4Q1 = new Chart(elT4Q1.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: ['Heard Messages (Yes)', 'Did Not Hear (No)'],
+            datasets: [{
+              label: 'Respondents',
+              data: [yesCount, noCount],
+              backgroundColor: ['#10b981', '#ef4444'],
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '20%' } }
+          }
+        });
+      }
+
+      // 13. Tool 4: Intercept Survey Q4 Bar Chart (Horizontal)
+      const elT4Q4 = document.getElementById('chartT4Q4');
+      if (elT4Q4) {
+        chartInstances.t4Q4 = new Chart(elT4Q4.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: ['Call Toll-Free 0800', 'Notify VHT', 'Private Clinic', 'Isolate / Traditional'],
+            datasets: [{
+              label: 'First Action',
+              data: [
+                dynamicTool4Records.filter(r => String(r.q4).includes('Toll-Free')).length,
+                dynamicTool4Records.filter(r => String(r.q4).includes('VHT')).length,
+                dynamicTool4Records.filter(r => String(r.q4).includes('Clinic')).length,
+                dynamicTool4Records.filter(r => String(r.q4).includes('Isolate') || String(r.q4).includes('Prayers')).length
+              ],
+              backgroundColor: ['#282c68', '#f1bc1b', '#94a3b8', '#ef4444'],
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '20%' } }
+          }
+        });
+      }
+
+      // 14. Tool 5: Take 5 Target Groups Bar Chart (Horizontal)
+      const elT5Target = document.getElementById('chartT5Target');
+      if (elT5Target) {
+        chartInstances.t5Target = new Chart(elT5Target.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: ['Market Vendors', 'Transport Ops', 'School Patrons', 'Youth / Boda'],
+            datasets: [{
+              label: 'Audited Group',
+              data: [
+                dynamicTool5Records.filter(r => String(r.target).includes('Vendor')).length,
+                dynamicTool5Records.filter(r => String(r.target).includes('Taxi') || String(r.target).includes('Transport')).length,
+                dynamicTool5Records.filter(r => String(r.target).includes('School') || String(r.target).includes('Patron')).length,
+                dynamicTool5Records.filter(r => String(r.target).includes('Boda') || String(r.target).includes('Youth')).length
+              ],
+              backgroundColor: '#282c68',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '20%' } }
+          }
+        });
+      }
+
+      // 15. Tool 5: Take 5 Verification Bar Chart (Horizontal)
+      const elT5Claims = document.getElementById('chartT5Claims');
+      if (elT5Claims) {
+        chartInstances.t5Claims = new Chart(elT5Claims.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: ['Fully Verified', 'Partially Verified', 'Unverified'],
+            datasets: [{
+              label: 'Status Count',
+              data: [dynamicTool5Records.length, 0, 0],
+              backgroundColor: ['#10b981', '#f1bc1b', '#ef4444'],
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, grace: '20%' } }
+          }
+        });
+      }
+    }
+
+    // ================= ROBUST EXCEL FILE UPLOADER =================
+    const fileInputEl = document.getElementById('fileInput');
+    if (fileInputEl) {
+      fileInputEl.addEventListener('click', function() {
+        this.value = '';
+      });
+
+      fileInputEl.addEventListener('change', function(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = function(evt) {
+          try {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+
+            if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+              alert('Error: The selected file does not appear to be a valid Excel workbook.');
+              return;
+            }
+
+            let targetSheetName = workbook.SheetNames.find(s => 
+              s.trim().toLowerCase().includes('public health') || s.trim().toLowerCase().includes('emergenc')
+            );
+            if (!targetSheetName) {
+              targetSheetName = workbook.SheetNames[0];
+            }
+
+            const worksheet = workbook.Sheets[targetSheetName];
+
+            if (!worksheet) {
+              alert('Error: Unable to read sheet "' + targetSheetName + '".');
+              return;
+            }
+
+            const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+            if (!rawRows || rawRows.length === 0) {
+              alert('Notice: Sheet "' + targetSheetName + '" has no data rows.');
+              return;
+            }
+
+            processRawWorkbookRows(rawRows);
+            populateFilterOptions();
+            applyFilters();
+
+            alert('Success! Loaded ' + rawRows.length + ' rows from "' + targetSheetName + '". Dashboard has been updated.');
+          } catch (err) {
+            console.error('Excel Parsing Error:', err);
+            alert('Error parsing uploaded Excel:\n' + err.message + '\n\nPlease check the browser Console (F12) for details.');
+          }
+        };
+
+        reader.onerror = function(err) {
+          console.error('File reading failed:', err);
+          alert('Browser error: Failed to read the file from disk.');
+        };
+
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    // Attach to global window
+    window.processRawWorkbookRows = processRawWorkbookRows;
+    window.recomputeAndRender = recomputeAndRender;
+    window.renderBarCharts = renderBarCharts;
+    window.showTab = showTab;
+    window.applyFilters = applyFilters;
+    window.resetFilters = resetFilters;
+    window.toggleAdminLogin = toggleAdminLogin;
+    window.checkAdminAuth = checkAdminAuth;
+
+    // Boot
+    window.addEventListener('DOMContentLoaded', () => {
+      checkAdminAuth();
+      processRawWorkbookRows([]);
+      populateFilterOptions();
+      applyFilters();
+    });
+  </script>
+</body>
+</html>
