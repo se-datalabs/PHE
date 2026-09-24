@@ -52,7 +52,7 @@
 
     /* Sidebar Navigation */
     .sidebar {
-      width: 300px;
+      width: 310px;
       background: var(--primary);
       color: #fff;
       display: flex;
@@ -113,7 +113,7 @@
       padding: 9px 12px;
       border-radius: 6px;
       text-align: left;
-      font-size: 0.81rem;
+      font-size: 0.79rem;
       font-weight: 500;
       cursor: pointer;
       display: flex;
@@ -153,7 +153,7 @@
 
     /* Main Content Wrapper */
     .main-wrapper {
-      margin-left: 300px;
+      margin-left: 310px;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -548,54 +548,54 @@
         <span class="tab-badge" id="badgeTotalReach">0</span>
       </button>
 
-      <div class="nav-section-title">Programmatic Tools (10 Activities)</div>
-      <button class="tab-btn" onclick="showTab('tool_1')">
-        <span>1. School Sessions & Wheel</span>
+      <div class="nav-section-title">Programmatic Tools (10 Instruments)</div>
+      <button class="tab-btn" onclick="showTab('tool_9')">
+        <span>1. School 3-Visit Wheel Session Tracker</span>
         <span class="tab-badge" id="badgeTool1">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_2')">
-        <span>2. Rumors & Misinformation</span>
-        <span class="tab-badge" id="badgeTool2">Recurrence</span>
+      <button class="tab-btn" onclick="showTab('tool_7')">
+        <span>2. Community Gatekeeper Dialogue</span>
+        <span class="tab-badge" id="badgeTool2">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_3')">
-        <span>3. Transect Walk Infrastructure</span>
+      <button class="tab-btn" onclick="showTab('tool_1')">
+        <span>3. Transect Walk &amp; Infrastructure Checklist</span>
         <span class="tab-badge" id="badgeTool3">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_4')">
-        <span>4. Rapid Intercept Survey</span>
+      <button class="tab-btn" onclick="showTab('tool_2')">
+        <span>4. Rapid Audience Intercept Survey</span>
         <span class="tab-badge" id="badgeTool4">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_5')">
-        <span>5. Take 5 Probing Diagnostic</span>
+      <button class="tab-btn" onclick="showTab('tool_3')">
+        <span>5. 'Ask 5' Behavioral Verification Diagnostic</span>
         <span class="tab-badge" id="badgeTool5">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_6')">
-        <span>6. Human-Interest Stories</span>
+      <button class="tab-btn" onclick="showTab('tool_4')">
+        <span>6. Most Significant Change Story Form</span>
         <span class="tab-badge" id="badgeTool6">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_7')">
-        <span>7. Trust Brokers Mapping</span>
+      <button class="tab-btn" onclick="showTab('tool_5')">
+        <span>7. Social Network &amp; Influencer Mapping</span>
         <span class="tab-badge" id="badgeTool7">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_8')">
-        <span>8. Photovoice Documentation</span>
+      <button class="tab-btn" onclick="showTab('tool_6')">
+        <span>8. Photovoice Participatory Documentation</span>
         <span class="tab-badge" id="badgeTool8">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_9')">
-        <span>9. Pre-Drill Safety Drill</span>
+      <button class="tab-btn" onclick="showTab('tool_10')">
+        <span>9. School Simulation Drill Protocol</span>
         <span class="tab-badge" id="badgeTool9">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_10')">
-        <span>10. School Preparedness (PAT)</span>
+      <button class="tab-btn" onclick="showTab('tool_8')">
+        <span>10. Preparedness Assessment Tool (PAT)</span>
         <span class="tab-badge" id="badgeTool10">0</span>
       </button>
     </div>
@@ -761,10 +761,10 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 1: SCHOOL SESSIONS & WHEEL ================= -->
-      <section id="tab-tool_1" class="tab-pane">
+      <!-- ================= TOOL 9: SCHOOL 3-VISIT WHEEL SESSION TRACKER ================= -->
+      <section id="tab-tool_9" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 1 Scope:</strong> Operational tracking tool for school sessions across target schools, monitoring curriculum delivery, wheel participation, take-home cards, and health club activation.
+          <strong>Tool 9 Scope (School 3-Visit Wheel Session Tracker):</strong> Operational tracking tool for school sessions across target schools, monitoring curriculum delivery, wheel participation, take-home cards, and health club activation.
         </div>
         <div class="dashboard-grid">
           <div class="card">
@@ -772,8 +772,8 @@
             <div class="chart-box"><canvas id="chartSignsT1"></canvas></div>
           </div>
           <div class="card">
-            <div class="card-title">Students who know toll free hotline (0800-100-066 / 8500)</div>
             <div class="chart-box"><canvas id="chartHotlineT1"></canvas></div>
+            <div class="card-title">Students who know toll free hotline (0800-100-066 / 8500)</div>
           </div>
         </div>
         <div class="dashboard-grid">
@@ -793,7 +793,7 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Tool 1: Complete School Session Registry (With Visit Number & Health Club Status)</div>
+          <div class="card-title">Tool 9 Registry: Complete School Session Registry (With Visit Number & Health Club Status)</div>
           <div class="table-responsive">
             <table>
               <thead>
@@ -819,49 +819,35 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 2: RUMORS & MISINFORMATION ================= -->
-      <section id="tab-tool_2" class="tab-pane">
+      <!-- ================= TOOL 7: COMMUNITY GATEKEEPER DIALOGUE ================= -->
+      <section id="tab-tool_7" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 2 Scope:</strong> Standardized weekly monitoring instrument capturing community concerns, school rumours, misinformation, and recurring barrier tracking for RCCE response.
+          <strong>Tool 7 Scope (Community Gatekeeper Dialogue):</strong> Tracking orientation sessions conducted with local leaders, religious figures, market masters, and elders.
         </div>
-        <div class="dashboard-grid">
-          <div class="card">
-            <div class="card-title">Most Prevalent Flagged Rumors & Misconceptions (Recurrence Count)</div>
-            <div class="chart-box"><canvas id="chartMisinfoT2"></canvas></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Sources of Flagged Rumors (Frequency Count)</div>
-            <div class="chart-box"><canvas id="chartSourcesT2"></canvas></div>
-          </div>
-        </div>
-
         <div class="card">
-          <div class="card-title">
-            <span>Qualitative Rumor, Local Barrier & Adaptation Log (Ranked by Recurrence)</span>
-            <span style="font-size:0.75rem; color:var(--text-muted);">Aggregates all recorded misconceptions, rumors, and barriers</span>
-          </div>
+          <div class="card-title">Community Gatekeeper Dialogue &amp; Commitment Log</div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Recurrence Rank</th>
-                  <th>Flagged Misconception / Concern / Rumor</th>
-                  <th>Times Re-appearing</th>
-                  <th>Key Identified Local Barrier</th>
-                  <th>Primary Source</th>
-                  <th>Recommended Tactical Adaptation</th>
+                  <th>District / Parish</th>
+                  <th>Coordinator / Lead</th>
+                  <th>Type of Gatekeeper</th>
+                  <th>Male Oriented</th>
+                  <th>Female Oriented</th>
+                  <th>Commitments &amp; Action Promises</th>
                 </tr>
               </thead>
-              <tbody id="tool2TableBody"></tbody>
+              <tbody id="tool7GatekeeperTableBody"></tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- ================= TOOL 3: TRANSECT WALK ================= -->
-      <section id="tab-tool_3" class="tab-pane">
+      <!-- ================= TOOL 1: TRANSECT WALK & INFRASTRUCTURE CHECKLIST ================= -->
+      <section id="tab-tool_1" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 3 Scope:</strong> Observational mapping of physical infrastructure, WASH facilities, crowd congestion, and visible IEC artefacts across markets, transport hubs, and compounds.
+          <strong>Tool 1 Scope (Transect Walk Environmental & Infrastructure Checklist):</strong> Observational mapping of physical infrastructure, WASH facilities, crowd congestion, and visible IEC artefacts across markets, transport hubs, and compounds.
         </div>
         <div class="dashboard-grid">
           <div class="card">
@@ -876,7 +862,7 @@
         
         <div class="card">
           <div class="card-title">
-            <span>Tool 3: Infrastructure Observational Mapping Log</span>
+            <span>Tool 1: Infrastructure Observational Mapping Log</span>
             <span style="font-size:0.75rem; color:var(--text-muted);">Ratio derived strictly as: Population count of the site &divide; Record number of functional stations</span>
           </div>
           <div class="table-responsive">
@@ -902,10 +888,10 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 4: RAPID AUDIENCE ASSESSMENT INTERCEPT SURVEY ================= -->
-      <section id="tab-tool_4" class="tab-pane">
+      <!-- ================= TOOL 2: RAPID AUDIENCE ASSESSMENT INTERCEPT SURVEY ================= -->
+      <section id="tab-tool_2" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 4 Scope:</strong> Rapid audience assessment intercept survey (20 exposed respondents per setting) to verify campaign reach, symptom recall, post-declaration risk perception, and early notification intent.
+          <strong>Tool 2 Scope (Rapid Audience Assessment Intercept Survey):</strong> Rapid audience assessment intercept survey (20 exposed respondents per setting) to verify campaign reach, symptom recall, post-declaration risk perception, and early notification intent.
           <span id="tool4DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
         </div>
         
@@ -941,10 +927,10 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 5: TAKE 5 RAPID PROBING QUALITATIVE DIAGNOSTIC ================= -->
-      <section id="tab-tool_5" class="tab-pane">
+      <!-- ================= TOOL 3: 'ASK 5' BEHAVIORAL VERIFICATION DIAGNOSTIC ================= -->
+      <section id="tab-tool_3" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 5 Scope:</strong> Take 5 rapid probing qualitative diagnostic administered to gatekeepers, market vendors, transport operators, teachers, and school health patrons to verify genuine behavioral adoption.
+          <strong>Tool 3 Scope ('Ask 5' Behavioral Verification Diagnostic):</strong> 'Ask 5' rapid probing qualitative diagnostic administered to gatekeepers, market vendors, transport operators, teachers, and school health patrons to verify genuine behavioral adoption.
           <span id="tool5DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
         </div>
 
@@ -960,7 +946,7 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Take 5 Field Probing & Physical Verification Log</div>
+          <div class="card-title">'Ask 5' Field Probing & Physical Verification Log</div>
           <div class="table-responsive">
             <table>
               <thead>
@@ -979,10 +965,10 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 6: HUMAN INTEREST STORIES ================= -->
-      <section id="tab-tool_6" class="tab-pane">
+      <!-- ================= TOOL 4: MOST SIGNIFICANT CHANGE STORY FORM ================= -->
+      <section id="tab-tool_4" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 6 Scope:</strong> Systematic qualitative tool capturing human-interest impact stories from community members, head teachers, school patrons, pupils, and health workers (Most Significant Change).
+          <strong>Tool 4 Scope (Most Significant Change Story Collection Form):</strong> Systematic qualitative tool capturing human-interest impact stories from community members, head teachers, school patrons, pupils, and health workers.
           <span id="tool6DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
         </div>
         <div class="card">
@@ -1005,10 +991,10 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 7: PARTICIPATORY TRUST MAPPING ================= -->
-      <section id="tab-tool_7" class="tab-pane">
+      <!-- ================= TOOL 5: SOCIAL NETWORK & INFLUENCER MAPPING ================= -->
+      <section id="tab-tool_5" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 7 Scope:</strong> Participatory mapping guide used during parish entry, gatekeeper orientations, and school stakeholder mappings to identify trusted leaders and communication channels.
+          <strong>Tool 5 Scope (Social Network & Influencer Mapping Protocol):</strong> Participatory mapping guide used during parish entry, gatekeeper orientations, and school stakeholder mappings to identify trusted leaders and communication channels.
           <span id="tool7DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
         </div>
         <div class="card">
@@ -1029,10 +1015,10 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 8: PHOTOVOICE DOCUMENTATION ================= -->
-      <section id="tab-tool_8" class="tab-pane">
+      <!-- ================= TOOL 6: PHOTOVOICE PARTICIPATORY DOCUMENTATION ================= -->
+      <section id="tab-tool_6" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 8 Scope:</strong> Protocol enabling community members, youth, and school health clubs to document daily realities, hygiene innovations, and behavioral challenges through photography.
+          <strong>Tool 6 Scope (Photovoice Participatory Documentation Guide & Caption Form):</strong> Protocol enabling community members, youth, and school health clubs to document daily realities, hygiene innovations, and behavioral challenges through photography.
           <span id="tool8DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
         </div>
         <div class="card">
@@ -1056,10 +1042,10 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 9: PRE-DRILL SAFETY DRILL ================= -->
-      <section id="tab-tool_9" class="tab-pane">
+      <!-- ================= TOOL 10: SCHOOL SIMULATION DRILL PROTOCOL ================= -->
+      <section id="tab-tool_10" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 9 Scope:</strong> Mandatory pre-drill verification and performance evaluation tool to safely rehearse school-level detection, isolation, notification, and handover without causing panic or stigma.
+          <strong>Tool 10 Scope (School Simulation Drill & Safeguarding Compliance Protocol):</strong> Mandatory pre-drill verification and performance evaluation tool to safely rehearse school-level detection, isolation, notification, and handover without causing panic or stigma.
           <span id="tool9DummyNotice" class="badge-pill badge-warning" style="margin-left: 8px;">Demo Baseline Loaded</span>
         </div>
         <div class="kpi-grid">
@@ -1089,10 +1075,10 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 10: PREPAREDNESS ASSESSMENT (PAT) ================= -->
-      <section id="tab-tool_10" class="tab-pane">
+      <!-- ================= TOOL 8: PREPAREDNESS ASSESSMENT TOOL (PAT) ================= -->
+      <section id="tab-tool_8" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 10 Scope:</strong> School Epidemic Preparedness Assessment Tool (PAT) examining institutional response plans, isolation wards, WASH baselines, and leadership hotline recall.
+          <strong>Tool 8 Scope (Preparedness Assessment Tool - PAT):</strong> School Epidemic Preparedness Assessment Tool examining institutional response plans, isolation wards, WASH baselines, and leadership hotline recall.
         </div>
         
         <!-- 3-COLUMN 6-PILLAR 10-PUPIL LITERACY & BEHAVIORAL SCORECARD GRID -->
@@ -1495,7 +1481,7 @@
     ];
 
     // ================= PERSISTENT STORAGE HELPERS =================
-    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v1';
+    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v2';
 
     function saveToLocalStorage(rows) {
       try {
@@ -1518,7 +1504,7 @@
     }
 
     /**
-     * Parse raw workbook rows strictly using 'Date' and 'Public Health Emergencies' columns
+     * Parse raw workbook rows using the exact updated activity titles and date column
      */
     function processRawWorkbookRows(rawRows, persist = false) {
       if (!rawRows || rawRows.length === 0) {
@@ -1558,10 +1544,8 @@
       let parsedT9 = [];
 
       rawRows.forEach((row, idx) => {
-        // STRICTLY use the 'Public Health Emergencies' column for activity classification
         const activityType = String(row['Public Health Emergencies'] || row['Public Health Emergencies '] || '').trim().toLowerCase();
         
-        // STRICTLY use the 'Date' column for date extraction
         let rawDateVal = row['Date'] || row['date'] || '';
         let formattedDate = '';
         if (rawDateVal) {
@@ -1574,8 +1558,8 @@
           }
         }
 
-        // 1. SCHOOL SESSIONS / WHEEL SESSIONS (Tool 1)
-        if (activityType.includes('school activity') || activityType.includes('wheel session') || activityType.includes('tool 1') || (!activityType.includes('transect') && !activityType.includes('preparedness') && !activityType.includes('gatekeeper') && getCol(row, 'School Name'))) {
+        // 1. TOOL 9: SCHOOL 3-VISIT WHEEL SESSION TRACKER
+        if (activityType.includes('3-visit') || activityType.includes('wheel session') || activityType.includes('school activity') || (!activityType.includes('transect') && !activityType.includes('gatekeeper') && !activityType.includes('preparedness') && getCol(row, 'School Name'))) {
           const sName = getCol(row, 'School Name', 'Name of the school');
           if (sName) {
             rawMasterData.push({
@@ -1605,7 +1589,7 @@
           }
         }
 
-        // 2. COMMUNITY GATEKEEPER SESSIONS
+        // 2. TOOL 7: COMMUNITY GATEKEEPER DIALOGUE
         if (activityType.includes('gatekeeper') || activityType.includes('community gate') || getCol(row, 'what commitments did the gatekeeper make')) {
           dynamicGatekeeperRecords.push({
             district: getCol(row, 'District'),
@@ -1630,8 +1614,8 @@
           });
         }
 
-        // 3. TRANSECT WALK (Tool 3)
-        if (activityType.includes('transect') || activityType.includes('walk') || activityType.includes('environmental') || activityType.includes('tool 3')) {
+        // 3. TOOL 1: TRANSECT WALK & INFRASTRUCTURE CHECKLIST
+        if (activityType.includes('transect') || activityType.includes('walk') || activityType.includes('environmental')) {
           const stations = parseNum(getCol(row, 'Record number of functional stations', 'Record number of functional stations '));
           const pop = parseNum(getCol(row, 'Population count of the site'));
           const calculatedRatio = stations > 0 ? `${(pop / stations).toFixed(1)}:1 (${pop} : ${stations})` : `Critical Gap: ${pop} Persons with 0 Stations`;
@@ -1652,7 +1636,7 @@
           });
         }
 
-        // 4. PREPAREDNESS ASSESSMENT (PAT - Tool 10)
+        // 4. TOOL 8: PREPAREDNESS ASSESSMENT TOOL (PAT)
         if (activityType.includes('preparedness') || activityType.includes('tool 11') || activityType.includes('pat') || getCol(row, 'Does the school have a Epidemic Preparedness Plan')) {
           dynamicPatRecords.push({
             name: getCol(row, 'Name of the school', 'School Name') || 'Assessed Facility',
@@ -1692,16 +1676,16 @@
 
       const titles = {
         'overview': ['Main Summary of Reach', 'Cross-tool reach aggregation, district performance, and programmatic coverage'],
-        'tool_1': ['Tool 1: Operational School Sessions & Wheel Delivery', 'Detailed analysis of learner reach, visit number, health club, and wheel answers'],
-        'tool_2': ['Tool 2: Standardized Weekly Misinformation & Rumor Instrument', 'Community rumors flagged, barrier recurrence analysis, and tactical RCCE adjustments'],
-        'tool_3': ['Tool 3: Observational Infrastructure & Transect Walk Mapping', 'Environmental sanitation, setting type, functional stations, and stance ratios'],
-        'tool_4': ['Tool 4: Rapid Audience Assessment Intercept Survey', 'Full questionnaire capture: 7-day recall, 2+ symptoms, risk perception, and notification intent'],
-        'tool_5': ['Tool 5: Take 5 Probing Qualitative Diagnostic (Behavioral Adoption)', 'Full 5-claim diagnostic audit for gatekeepers, teachers, vendors, and transport operators'],
-        'tool_6': ['Tool 6: Systematic Human-Interest Impact Stories', 'Four-step qualitative narrative tracking of the Most Significant Change'],
-        'tool_7': ['Tool 7: Participatory Entry & Informal Trust Broker Mapping', 'Identification of trusted community influencers across 5 social sectors'],
-        'tool_8': ['Tool 8: Photovoice Community Realities Documentation', 'PHOTO protocol analysis of youth-led hygiene challenges and community solutions'],
-        'tool_9': ['Tool 9: Mandatory Pre-Drill Safety & Isolation Performance Evaluation', 'Four-stage safe rehearsal of detection, holding bay escort, call, and handover'],
-        'tool_10': ['Tool 10: School Epidemic Preparedness Assessment Tool (PAT)', 'Institutional response diagnostic covering isolation bays, plans, and stance ratios']
+        'tool_9': ['Tool 9: School 3-Visit Model & Knowledge Wheel Session Tracker', 'Detailed analysis of learner reach, visit number, health club, and wheel answers'],
+        'tool_7': ['Tool 7: Community Gatekeeper Dialogue & Commitment Log', 'Tracking orientation sessions conducted with local leaders and community stakeholders'],
+        'tool_1': ['Tool 1: Transect Walk Environmental & Infrastructure Checklist', 'Environmental sanitation, setting type, functional stations, and stance ratios'],
+        'tool_2': ['Tool 2: Rapid Audience Assessment Intercept Survey', 'Full questionnaire capture: 7-day recall, 2+ symptoms, risk perception, and notification intent'],
+        'tool_3': ['Tool 3: "Ask 5" Behavioral Verification Diagnostic Tool', 'Full 5-claim diagnostic audit for gatekeepers, teachers, vendors, and transport operators'],
+        'tool_4': ['Tool 4: Most Significant Change Story Collection Form', 'Systematic qualitative narrative tracking of the Most Significant Change'],
+        'tool_5': ['Tool 5: Social Network & Influencer Mapping Protocol', 'Identification of trusted community influencers across social sectors'],
+        'tool_6': ['Tool 6: Photovoice Participatory Documentation Guide & Caption Form', 'PHOTO protocol analysis of youth-led hygiene challenges and community solutions'],
+        'tool_10': ['Tool 10: School Simulation Drill & Safeguarding Compliance Protocol', 'Mandatory pre-drill verification and performance rehearsal evaluation'],
+        'tool_8': ['Tool 8: Preparedness Assessment Tool (PAT)', 'School Epidemic Preparedness Assessment Tool examining institutional response plans and isolation wards']
       };
 
       if (titles[tabId]) {
@@ -1714,22 +1698,19 @@
           if (leafletMap) leafletMap.invalidateSize();
           if (chartInstances.districtReach) chartInstances.districtReach.resize();
           if (chartInstances.districtShare) chartInstances.districtShare.resize();
-        } else if (tabId === 'tool_1') {
+        } else if (tabId === 'tool_9') {
           if (chartInstances.signsT1) chartInstances.signsT1.resize();
           if (chartInstances.hotlineT1) chartInstances.hotlineT1.resize();
           if (chartInstances.stigmaT1) chartInstances.stigmaT1.resize();
           if (chartInstances.handwashT1) chartInstances.handwashT1.resize();
           if (chartInstances.topSchoolsT1) chartInstances.topSchoolsT1.resize();
-        } else if (tabId === 'tool_2') {
-          if (chartInstances.misinfoT2) chartInstances.misinfoT2.resize();
-          if (chartInstances.sourcesT2) chartInstances.sourcesT2.resize();
-        } else if (tabId === 'tool_3') {
+        } else if (tabId === 'tool_1') {
           if (chartInstances.washT3) chartInstances.washT3.resize();
           if (chartInstances.posterT3) chartInstances.posterT3.resize();
-        } else if (tabId === 'tool_4') {
+        } else if (tabId === 'tool_2') {
           if (chartInstances.t4Q1) chartInstances.t4Q1.resize();
           if (chartInstances.t4Q4) chartInstances.t4Q4.resize();
-        } else if (tabId === 'tool_5') {
+        } else if (chartId === 'tool_3') {
           if (chartInstances.t5Target) chartInstances.t5Target.resize();
           if (chartInstances.t5Claims) chartInstances.t5Claims.resize();
         }
@@ -1843,6 +1824,7 @@
       safeSetText('kpiDistricts', distList.length);
       safeSetText('badgeTotalReach', grandTotalReach > 1000 ? `${(grandTotalReach/1000).toFixed(1)}K` : grandTotalReach);
       safeSetText('badgeTool1', appData.filter(d => d.tool === 'School Activity').length);
+      safeSetText('badgeTool2', dynamicGatekeeperRecords.length);
       safeSetText('badgeTool3', dynamicTransectRecords.length);
       safeSetText('badgeTool4', dynamicTool4Records.length);
       safeSetText('badgeTool5', dynamicTool5Records.length);
@@ -1865,16 +1847,16 @@
 
       const schoolActsCount = appData.filter(d => d.tool === 'School Activity').length;
       const toolDefs = [
-        { num: 1, name: "Operational tracking tool for school sessions (Wheel & Curricula)", q: 26, reach: `${totalLearners.toLocaleString()} Learners (${schoolActsCount} Schools)`, tab: "tool_1" },
-        { num: 2, name: "Standardized weekly monitoring of community rumors & misinformation", q: 8, reach: `${appData.filter(d=>d.rumor||d.barrier).length} Reports / Concerns Flagged`, tab: "tool_2" },
-        { num: 3, name: "Observational mapping of physical infrastructure & WASH (Transect walk)", q: 14, reach: `${dynamicTransectRecords.length} Facility Audits`, tab: "tool_3" },
-        { num: 4, name: "Rapid audience assessment intercept survey (All Questions Captured)", q: 15, reach: `${dynamicTool4Records.length} Respondents`, tab: "tool_4" },
-        { num: 5, name: "Take 5 qualitative probing diagnostic for genuine behavioral adoption", q: 32, reach: `${dynamicTool5Records.length} Diagnostic Audits`, tab: "tool_5" },
-        { num: 6, name: "Systematic qualitative human-interest impact stories (MSC)", q: 5, reach: `${dynamicTool6Records.length} Narrative turning points`, tab: "tool_6" },
-        { num: 7, name: "Participatory mapping guide for informal trust brokers & parish entry", q: 19, reach: `${dynamicTool7Records.length} Social Sectors`, tab: "tool_7" },
-        { num: 8, name: "Photovoice protocol on hygiene realities & behavioral innovations", q: 9, reach: `${dynamicTool8Records.length} Photo Diagnostics`, tab: "tool_8" },
-        { num: 9, name: "Mandatory pre-drill verification & performance rehearsal evaluation", q: 19, reach: `${dynamicTool9Records.length} Drills Evaluated`, tab: "tool_9" },
-        { num: 10, name: "School Epidemic Preparedness Assessment Tool (PAT)", q: 53, reach: `${dynamicPatRecords.length} Institutional Audits Complete`, tab: "tool_10" }
+        { num: 1, name: "Tool 9: School 3-Visit Model & Knowledge Wheel Session Tracker", q: 26, reach: `${totalLearners.toLocaleString()} Learners (${schoolActsCount} Schools)`, tab: "tool_9" },
+        { num: 2, name: "Tool 7: Community Gatekeeper Dialogue & Commitment Log", q: 8, reach: `${dynamicGatekeeperRecords.length} Sessions Oriented`, tab: "tool_7" },
+        { num: 3, name: "Tool 1: Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: `${dynamicTransectRecords.length} Facility Audits`, tab: "tool_1" },
+        { num: 4, name: "Tool 2: Rapid Audience Assessment Intercept Survey", q: 15, reach: `${dynamicTool4Records.length} Respondents`, tab: "tool_2" },
+        { num: 5, name: "Tool 3: 'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: `${dynamicTool5Records.length} Diagnostic Audits`, tab: "tool_3" },
+        { num: 6, name: "Tool 4: Most Significant Change Story Collection Form", q: 5, reach: `${dynamicTool6Records.length} Narrative turning points`, tab: "tool_4" },
+        { num: 7, name: "Tool 5: Social Network & Influencer Mapping Protocol", q: 19, reach: `${dynamicTool7Records.length} Social Sectors`, tab: "tool_5" },
+        { num: 8, name: "Tool 6: Photovoice Participatory Documentation Guide & Caption Form", q: 9, reach: `${dynamicTool8Records.length} Photo Diagnostics`, tab: "tool_6" },
+        { num: 9, name: "Tool 10: School Simulation Drill & Safeguarding Compliance Protocol", q: 19, reach: `${dynamicTool9Records.length} Drills Evaluated`, tab: "tool_10" },
+        { num: 10, name: "Tool 8: Preparedness Assessment Tool (PAT)", q: 53, reach: `${dynamicPatRecords.length} Institutional Audits Complete`, tab: "tool_8" }
       ];
 
       safeSetHtml('toolsManifestBody', toolDefs.map(t => `
@@ -1932,9 +1914,19 @@
         `;
       }).join(''));
 
-      renderRecurringRumorLog();
+      // Tool 7 Gatekeeper Table
+      safeSetHtml('tool7GatekeeperTableBody', dynamicGatekeeperRecords.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No gatekeeper dialogue records found.</td></tr>` : dynamicGatekeeperRecords.map(g => `
+        <tr>
+          <td><strong>${g.district || 'Central'} / ${g.parish || '—'}</strong></td>
+          <td>${g.lead || 'Coordinator'}</td>
+          <td><span class="badge-pill badge-primary">${g.role}</span></td>
+          <td>${g.male || 0}</td>
+          <td>${g.female || 0}</td>
+          <td style="max-width:300px; white-space:normal; font-size:0.77rem;">${g.commitments || 'Committed to supporting institutional PHE compliance'}</td>
+        </tr>
+      `).join(''));
 
-      // Tool 3 Table
+      // Tool 1 Transect Table
       safeSetHtml('tool3TableBody', dynamicTransectRecords.length === 0 ? `<tr><td colspan="11" style="text-align:center; color:#94a3b8; padding:20px;">No transect walk records found.</td></tr>` : dynamicTransectRecords.map(t => `
         <tr>
           <td><strong>${t.auditor}</strong></td>
@@ -2017,7 +2009,7 @@
         </tr>
       `).join(''));
 
-      // Tool 10 Table (Clean PAT Institutional Audit Table)
+      // Tool 8 Table (PAT Institutional Audit Table)
       safeSetHtml('tool10TableBody', dynamicPatRecords.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding:20px;">No PAT institutional audits found.</td></tr>` : dynamicPatRecords.map(p => `
         <tr>
           <td><strong>${p.name}</strong></td>
@@ -2212,8 +2204,6 @@
     }
 
     function renderBarCharts(distList) {
-      // ALL BAR CHARTS CONFIGURED WITH indexAxis: 'y' SO LABELS ARE ON THE LEFT
-      
       // 1. Stacked District Reach Bar Chart
       const elDist = document.getElementById('chartDistrictReach');
       if (elDist) {
@@ -2316,7 +2306,7 @@
         return c;
       };
 
-      // 3. Tool 1: Warning Signs Bar Chart (Horizontal)
+      // 3. Tool 9: Warning Signs Bar Chart (Horizontal)
       const elSigns = document.getElementById('chartSignsT1');
       if (elSigns) {
         const signsCount = countProp('signs');
@@ -2342,7 +2332,7 @@
         });
       }
 
-      // 4. Tool 1: Students who know toll free hotline (Horizontal)
+      // 4. Tool 9: Students who know toll free hotline (Horizontal)
       const elHotline = document.getElementById('chartHotlineT1');
       if (elHotline) {
         const hotlineCount = countProp('hotline');
@@ -2368,7 +2358,7 @@
         });
       }
 
-      // 5. Tool 1: Anti-Stigma Attitude Bar Chart (Horizontal)
+      // 5. Tool 9: Anti-Stigma Attitude Bar Chart (Horizontal)
       const elStigma = document.getElementById('chartStigmaT1');
       if (elStigma) {
         const stigmaCount = countProp('stigma');
@@ -2394,7 +2384,7 @@
         });
       }
 
-      // 6. Tool 1: Handwashing Steps Demo Bar Chart (Horizontal)
+      // 6. Tool 9: Handwashing Steps Demo Bar Chart (Horizontal)
       const elHandwash = document.getElementById('chartHandwashT1');
       if (elHandwash) {
         const demoCount = countProp('handwash_demo');
@@ -2420,7 +2410,7 @@
         });
       }
 
-      // 7. Tool 1: Top Schools by Sensitised Population (Horizontal)
+      // 7. Tool 9: Top Schools by Sensitised Population (Horizontal)
       const elTop = document.getElementById('chartTopSchoolsT1');
       if (elTop) {
         const topSchools = [...appData.filter(d => d.tool === 'School Activity')]
@@ -2465,73 +2455,7 @@
         });
       }
 
-      // 8. Tool 2: Flagged Rumors Frequency Bar Chart (Horizontal)
-      const elMisinfo = document.getElementById('chartMisinfoT2');
-      if (elMisinfo) {
-        const rCounts = {};
-        appData.forEach(d => {
-          const r = (d.rumor || '').trim();
-          if (r && r !== 'other') rCounts[r] = (rCounts[r] || 0) + 1;
-        });
-
-        const sortedR = Object.keys(rCounts).sort((a, b) => rCounts[b] - rCounts[a]).slice(0, 5);
-
-        chartInstances.misinfoT2 = new Chart(elMisinfo.getContext('2d'), {
-          type: 'bar',
-          data: {
-            labels: sortedR.map(k => k.length > 35 ? k.substring(0, 32) + '...' : k),
-            datasets: [{
-              label: 'Times Flagged',
-              data: sortedR.map(k => rCounts[k]),
-              backgroundColor: '#282c68',
-              borderRadius: 4,
-              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, grace: '15%' } }
-          }
-        });
-      }
-
-      // 9. Tool 2: Rumor Sources Bar Chart (Horizontal)
-      const elSources = document.getElementById('chartSourcesT2');
-      if (elSources) {
-        const sCounts = {};
-        appData.forEach(d => {
-          const s = (d.source || '').trim();
-          if (s) sCounts[s] = (sCounts[s] || 0) + 1;
-        });
-
-        const sortedS = Object.keys(sCounts).sort((a, b) => sCounts[b] - sCounts[a]);
-
-        chartInstances.sourcesT2 = new Chart(elSources.getContext('2d'), {
-          type: 'bar',
-          data: {
-            labels: sortedS,
-            datasets: [{
-              label: 'Rumors Sourced',
-              data: sortedS.map(k => sCounts[k]),
-              backgroundColor: '#f1bc1b',
-              borderRadius: 4,
-              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, grace: '15%' } }
-          }
-        });
-      }
-
-      // 10. Tool 3: Handwashing Points Bar Chart (Horizontal)
+      // 8. Tool 1: Handwashing Points Bar Chart (Horizontal)
       const elWash = document.getElementById('chartWashT3');
       if (elWash) {
         chartInstances.washT3 = new Chart(elWash.getContext('2d'), {
@@ -2560,7 +2484,7 @@
         });
       }
 
-      // 11. Tool 3: Posters & Hotline Currency Bar Chart (Horizontal)
+      // 9. Tool 1: Posters & Hotline Currency Bar Chart (Horizontal)
       const elPoster = document.getElementById('chartPosterT3');
       if (elPoster) {
         chartInstances.posterT3 = new Chart(elPoster.getContext('2d'), {
@@ -2590,7 +2514,7 @@
         });
       }
 
-      // 12. Tool 4: Intercept Survey Q1 Bar Chart (Horizontal)
+      // 10. Tool 2: Intercept Survey Q1 Bar Chart (Horizontal)
       const elT4Q1 = document.getElementById('chartT4Q1');
       if (elT4Q1) {
         const yesCount = dynamicTool4Records.filter(r => r.q1 === 'Yes').length;
@@ -2617,7 +2541,7 @@
         });
       }
 
-      // 13. Tool 4: Intercept Survey Q4 Bar Chart (Horizontal)
+      // 11. Tool 2: Intercept Survey Q4 Bar Chart (Horizontal)
       const elT4Q4 = document.getElementById('chartT4Q4');
       if (elT4Q4) {
         chartInstances.t4Q4 = new Chart(elT4Q4.getContext('2d'), {
@@ -2647,7 +2571,7 @@
         });
       }
 
-      // 14. Tool 5: Take 5 Target Groups Bar Chart (Horizontal)
+      // 12. Tool 3: 'Ask 5' Target Groups Bar Chart (Horizontal)
       const elT5Target = document.getElementById('chartT5Target');
       if (elT5Target) {
         chartInstances.t5Target = new Chart(elT5Target.getContext('2d'), {
@@ -2677,7 +2601,7 @@
         });
       }
 
-      // 15. Tool 5: Take 5 Verification Bar Chart (Horizontal)
+      // 13. Tool 3: 'Ask 5' Verification Bar Chart (Horizontal)
       const elT5Claims = document.getElementById('chartT5Claims');
       if (elT5Claims) {
         chartInstances.t5Claims = new Chart(elT5Claims.getContext('2d'), {
