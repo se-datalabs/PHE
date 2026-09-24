@@ -663,7 +663,7 @@
           <div class="kpi-card">
             <div class="kpi-title">Total Enrolment Monitored</div>
             <div class="kpi-value" id="kpiEnrolment">0</div>
-            <div class="kpi-subtitle" id="kpiEnrolmentSub">Unique school population base (de-duplicated)</div>
+            <div class="kpi-subtitle" id="kpiEnrolmentSub">Unique school population base (validated)</div>
           </div>
           <div class="kpi-card accent">
             <div class="kpi-title">Gatekeepers & Teachers Oriented</div>
@@ -717,7 +717,7 @@
           </div>
         </div>
 
-        <!-- Master Manifest of 10 Tools -->
+        <!-- Master Manifest of 10 Tools (Dynamically Bound to Live Entries) -->
         <div class="card">
           <div class="card-title">Programmatic Tools & Reach Overview (10 Operational Instruments)</div>
           <div class="table-responsive">
@@ -1476,7 +1476,7 @@
     ];
 
     // ================= PERSISTENT STORAGE HELPERS =================
-    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v3';
+    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v4';
 
     function saveToLocalStorage(rows) {
       try {
@@ -1557,6 +1557,16 @@
         if (activityType.includes('3-visit') || activityType.includes('wheel session') || activityType.includes('school activity') || (!activityType.includes('transect') && !activityType.includes('gatekeeper') && !activityType.includes('preparedness') && getCol(row, 'School Name'))) {
           const sName = getCol(row, 'School Name', 'Name of the school');
           if (sName) {
+            const boys = parseNum(getCol(row, 'Number of boys sensitised'));
+            const girls = parseNum(getCol(row, 'Number of girls sensitised'));
+            let enrolment = parseNum(getCol(row, 'Total School enrolment Population', 'Total School Enrollment Population'));
+            
+            // SMART VALIDATION CHECK: If visit reach > enrolment, set enrolment floor to peak visit reach
+            const visitReach = boys + girls;
+            if (visitReach > enrolment) {
+              enrolment = visitReach;
+            }
+
             rawMasterData.push({
               id: getCol(row, '_id') || (idx + 1),
               date: formattedDate,
@@ -1567,9 +1577,9 @@
               school: sName,
               visit_num: getCol(row, 'Visit Number') || 'Visit 1',
               health_club: getCol(row, 'Presence of school health club', 'Presence of health club', 'School Health Club Status') || 'Active',
-              boys: parseNum(getCol(row, 'Number of boys sensitised')),
-              girls: parseNum(getCol(row, 'Number of girls sensitised')),
-              enrolment: parseNum(getCol(row, 'Total School enrolment Population', 'Total School Enrollment Population')),
+              boys: boys,
+              girls: girls,
+              enrolment: enrolment,
               teachers: parseNum(getCol(row, 'Number of Teachers/Patrons Present')),
               games: parseNum(getCol(row, 'Snakes & Ladders Board Games distributed')),
               signs: getCol(row, 'Raise your hand if you can name 3 warning signs of PHE'),
@@ -1840,7 +1850,7 @@
       safeSetText('kpiLearners', totalLearners.toLocaleString());
       safeSetText('kpiLearnersSub', `${totalBoys.toLocaleString()} Boys | ${totalGirls.toLocaleString()} Girls (${totalLearners > 0 ? ((totalGirls / totalLearners) * 100).toFixed(1) : 0}% F)`);
       safeSetText('kpiEnrolment', totalEnrolment.toLocaleString());
-      safeSetText('kpiEnrolmentSub', `Unique school population base (de-duplicated)`);
+      safeSetText('kpiEnrolmentSub', `Unique school population base (validated)`);
       safeSetText('kpiGatekeepers', grandTotalGatekeepers.toLocaleString());
       safeSetText('kpiGames', totalGames.toLocaleString());
       safeSetText('kpiDistricts', distList.length);
