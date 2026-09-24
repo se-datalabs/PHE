@@ -1095,7 +1095,7 @@
           <strong>Tool 10 Scope:</strong> School Epidemic Preparedness Assessment Tool (PAT) examining institutional response plans, isolation wards, WASH baselines, and leadership hotline recall.
         </div>
         
-        <!-- 3-COLUMN 6-PILLAR 10-PUPIL LITERACY & BEHAVIORAL SCORECARD GRID (EXACT ROUND FIGURES ENDING IN ZERO) -->
+        <!-- 3-COLUMN 6-PILLAR 10-PUPIL LITERACY & BEHAVIORAL SCORECARD GRID -->
         <div class="three-col-grid">
           <div class="kpi-card accent">
             <div class="kpi-title">Pupil Symptom Recall</div>
@@ -1424,7 +1424,7 @@
       { id: 7, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Salaama", coordinator: "Rebecca", school: "Life care primary school", visit_num: "Visit 1", health_club: "Dormant", boys: 139, girls: 161, enrolment: 300, teachers: 5, games: 60, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "Ebola no longer kills", barrier: "Financial constraints not allowing purchase of soap", source: "P6 pupil" },
       { id: 8, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Kibuye", coordinator: "Emmanuel", school: "Katwe Church of Uganda primary school", visit_num: "Visit 1", health_club: "Active", boys: 110, girls: 180, enrolment: 290, teachers: 8, games: 30, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Students" },
       { id: 9, date: "2026-08-14", tool: "School Activity", district: "Kawempe", parish: "Kikaayq", coordinator: "Emmanuel", school: "Mariam High School", visit_num: "Visit 1", health_club: "No", boys: 0, girls: 645, enrolment: 645, teachers: 12, games: 0, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Functional running water AND soap present", rumor: "Isolation units cause death instead of treatment", barrier: "Fear of forced quarantine", source: "Community" },
-      { id: 10, date: "2026-08-14", tool: "School Activity", district: "Kawempe", parish: "Makerere University", coordinator: "Emmanuel", school: "Makerere university", visit_num: "Visit 1", health_club: "Active", boys: 0, girls: 0, enrolment: 3000, teachers: 6, games: 0, signs: "Most / All raised hands (> 75% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Peers" },
+      { id: 10, date: "2026-08-14", tool: "School Activity", district: "Kawempe", parish: "Makerere University", coordinator: "Emmanuel", school: "Makerere university", visit_num: "Visit 1", health_club: "Active", boys: 0, girls: 0, enrolment: 3000, teachers: 6, games: 0, signs: "Most / All raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Peers" },
       { id: 11, date: "2026-08-15", tool: "School Activity", district: "Kawempe", parish: "Kyebando", coordinator: "Muganwa", school: "Gayaza Road High school", visit_num: "Visit 1", health_club: "Dormant", boys: 15, girls: 19, enrolment: 200, teachers: 4, games: 0, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "PHEs are spiritual/cultural rather than infectious", barrier: "Cultural belief barrier", source: "Peers" },
       { id: 12, date: "2026-08-15", tool: "School Activity", district: "Kawempe", parish: "Bwaise I", coordinator: "Muganwa", school: "Mamtaz secondary school", visit_num: "Visit 1", health_club: "Active", boys: 14, girls: 22, enrolment: 200, teachers: 5, games: 0, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Few hands raised (< 25% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Slum drainage overflow", source: "Community" },
       { id: 13, date: "2026-08-16", tool: "School Activity", district: "Kawempe", parish: "Bwaise III", coordinator: "Muganwa", school: "Bwaise parents primary school", visit_num: "Visit 1", health_club: "Active", boys: 25, girls: 39, enrolment: 480, teachers: 3, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Financial constraints not allowing purchase of soap", source: "Students" },
@@ -1518,7 +1518,7 @@
     }
 
     /**
-     * Parse raw workbook rows and dynamically populate all 10 tools
+     * Parse raw workbook rows strictly using 'Date' and 'Public Health Emergencies' columns
      */
     function processRawWorkbookRows(rawRows, persist = false) {
       if (!rawRows || rawRows.length === 0) {
@@ -1558,17 +1558,29 @@
       let parsedT9 = [];
 
       rawRows.forEach((row, idx) => {
-        const rowValuesStr = Object.values(row).join(' ').toLowerCase();
-        const activityType = getCol(row, 'Public Health Emergencies', 'Public Health Emergencies ', 'Activity Type', 'Tool Type', 'Select Tool');
-        const actLower = String(activityType).toLowerCase() + ' ' + rowValuesStr;
+        // STRICTLY use the 'Public Health Emergencies' column for activity classification
+        const activityType = String(row['Public Health Emergencies'] || row['Public Health Emergencies '] || '').trim().toLowerCase();
+        
+        // STRICTLY use the 'Date' column for date extraction
+        let rawDateVal = row['Date'] || row['date'] || '';
+        let formattedDate = '';
+        if (rawDateVal) {
+          if (typeof rawDateVal === 'number') {
+            const utcDays = Math.floor(rawDateVal - 25569);
+            const dateObj = new Date(utcDays * 86400 * 1000);
+            formattedDate = dateObj.toISOString().substring(0, 10);
+          } else {
+            formattedDate = String(rawDateVal).substring(0, 10);
+          }
+        }
 
-        // 1. TOOL 1: SCHOOL SESSIONS
-        if (actLower.includes('school activity') || actLower.includes('tool 1') || (!actLower.includes('transect') && !actLower.includes('walk') && !actLower.includes('preparedness') && !actLower.includes('gatekeeper') && getCol(row, 'School Name', 'Name of the school'))) {
+        // 1. SCHOOL SESSIONS / WHEEL SESSIONS (Tool 1)
+        if (activityType.includes('school activity') || activityType.includes('wheel session') || activityType.includes('tool 1') || (!activityType.includes('transect') && !activityType.includes('preparedness') && !activityType.includes('gatekeeper') && getCol(row, 'School Name'))) {
           const sName = getCol(row, 'School Name', 'Name of the school');
           if (sName) {
             rawMasterData.push({
               id: getCol(row, '_id') || (idx + 1),
-              date: String(getCol(row, 'Date', 'start', 'end')).substring(0, 10),
+              date: formattedDate,
               tool: 'School Activity',
               district: getCol(row, 'District') || 'Central',
               parish: getCol(row, 'Parish'),
@@ -1576,69 +1588,77 @@
               school: sName,
               visit_num: getCol(row, 'Visit Number') || 'Visit 1',
               health_club: getCol(row, 'Presence of school health club', 'Presence of health club', 'School Health Club Status') || 'Active',
-              boys: parseNum(getCol(row, 'Number of boys sensitised', 'boys')),
-              girls: parseNum(getCol(row, 'Number of girls sensitised', 'girls')),
-              enrolment: parseNum(getCol(row, 'Total School enrolment Population', 'Total School Enrollment Population', 'enrolment')),
-              teachers: parseNum(getCol(row, 'Number of Teachers/Patrons Present', 'teachers')),
-              games: parseNum(getCol(row, 'Snakes & Ladders Board Games distributed', 'games')),
-              signs: getCol(row, 'Raise your hand if you can name 3 warning signs of PHE', 'signs'),
-              hotline: getCol(row, 'Raise your hand if you know the toll-free hotline or where to report', 'hotline'),
-              stigma: getCol(row, 'Raise your hand if you believe a sick person should be cared for safely without being chased or hidden', 'stigma'),
-              handwash_demo: getCol(row, 'Did the volunteer demonstrate correct handwashing steps', 'handwash_demo'),
-              soap: getCol(row, 'Soap and running water available at venue today', 'soap'),
+              boys: parseNum(getCol(row, 'Number of boys sensitised')),
+              girls: parseNum(getCol(row, 'Number of girls sensitised')),
+              enrolment: parseNum(getCol(row, 'Total School enrolment Population', 'Total School Enrollment Population')),
+              teachers: parseNum(getCol(row, 'Number of Teachers/Patrons Present')),
+              games: parseNum(getCol(row, 'Snakes & Ladders Board Games distributed')),
+              signs: getCol(row, 'Raise your hand if you can name 3 warning signs of PHE'),
+              hotline: getCol(row, 'Raise your hand if you know the toll-free hotline or where to report'),
+              stigma: getCol(row, 'Raise your hand if you believe a sick person should be cared for safely without being chased or hidden'),
+              handwash_demo: getCol(row, 'Did the volunteer demonstrate correct handwashing steps'),
+              soap: getCol(row, 'Soap and running water available at venue today'),
               rumor: getCol(row, 'Rumor, misinformation or question flagged', 'Top misconception heard today', 'specify3', 'Local barrier identified'),
-              barrier: getCol(row, 'Local barrier identified', 'barrier'),
-              source: getCol(row, 'source of the rumor', 'source') || 'Community'
+              barrier: getCol(row, 'Local barrier identified'),
+              source: getCol(row, 'source of the rumor') || 'Community'
             });
           }
         }
 
-        // 2. TOOL 2: RUMORS & MISINFORMATION
-        const rumorVal = getCol(row, 'Rumor, misinformation or question flagged', 'Top misconception heard today', 'specify3', 'Local barrier identified');
-        if (rumorVal && !actLower.includes('school activity')) {
+        // 2. COMMUNITY GATEKEEPER SESSIONS
+        if (activityType.includes('gatekeeper') || activityType.includes('community gate') || getCol(row, 'what commitments did the gatekeeper make')) {
+          dynamicGatekeeperRecords.push({
+            district: getCol(row, 'District'),
+            parish: getCol(row, 'Parish'),
+            lead: getCol(row, 'specify', 'Cordinator'),
+            role: getCol(row, 'Type of gatekeeper') || 'Teacher / Patron',
+            commitments: getCol(row, 'what commitments did the gatekeeper make'),
+            male: parseNum(getCol(row, 'Male Gatekeepers Oriented')),
+            female: parseNum(getCol(row, 'Female Gatekeepers Oriented'))
+          });
+
           rawMasterData.push({
             id: getCol(row, '_id') || (idx + 1),
-            date: String(getCol(row, 'Date', 'start', 'end')).substring(0, 10),
-            tool: 'Rumor Log',
+            date: formattedDate,
+            tool: 'Gatekeeper Session',
             district: getCol(row, 'District') || 'Central',
             parish: getCol(row, 'Parish'),
-            school: getCol(row, 'School Name', 'Name of the school') || 'Community Site',
-            boys: 0, girls: 0, enrolment: 0, teachers: 0, games: 0,
-            rumor: rumorVal,
-            barrier: getCol(row, 'Local barrier identified'),
-            source: getCol(row, 'source of the rumor') || 'Community'
+            school: `Gatekeeper Session (${getCol(row, 'Type of gatekeeper') || 'Community'})`,
+            boys: 0, girls: 0, enrolment: 0,
+            teachers: parseNum(getCol(row, 'Male Gatekeepers Oriented')) + parseNum(getCol(row, 'Female Gatekeepers Oriented')),
+            games: 0
           });
         }
 
-        // 3. TOOL 3: TRANSECT WALK (BROADENED MATCHING FOR ALL 13+ RECORDS & QUESTIONS)
-        if (actLower.includes('transect') || actLower.includes('walk') || actLower.includes('environmental') || actLower.includes('infrastructure') || actLower.includes('tool 3') || actLower.includes('wash audit')) {
-          const stations = parseNum(getCol(row, 'Record number of functional stations', 'Record number of functional stations ', 'functional stations', 'stations'));
-          const pop = parseNum(getCol(row, 'Population count of the site', 'population', 'site population'));
-          const calculatedRatio = stations > 0 ? `${(pop / stations).toFixed(1)}:1 (${pop} : ${stations})` : 'N/A';
+        // 3. TRANSECT WALK (Tool 3)
+        if (activityType.includes('transect') || activityType.includes('walk') || activityType.includes('environmental') || activityType.includes('tool 3')) {
+          const stations = parseNum(getCol(row, 'Record number of functional stations', 'Record number of functional stations '));
+          const pop = parseNum(getCol(row, 'Population count of the site'));
+          const calculatedRatio = stations > 0 ? `${(pop / stations).toFixed(1)}:1 (${pop} : ${stations})` : `Critical Gap: ${pop} Persons with 0 Stations`;
 
           dynamicTransectRecords.push({
-            auditor: getCol(row, 'specify', 'Cordinator', 'Coordinator', 'auditor') || 'Lead Auditor',
+            auditor: getCol(row, 'specify', 'Cordinator', 'Coordinator') || 'Lead Auditor',
             site: `${getCol(row, 'District')} / ${getCol(row, 'Parish')}`,
-            setting: getCol(row, 'Setting type', 'specify3', 'setting') || 'School',
+            setting: getCol(row, 'Setting type', 'specify3') || 'School',
             stations: stations,
             pop: pop,
             stance_ratio: calculatedRatio,
-            notes: getCol(row, 'Observation notes', 'Notes', 'Additional notes') || 'No notes',
-            refuse: getCol(row, 'Open refuse heaps, stagnant water, overflowing drainage channels near classrooms, food stalls, or passenger bays.', 'refuse', 'waste') || 'Maintained',
-            wash: getCol(row, 'Functional handwashing points at gates, latrines, and dining/canteen areas with soap and running water.', 'wash') || 'Present',
-            poster: getCol(row, 'Presence, legibility, and currency of MoH/KCCA posters on Ebola, Mpox, and Marburg with active toll-free lines.', 'poster') || 'Observed',
-            holding: getCol(row, 'Designated space, ventilation, clean bedding, and written separation protocol for suspected symptomatic cases.', 'holding', 'isolation') || 'Makeshift Only',
-            staff: getCol(row, 'Verify if school nurse/matron or market head has ever received orientation on epidemics.', 'staff') || 'Not oriented'
+            notes: getCol(row, 'Observation notes', 'Check vector breeding sites and safety near food points.') || 'No notes',
+            refuse: getCol(row, 'Open refuse heaps, stagnant water, overflowing drainage channels near classrooms, food stalls, or passenger bays.') || 'Maintained',
+            wash: getCol(row, 'Functional handwashing points at gates, latrines, and dining/canteen areas with soap and running water.') || 'Present',
+            poster: getCol(row, 'Presence, legibility, and currency of MoH/KCCA posters on Ebola, Mpox, and Marburg with active toll-free lines.') || 'Observed',
+            holding: getCol(row, 'Designated space, ventilation, clean bedding, and written separation protocol for suspected symptomatic cases.') || 'Makeshift Only',
+            staff: getCol(row, 'Verify if school nurse/matron or market head has ever received orientation on epidemics.') || 'Not oriented'
           });
         }
 
-        // 4. TOOL 10: PREPAREDNESS ASSESSMENT (PAT)
-        if (actLower.includes('preparedness') || actLower.includes('tool 11') || actLower.includes('pat') || getCol(row, 'Does the school have a Epidemic Preparedness Plan')) {
+        // 4. PREPAREDNESS ASSESSMENT (PAT - Tool 10)
+        if (activityType.includes('preparedness') || activityType.includes('tool 11') || activityType.includes('pat') || getCol(row, 'Does the school have a Epidemic Preparedness Plan')) {
           dynamicPatRecords.push({
             name: getCol(row, 'Name of the school', 'School Name') || 'Assessed Facility',
             level: getCol(row, 'School level') || 'Primary',
-            boys: parseNum(getCol(row, 'total enrolment for boys', 'boys')),
-            girls: parseNum(getCol(row, 'Totla enrolement for girls', 'Total enrolment for girls', 'girls')),
+            boys: parseNum(getCol(row, 'total enrolment for boys')),
+            girls: parseNum(getCol(row, 'Totla enrolement for girls', 'Total enrolment for girls')),
             maleStaff: parseNum(getCol(row, 'Total male teaching staff')),
             femaleStaff: parseNum(getCol(row, 'Total female teaching staff')),
             club: getCol(row, 'Presence of health club', 'School Health Club Status') || 'Active',
