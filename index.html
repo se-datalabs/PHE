@@ -738,21 +738,20 @@
         </div>
 
         <div class="card">
-          <div class="card-title">District Reach Matrix Summary (Unique School Enrolment Base)</div>
+          <div class="card-title">District Reach Matrix Summary (With Multi-Visit Reach Breakdown: Visit 1, 2 &amp; 3)</div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
                   <th>District</th>
-                  <th>Schools / Facilities</th>
+                  <th>Schools</th>
                   <th>Unique Enrolment</th>
-                  <th>Boys Sensitised</th>
-                  <th>Girls Sensitised</th>
-                  <th>Total Learners</th>
+                  <th>Visit 1 Reach</th>
+                  <th>Visit 2 Reach</th>
+                  <th>Visit 3 Reach</th>
                   <th>Gatekeepers / Teachers</th>
-                  <th>Total Sensitised Reach</th>
+                  <th>Total Cumulative Reach</th>
                   <th>Games Distributed</th>
-                  <th>Coverage Rate</th>
                 </tr>
               </thead>
               <tbody id="districtSummaryTableBody"></tbody>
@@ -788,29 +787,25 @@
         </div>
         
         <div class="card">
-          <div class="card-title">Top Schools by Sensitised Population (% of total enrolment in brackets)</div>
+          <div class="card-title">Top Schools by Sensitised Population</div>
           <div class="chart-box" style="height: 340px;"><canvas id="chartTopSchoolsT1"></canvas></div>
         </div>
 
         <div class="card">
-          <div class="card-title">Tool 9 Registry: Complete School Session Registry (With Visit Number & Health Club Status)</div>
+          <div class="card-title">Tool 9 Registry: Multi-Visit School Session Breakdown (Visit 1, Visit 2, Visit 3)</div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
                   <th>School Name</th>
-                  <th>Visit #</th>
-                  <th>School Health Club</th>
                   <th>District</th>
                   <th>Parish</th>
-                  <th>Enrolment</th>
-                  <th>Boys / Girls</th>
-                  <th>Total Sensitised</th>
-                  <th>% Enrolment Reached</th>
-                  <th>Gatekeepers</th>
-                  <th>Games</th>
-                  <th>Handwashing Demo</th>
-                  <th>Soap Availability</th>
+                  <th>Unique Enrolment</th>
+                  <th>Visit 1 (Reach / Status)</th>
+                  <th>Visit 2 (Reach / Status)</th>
+                  <th>Visit 3 (Reach / Status)</th>
+                  <th>Total Cumulative Reach</th>
+                  <th>Games Distributed</th>
                 </tr>
               </thead>
               <tbody id="tool1TableBody"></tbody>
@@ -1481,7 +1476,7 @@
     ];
 
     // ================= PERSISTENT STORAGE HELPERS =================
-    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v2';
+    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v3';
 
     function saveToLocalStorage(rows) {
       try {
@@ -1774,7 +1769,6 @@
       const distMap = {};
       let totalBoys = 0, totalGirls = 0, totalTeachers = 0, totalGames = 0;
 
-      // AUTOMATIC UNIQUE SCHOOL ENROLMENT DE-DUPLICATION ACROSS REPEATED VISITS
       const schoolUniqueEnrolment = {};
       appData.forEach(r => {
         totalBoys += (r.boys || 0);
@@ -1793,18 +1787,27 @@
         }
 
         if (!distMap[dName]) {
-          distMap[dName] = { count: 0, enrolment: 0, boys: 0, girls: 0, teachers: 0, totalLearners: 0, totalReach: 0, games: 0 };
+          distMap[dName] = { count: 0, enrolment: 0, boys: 0, girls: 0, teachers: 0, totalLearners: 0, totalReach: 0, games: 0, v1Reach: 0, v2Reach: 0, v3Reach: 0, schoolsSet: new Set() };
         }
-        distMap[dName].count += 1;
+        
+        if (sName && sName !== 'site' && !sName.startsWith('gatekeeper')) {
+          distMap[dName].schoolsSet.add(sName);
+        }
+
         distMap[dName].boys += (r.boys || 0);
         distMap[dName].girls += (r.girls || 0);
         distMap[dName].teachers += (r.teachers || 0);
         distMap[dName].totalLearners += ((r.boys || 0) + (r.girls || 0));
         distMap[dName].totalReach += ((r.boys || 0) + (r.girls || 0) + (r.teachers || 0));
         distMap[dName].games += (r.games || 0);
+
+        const vNum = String(r.visit_num || 'Visit 1').trim().toLowerCase();
+        const vReach = (r.boys || 0) + (r.girls || 0);
+        if (vNum.includes('visit 1') || vNum === '1') distMap[dName].v1Reach += vReach;
+        else if (vNum.includes('visit 2') || vNum === '2') distMap[dName].v2Reach += vReach;
+        else if (vNum.includes('visit 3') || vNum === '3') distMap[dName].v3Reach += vReach;
       });
 
-      // Sum de-duplicated school enrolments per district and globally
       let totalEnrolment = 0;
       Object.values(schoolUniqueEnrolment).forEach(item => {
         totalEnrolment += item.enr;
@@ -1824,6 +1827,7 @@
 
       const distList = Object.keys(distMap).map(d => ({
         name: d,
+        schoolCount: distMap[d].schoolsSet.size > 0 ? distMap[d].schoolsSet.size : distMap[d].count,
         ...distMap[d]
       })).sort((a, b) => b.totalReach - a.totalReach);
 
@@ -1888,46 +1892,78 @@
         </tr>
       `).join(''));
 
+      // District Summary Table (With Visit 1, Visit 2, and Visit 3 Reach columns)
       safeSetHtml('districtSummaryTableBody', distList.map(d => {
-        const rate = d.enrolment > 0 ? ((d.totalLearners / d.enrolment) * 100).toFixed(1) : 0;
-        const badge = rate >= 50 ? 'badge-success' : (rate >= 30 ? 'badge-primary' : 'badge-warning');
         return `
           <tr>
             <td><strong>${d.name}</strong></td>
-            <td>${d.count}</td>
+            <td>${d.schoolCount}</td>
             <td>${d.enrolment.toLocaleString()}</td>
-            <td>${d.boys.toLocaleString()}</td>
-            <td>${d.girls.toLocaleString()}</td>
-            <td><strong>${d.totalLearners.toLocaleString()}</strong></td>
+            <td><strong>${d.v1Reach > 0 ? d.v1Reach.toLocaleString() : '—'}</strong></td>
+            <td><strong>${d.v2Reach > 0 ? d.v2Reach.toLocaleString() : '—'}</strong></td>
+            <td><strong>${d.v3Reach > 0 ? d.v3Reach.toLocaleString() : '—'}</strong></td>
             <td><strong style="color:var(--gatekeeper);">${d.teachers}</strong></td>
             <td><strong style="color:var(--primary);">${d.totalReach.toLocaleString()}</strong></td>
             <td>${d.games.toLocaleString()}</td>
-            <td><span class="badge-pill ${badge}">${rate}%</span></td>
           </tr>
         `;
       }).join(''));
 
-      const schoolListRows = appData.filter(s => s.tool === 'School Activity');
-      safeSetHtml('tool1TableBody', schoolListRows.length === 0 ? `<tr><td colspan="13" style="text-align:center; color:#94a3b8; padding:20px;">No school session records found in active filter.</td></tr>` : schoolListRows.map(s => {
-        const total = (s.boys || 0) + (s.girls || 0);
-        const rate = s.enrolment > 0 ? ((total / s.enrolment) * 100).toFixed(1) : 0;
-        const demoBadge = String(s.handwash_demo).includes('All Steps') ? 'badge-success' : (String(s.handwash_demo).includes('Not done') ? 'badge-danger' : 'badge-warning');
-        const clubBadge = String(s.health_club).includes('Active') ? 'badge-success' : (String(s.health_club).includes('Dormant') ? 'badge-warning' : 'badge-danger');
+      // Group school visits by school name to render Visit 1, Visit 2, and Visit 3 columns side by side
+      const schoolVisitMap = {};
+      appData.filter(s => s.tool === 'School Activity').forEach(s => {
+        const sKey = (s.school || 'Unknown School').trim();
+        if (!schoolVisitMap[sKey]) {
+          schoolVisitMap[sKey] = {
+            name: sKey,
+            district: s.district,
+            parish: s.parish || '—',
+            enrolment: s.enrolment || 0,
+            visits: {},
+            totalGames: 0
+          };
+        }
+        const vNum = String(s.visit_num || 'Visit 1').trim();
+        schoolVisitMap[sKey].visits[vNum] = {
+          boys: s.boys || 0,
+          girls: s.girls || 0,
+          total: (s.boys || 0) + (s.girls || 0),
+          club: s.health_club || 'Active'
+        };
+        schoolVisitMap[sKey].totalGames += (s.games || 0);
+        if (s.enrolment > schoolVisitMap[sKey].enrolment) {
+          schoolVisitMap[sKey].enrolment = s.enrolment;
+        }
+      });
+
+      const schoolMultiVisitRows = Object.values(schoolVisitMap);
+      safeSetHtml('tool1TableBody', schoolMultiVisitRows.length === 0 ? `<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No school session records found in active filter.</td></tr>` : schoolMultiVisitRows.map(s => {
+        const v1 = s.visits['Visit 1'] || s.visits['1'] || { total: '—', club: '—' };
+        const v2 = s.visits['Visit 2'] || s.visits['2'] || { total: 'Pending', club: '—' };
+        const v3 = s.visits['Visit 3'] || s.visits['3'] || { total: 'Pending', club: '—' };
+
+        const cumulativeReach = (typeof v1.total === 'number' ? v1.total : 0) + 
+                                (typeof v2.total === 'number' ? v2.total : 0) + 
+                                (typeof v3.total === 'number' ? v3.total : 0);
+
+        const formatVisitCell = (vData) => {
+          if (typeof vData.total === 'number') {
+            return `<strong>${vData.total.toLocaleString()}</strong> <span style="font-size:0.7rem; color:var(--text-muted);">(${vData.boys || 0}B/${vData.girls || 0}G)</span>`;
+          }
+          return `<span style="color:#94a3b8; font-style:italic;">${vData.total}</span>`;
+        };
+
         return `
           <tr>
-            <td><strong>${s.school}</strong></td>
-            <td><span class="badge-pill badge-primary">${s.visit_num || 'Visit 1'}</span></td>
-            <td><span class="badge-pill ${clubBadge}">${s.health_club || 'Active'}</span></td>
+            <td><strong>${s.name}</strong></td>
             <td>${s.district}</td>
-            <td>${s.parish || '—'}</td>
-            <td>${(s.enrolment || 0).toLocaleString()}</td>
-            <td>${s.boys || 0} / ${s.girls || 0}</td>
-            <td><strong>${total.toLocaleString()}</strong></td>
-            <td><strong style="color:var(--primary);">${rate}%</strong></td>
-            <td>${s.teachers || 0}</td>
-            <td>${s.games || 0}</td>
-            <td><span class="badge-pill ${demoBadge}">${s.handwash_demo || 'Not done'}</span></td>
-            <td>${s.soap || '—'}</td>
+            <td>${s.parish}</td>
+            <td>${s.enrolment.toLocaleString()}</td>
+            <td>${formatVisitCell(v1)}</td>
+            <td>${formatVisitCell(v2)}</td>
+            <td>${formatVisitCell(v3)}</td>
+            <td><strong style="color:var(--primary);">${cumulativeReach.toLocaleString()}</strong></td>
+            <td>${s.totalGames.toLocaleString()}</td>
           </tr>
         `;
       }).join(''));
