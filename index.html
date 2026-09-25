@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Public Health Emergencies (PHE) - Multi-Tool Analytics Dashboard</title>
   
   <!-- Chart.js & Plugins -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-  
 
   <!-- Leaflet Interactive Maps -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -19,11 +18,17 @@
 </head>
 <body>
 
+  <!-- Backdrop overlay for mobile drawer -->
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
   <!-- Navigation Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="appSidebar">
     <div class="brand">
-      <h2>PHE RCCE Tracker</h2>
-      <p>10 Integrated Tools Dashboard</p>
+      <div class="brand-text">
+        <h2>PHE RCCE Tracker</h2>
+        <p>10 Integrated Tools Dashboard</p>
+      </div>
+      <button class="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="Close navigation menu">✕</button>
     </div>
     <div class="nav-tabs">
       <div class="nav-section-title">Core Performance</div>
@@ -88,13 +93,25 @@
   <!-- Main Content Area -->
   <div class="main-wrapper">
     <header>
-      <div class="header-title">
-        <h1 id="screenTitle">Main Summary of Reach</h1>
-        <p id="screenSubtitle">Cross-tool reach aggregation, district performance, and programmatic coverage</p>
+      <div class="header-top-bar">
+        <button id="menuToggleBtn" class="menu-toggle-btn" onclick="toggleSidebar(true)" aria-label="Open navigation menu">
+          <span class="menu-icon">☰</span>
+          <span class="menu-text">Tools Menu</span>
+        </button>
+
+        <div class="header-title">
+          <h1 id="screenTitle">Main Summary of Reach</h1>
+          <p id="screenSubtitle">Cross-tool reach aggregation, district performance, and programmatic coverage</p>
+        </div>
+
+        <button id="filterToggleBtn" class="filter-toggle-btn" onclick="toggleFilterBar()" aria-label="Toggle filter controls">
+          <span>🔍</span>
+          <span class="filter-toggle-text">Filters</span>
+        </button>
       </div>
 
       <!-- FILTER CONTROLS BAR -->
-      <div class="filter-bar">
+      <div class="filter-bar" id="filterBar">
         <div class="filter-item">
           <label for="filterDistrict">District:</label>
           <select id="filterDistrict" class="filter-select" onchange="applyFilters()">
@@ -178,7 +195,7 @@
           </div>
           <div id="schoolMap"></div>
           <div style="margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; font-size: 0.77rem; color: #475569;">
-            <div style="display:flex; gap:16px; align-items:center;">
+            <div style="display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center;">
               <span><strong style="color:var(--primary);">🔵 Deep Indigo Pin:</strong> Standard Sensitization Activity</span>
               <span><strong style="color:#d97706;">🟡 Amber Pin:</strong> High Gamified Allocation (&ge;50 Games)</span>
             </div>

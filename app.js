@@ -307,9 +307,47 @@ function processRawWorkbookRows(rawRows) {
 }
 
 /**
+ * Mobile Navigation Drawer & Filter Toggle Functions
+ */
+function toggleSidebar(open) {
+  const sidebar = document.getElementById('appSidebar') || document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar) return;
+  const shouldOpen = open !== undefined ? open : !sidebar.classList.contains('open');
+  if (shouldOpen) {
+    sidebar.classList.add('open');
+    if (overlay) overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  } else {
+    sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
+function toggleFilterBar() {
+  const filterBar = document.getElementById('filterBar');
+  const toggleBtn = document.getElementById('filterToggleBtn');
+  if (!filterBar) return;
+  const isOpen = filterBar.classList.toggle('open');
+  if (toggleBtn) {
+    if (isOpen) {
+      toggleBtn.classList.add('active');
+    } else {
+      toggleBtn.classList.remove('active');
+    }
+  }
+}
+
+/**
  * Tab switching handler
  */
 function showTab(tabId) {
+  // On mobile/tablet, close drawer automatically when tool is tapped
+  if (window.innerWidth <= 992) {
+    toggleSidebar(false);
+  }
+
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
   if (activeBtn) activeBtn.classList.add('active');
@@ -1414,4 +1452,16 @@ window.addEventListener('DOMContentLoaded', () => {
   populateFilterOptions();
   applyFilters();
   tryAutoFetchServerData();
+});
+
+// Responsive resize listener for orientation changes and viewport resizing
+window.addEventListener('resize', () => {
+  if (leafletMap) {
+    leafletMap.invalidateSize();
+  }
+  Object.values(chartInstances).forEach(c => {
+    if (c && typeof c.resize === 'function') {
+      c.resize();
+    }
+  });
 });
