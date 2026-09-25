@@ -609,7 +609,7 @@
         <p id="screenSubtitle">Cross-tool reach aggregation, district performance, and programmatic coverage</p>
       </div>
 
-      <!-- FILTER CONTROLS BAR WITH PASSWORD-GATED UPLOAD -->
+      <!-- FILTER CONTROLS BAR WITH START & END DATE RANGE ON 'Date' COLUMN -->
       <div class="filter-bar">
         <div class="filter-item">
           <label for="filterDistrict">District:</label>
@@ -1381,8 +1381,36 @@
       return isNaN(num) ? 0 : num;
     }
 
-    // Persistent Storage Helpers
-    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v5';
+    /**
+     * TIMEZONE-SAFE DATE NORMALIZATION (PREVENTS 1-DAY SHIFT BUG FOR AUGUST DATES)
+     */
+    function normalizeLocalDate(rawVal) {
+      if (!rawVal) return '';
+      if (rawVal instanceof Date) {
+        if (isNaN(rawVal.getTime())) return '';
+        const y = rawVal.getFullYear();
+        const m = String(rawVal.getMonth() + 1).padStart(2, '0');
+        const d = String(rawVal.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      if (typeof rawVal === 'number') {
+        const utcDays = Math.floor(rawVal - 25569);
+        const dateObj = new Date(utcDays * 86400 * 1000);
+        if (isNaN(dateObj.getTime())) return '';
+        const y = dateObj.getUTCFullYear();
+        const m = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getUTCDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      const strVal = String(rawVal).trim();
+      if (strVal.length >= 10 && strVal.includes('-')) {
+        return strVal.substring(0, 10);
+      }
+      return strVal.substring(0, 10);
+    }
+
+    // Persistent Storage Helpers (v10 cache purge)
+    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v10';
 
     function saveToLocalStorage(rows) {
       try {
@@ -1405,8 +1433,7 @@
     }
 
     /**
-     * Parse raw workbook rows strictly using 'Date' and 'Public Health Emergencies' columns.
-     * REMOVED ALL DUMMY FALLBACKS so blank forms correctly show zero/empty entries.
+     * Parse raw workbook rows strictly using 'Date' column and 'Public Health Emergencies' activity column.
      */
     function processRawWorkbookRows(rawRows, persist = false) {
       if (!rawRows || rawRows.length === 0) {
@@ -1415,15 +1442,6 @@
           rawRows = cached;
         } else {
           rawMasterData = [];
-          dynamicTransectRecords = [];
-          dynamicPatRecords = [];
-          dynamicGatekeeperRecords = [];
-          dynamicTool4Records = [];
-          dynamicTool5Records = [];
-          dynamicTool6Records = [];
-          dynamicTool7Records = [];
-          dynamicTool8Records = [];
-          dynamicTool9Records = [];
           return;
         }
       }
@@ -1433,44 +1451,21 @@
       }
 
       rawMasterData = [];
-      dynamicTransectRecords = [];
-      dynamicPatRecords = [];
-      dynamicGatekeeperRecords = [];
-      dynamicTool4Records = [];
-      dynamicTool5Records = [];
-      dynamicTool6Records = [];
-      dynamicTool7Records = [];
-      dynamicTool8Records = [];
-      dynamicTool9Records = [];
 
       rawRows.forEach((row, idx) => {
         const activityType = String(row['Public Health Emergencies'] || row['Public Health Emergencies '] || '').trim().toLowerCase();
-        
         let rawDateVal = row['Date'] || row['date'] || '';
-        let formattedDate = '';
-        if (rawDateVal) {
-          if (typeof rawDateVal === 'number') {
-            const utcDays = Math.floor(rawDateVal - 25569);
-            const dateObj = new Date(utcDays * 86400 * 1000);
-            formattedDate = dateObj.toISOString().substring(0, 10);
-          } else {
-            formattedDate = String(rawDateVal).substring(0, 10);
-          }
-        }
+        const formattedDate = normalizeLocalDate(rawDateVal);
 
-        // 1. TOOL 9: SCHOOL 3-VISIT WHEEL SESSION TRACKER
+        // 1. SCHOOL SESSIONS / WHEEL SESSIONS (Tool 9)
         if (activityType.includes('3-visit') || activityType.includes('wheel session') || activityType.includes('school activity') || (!activityType.includes('transect') && !activityType.includes('gatekeeper') && !activityType.includes('preparedness') && getCol(row, 'School Name'))) {
           const sName = getCol(row, 'School Name', 'Name of the school');
           if (sName) {
             const boys = parseNum(getCol(row, 'Number of boys sensitised'));
             const girls = parseNum(getCol(row, 'Number of girls sensitised'));
             let enrolment = parseNum(getCol(row, 'Total School enrolment Population', 'Total School Enrollment Population'));
-            
-            // SMART VALIDATION CHECK: If visit reach > enrolment, set enrolment floor to peak visit reach
             const visitReach = boys + girls;
-            if (visitReach > enrolment) {
-              enrolment = visitReach;
-            }
+            if (visitReach > enrolment) enrolment = visitReach;
 
             rawMasterData.push({
               id: getCol(row, '_id') || (idx + 1),
@@ -1499,17 +1494,11 @@
           }
         }
 
-        // 2. TOOL 7: COMMUNITY GATEKEEPER DIALOGUE
+        // 2. COMMUNITY GATEKEEPER DIALOGUE (Tool 7)
         if (activityType.includes('gatekeeper') || activityType.includes('community gate') || getCol(row, 'what commitments did the gatekeeper make')) {
-          dynamicGatekeeperRecords.push({
-            district: getCol(row, 'District'),
-            parish: getCol(row, 'Parish'),
-            lead: getCol(row, 'specify', 'Cordinator'),
-            role: getCol(row, 'Type of gatekeeper') || 'Teacher / Patron',
-            commitments: getCol(row, 'what commitments did the gatekeeper make'),
-            male: parseNum(getCol(row, 'Male Gatekeepers Oriented')),
-            female: parseNum(getCol(row, 'Female Gatekeepers Oriented'))
-          });
+          const maleGk = parseNum(getCol(row, 'Male Gatekeepers Oriented'));
+          const femaleGk = parseNum(getCol(row, 'Female Gatekeepers Oriented'));
+          const totalGk = maleGk + femaleGk;
 
           rawMasterData.push({
             id: getCol(row, '_id') || (idx + 1),
@@ -1517,20 +1506,30 @@
             tool: 'Gatekeeper Session',
             district: getCol(row, 'District') || 'Central',
             parish: getCol(row, 'Parish'),
+            coordinator: getCol(row, 'specify', 'Cordinator'),
             school: `Gatekeeper Session (${getCol(row, 'Type of gatekeeper') || 'Community'})`,
+            role: getCol(row, 'Type of gatekeeper') || 'Teacher / Patron',
+            commitments: getCol(row, 'what commitments did the gatekeeper make'),
+            male: maleGk,
+            female: femaleGk,
             boys: 0, girls: 0, enrolment: 0,
-            teachers: parseNum(getCol(row, 'Male Gatekeepers Oriented')) + parseNum(getCol(row, 'Female Gatekeepers Oriented')),
+            teachers: totalGk,
             games: 0
           });
         }
 
-        // 3. TOOL 1: TRANSECT WALK & INFRASTRUCTURE CHECKLIST
+        // 3. TRANSECT WALK (Tool 1)
         if (activityType.includes('transect') || activityType.includes('walk') || activityType.includes('environmental')) {
           const stations = parseNum(getCol(row, 'Record number of functional stations', 'Record number of functional stations '));
           const pop = parseNum(getCol(row, 'Population count of the site'));
           const calculatedRatio = stations > 0 ? `${(pop / stations).toFixed(1)}:1 (${pop} : ${stations})` : `Critical Gap: ${pop} Persons with 0 Stations`;
 
-          dynamicTransectRecords.push({
+          rawMasterData.push({
+            id: getCol(row, '_id') || (idx + 1),
+            date: formattedDate,
+            tool: 'Transect Walk',
+            district: getCol(row, 'District') || 'Central',
+            parish: getCol(row, 'Parish'),
             auditor: getCol(row, 'specify', 'Cordinator', 'Coordinator') || 'Lead Auditor',
             site: `${getCol(row, 'District')} / ${getCol(row, 'Parish')}`,
             setting: getCol(row, 'Setting type', 'specify3') || 'School',
@@ -1542,13 +1541,19 @@
             wash: getCol(row, 'Functional handwashing points at gates, latrines, and dining/canteen areas with soap and running water.') || 'Present',
             poster: getCol(row, 'Presence, legibility, and currency of MoH/KCCA posters on Ebola, Mpox, and Marburg with active toll-free lines.') || 'Observed',
             holding: getCol(row, 'Designated space, ventilation, clean bedding, and written separation protocol for suspected symptomatic cases.') || 'Makeshift Only',
-            staff: getCol(row, 'Verify if school nurse/matron or market head has ever received orientation on epidemics.') || 'Not oriented'
+            staff: getCol(row, 'Verify if school nurse/matron or market head has ever received orientation on epidemics.') || 'Not oriented',
+            boys: 0, girls: 0, enrolment: 0, teachers: 0, games: 0
           });
         }
 
-        // 4. TOOL 8: PREPAREDNESS ASSESSMENT TOOL (PAT)
+        // 4. PREPAREDNESS ASSESSMENT TOOL / PAT (Tool 8)
         if (activityType.includes('preparedness') || activityType.includes('tool 11') || activityType.includes('pat') || getCol(row, 'Does the school have a Epidemic Preparedness Plan')) {
-          dynamicPatRecords.push({
+          rawMasterData.push({
+            id: getCol(row, '_id') || (idx + 1),
+            date: formattedDate,
+            tool: 'PAT Assessment',
+            district: getCol(row, 'District') || 'Central',
+            parish: getCol(row, 'Parish'),
             name: getCol(row, 'Name of the school', 'School Name') || 'Assessed Facility',
             level: getCol(row, 'School level') || 'Primary',
             boys: parseNum(getCol(row, 'total enrolment for boys')),
@@ -1566,7 +1571,8 @@
             stanceAudit: getCol(row, 'Record toilet stances separated by gender, functional locks, clean floors, and handwash stations within 5 meters of exits.') || 'Adequate',
             wasteAudit: getCol(row, 'Enclosed bins, absence of overflowing compost/litter pits or open medical/menstrual waste.') || 'Maintained',
             drainageAudit: getCol(row, 'Record drainage conditions around the waste collection area') || 'Flowing',
-            hotlineLegible: getCol(row, 'Is the toll-free hotline legible on the posters') || 'Yes'
+            hotlineLegible: getCol(row, 'Is the toll-free hotline legible on the posters') || 'Yes',
+            enrolment: 0, teachers: 0, games: 0
           });
         }
       });
@@ -1617,12 +1623,6 @@
         } else if (tabId === 'tool_1') {
           if (chartInstances.washT3) chartInstances.washT3.resize();
           if (chartInstances.posterT3) chartInstances.posterT3.resize();
-        } else if (tabId === 'tool_2') {
-          if (chartInstances.t4Q1) chartInstances.t4Q1.resize();
-          if (chartInstances.t4Q4) chartInstances.t4Q4.resize();
-        } else if (tabId === 'tool_3') {
-          if (chartInstances.t5Target) chartInstances.t5Target.resize();
-          if (chartInstances.t5Claims) chartInstances.t5Claims.resize();
         }
       }, 60);
     }
@@ -1638,11 +1638,18 @@
       }
     }
 
+    /**
+     * START DATE & END DATE RANGE FILTERING ENGINE (ROBUST TO TIMEZONE OFFSETS)
+     */
     function applyFilters() {
       const selectedDistrict = document.getElementById('filterDistrict')?.value || 'ALL';
       const searchText = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
-      const startDate = document.getElementById('filterStartDate')?.value || '';
-      const endDate = document.getElementById('filterEndDate')?.value || '';
+      let startDate = document.getElementById('filterStartDate')?.value || '';
+      let endDate = document.getElementById('filterEndDate')?.value || '';
+
+      if (startDate && endDate && startDate > endDate) {
+        endDate = '';
+      }
 
       appData = rawMasterData.filter(d => {
         const matchesDistrict = (selectedDistrict === 'ALL' || d.district === selectedDistrict);
@@ -1652,10 +1659,17 @@
           (d.district && d.district.toLowerCase().includes(searchText)) ||
           (d.parish && d.parish.toLowerCase().includes(searchText)) ||
           (d.rumor && d.rumor.toLowerCase().includes(searchText)) ||
-          (d.barrier && d.barrier.toLowerCase().includes(searchText))
+          (d.barrier && d.barrier.toLowerCase().includes(searchText)) ||
+          (d.name && d.name.toLowerCase().includes(searchText))
         );
 
-        const rowDate = (d.date || '').substring(0, 10);
+        let rowDate = (d.date || '').trim();
+
+        const hasDateFilter = startDate || endDate;
+        if (!rowDate && hasDateFilter) {
+          return false;
+        }
+
         const matchesStart = !startDate || (rowDate && rowDate >= startDate);
         const matchesEnd = !endDate || (rowDate && rowDate <= endDate);
 
@@ -1691,11 +1705,11 @@
         totalTeachers += (r.teachers || 0);
         totalGames += (r.games || 0);
 
-        const sName = (r.school || '').trim().toLowerCase();
+        const sName = (r.school || r.name || '').trim().toLowerCase();
         const enr = r.enrolment || 0;
         const dName = r.district || 'Unassigned';
 
-        if (sName && sName !== 'site' && !sName.startsWith('gatekeeper')) {
+        if (sName && sName !== 'site' && !sName.startsWith('gatekeeper') && r.tool === 'School Activity') {
           if (!schoolUniqueEnrolment[sName] || enr > schoolUniqueEnrolment[sName].enr) {
             schoolUniqueEnrolment[sName] = { enr: enr, district: dName };
           }
@@ -1705,7 +1719,7 @@
           distMap[dName] = { count: 0, enrolment: 0, boys: 0, girls: 0, teachers: 0, totalLearners: 0, totalReach: 0, games: 0, v1Reach: 0, v2Reach: 0, v3Reach: 0, schoolsSet: new Set() };
         }
         
-        if (sName && sName !== 'site' && !sName.startsWith('gatekeeper')) {
+        if (sName && sName !== 'site' && !sName.startsWith('gatekeeper') && r.tool === 'School Activity') {
           distMap[dName].schoolsSet.add(sName);
         }
 
@@ -1716,11 +1730,13 @@
         distMap[dName].totalReach += ((r.boys || 0) + (r.girls || 0) + (r.teachers || 0));
         distMap[dName].games += (r.games || 0);
 
-        const vNum = String(r.visit_num || 'Visit 1').trim().toLowerCase();
-        const vReach = (r.boys || 0) + (r.girls || 0);
-        if (vNum.includes('visit 1') || vNum === '1') distMap[dName].v1Reach += vReach;
-        else if (vNum.includes('visit 2') || vNum === '2') distMap[dName].v2Reach += vReach;
-        else if (vNum.includes('visit 3') || vNum === '3') distMap[dName].v3Reach += vReach;
+        if (r.tool === 'School Activity') {
+          const vNum = String(r.visit_num || 'Visit 1').trim().toLowerCase();
+          const vReach = (r.boys || 0) + (r.girls || 0);
+          if (vNum.includes('visit 1') || vNum === '1') distMap[dName].v1Reach += vReach;
+          else if (vNum.includes('visit 2') || vNum === '2') distMap[dName].v2Reach += vReach;
+          else if (vNum.includes('visit 3') || vNum === '3') distMap[dName].v3Reach += vReach;
+        }
       });
 
       let totalEnrolment = 0;
@@ -1728,15 +1744,6 @@
         totalEnrolment += item.enr;
         if (distMap[item.district]) {
           distMap[item.district].enrolment += item.enr;
-        }
-      });
-
-      dynamicGatekeeperRecords.forEach(gk => {
-        const dName = gk.district || 'Mukono';
-        const gkCount = (gk.male || 0) + (gk.female || 0);
-        if (distMap[dName]) {
-          distMap[dName].teachers += gkCount;
-          distMap[dName].totalReach += gkCount;
         }
       });
 
@@ -1748,8 +1755,8 @@
 
       const totalSensitised = totalBoys + totalGirls;
       const totalLearners = totalSensitised;
-      const totalCommunityGK = dynamicGatekeeperRecords.reduce((acc, g) => acc + (g.male || 0) + (g.female || 0), 0);
-      const grandTotalGatekeepers = totalTeachers + (totalCommunityGK > 0 ? totalCommunityGK : 2);
+      const gatekeeperRowsFiltered = appData.filter(d => d.tool === 'Gatekeeper Session');
+      const grandTotalGatekeepers = totalTeachers;
       const grandTotalReach = totalLearners + grandTotalGatekeepers;
 
       safeSetText('kpiLearners', totalLearners.toLocaleString());
@@ -1761,15 +1768,9 @@
       safeSetText('kpiDistricts', distList.length);
       safeSetText('badgeTotalReach', grandTotalReach > 1000 ? `${(grandTotalReach/1000).toFixed(1)}K` : grandTotalReach);
       safeSetText('badgeTool1', appData.filter(d => d.tool === 'School Activity').length);
-      safeSetText('badgeTool2', dynamicGatekeeperRecords.length);
-      safeSetText('badgeTool3', dynamicTransectRecords.length);
-      safeSetText('badgeTool4', dynamicTool4Records.length);
-      safeSetText('badgeTool5', dynamicTool5Records.length);
-      safeSetText('badgeTool6', dynamicTool6Records.length);
-      safeSetText('badgeTool7', dynamicTool7Records.length);
-      safeSetText('badgeTool8', dynamicTool8Records.length);
-      safeSetText('badgeTool9', dynamicTool9Records.length);
-      safeSetText('badgeTool10', dynamicPatRecords.length);
+      safeSetText('badgeTool2', gatekeeperRowsFiltered.length);
+      safeSetText('badgeTool3', appData.filter(d => d.tool === 'Transect Walk').length);
+      safeSetText('badgeTool10', appData.filter(d => d.tool === 'PAT Assessment').length);
 
       const keyChipsHtml = distList.length === 0
         ? `<span style="color:#64748b; font-size:0.8rem;">No district data for active filter.</span>`
@@ -1784,16 +1785,16 @@
 
       const schoolActsCount = appData.filter(d => d.tool === 'School Activity').length;
       const toolDefs = [
-        { num: 1, name: "Tool 9: School 3-Visit Model & Knowledge Wheel Session Tracker", q: 26, reach: `${appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.boys||0) + (r.girls||0), 0).toLocaleString()} Learners (${appData.filter(d => d.tool === 'School Activity').length} Schools)`, tab: "tool_9" },
-        { num: 2, name: "Tool 7: Community Gatekeeper Dialogue & Commitment Log", q: 8, reach: `${appData.filter(d => d.tool === 'Gatekeeper Session').length} Sessions Oriented`, tab: "tool_7" },
-        { num: 3, name: "Tool 1: Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: `${dynamicTransectRecords.length} Facility Audits`, tab: "tool_1" },
-        { num: 4, name: "Tool 2: Rapid Audience Assessment Intercept Survey", q: 15, reach: `${dynamicTool4Records.length} Respondents`, tab: "tool_2" },
-        { num: 5, name: "Tool 3: 'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: `${dynamicTool5Records.length} Diagnostic Audits`, tab: "tool_3" },
-        { num: 6, name: "Tool 4: Most Significant Change Story Collection Form", q: 5, reach: `${dynamicTool6Records.length} Narrative turning points`, tab: "tool_4" },
-        { num: 7, name: "Tool 5: Social Network & Influencer Mapping Protocol", q: 19, reach: `${dynamicTool7Records.length} Social Sectors`, tab: "tool_5" },
-        { num: 8, name: "Tool 6: Photovoice Participatory Documentation Guide & Caption Form", q: 9, reach: `${dynamicTool8Records.length} Photo Diagnostics`, tab: "tool_6" },
-        { num: 9, name: "Tool 10: School Simulation Drill & Safeguarding Compliance Protocol", q: 19, reach: `${dynamicTool9Records.length} Drills Evaluated`, tab: "tool_10" },
-        { num: 10, name: "Tool 8: Preparedness Assessment Tool (PAT)", q: 53, reach: `${dynamicPatRecords.length} Institutional Audits Complete`, tab: "tool_8" }
+        { num: 1, name: "Tool 9: School 3-Visit Model & Knowledge Wheel Session Tracker", q: 26, reach: `${appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.boys||0) + (r.girls||0), 0).toLocaleString()} Learners (${schoolActsCount} Schools)`, tab: "tool_9" },
+        { num: 2, name: "Tool 7: Community Gatekeeper Dialogue & Commitment Log", q: 8, reach: `${gatekeeperRowsFiltered.length} Sessions Oriented`, tab: "tool_7" },
+        { num: 3, name: "Tool 1: Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: `${appData.filter(d => d.tool === 'Transect Walk').length} Facility Audits`, tab: "tool_1" },
+        { num: 4, name: "Tool 2: Rapid Audience Assessment Intercept Survey", q: 15, reach: `Active`, tab: "tool_2" },
+        { num: 5, name: "Tool 3: 'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: `Active`, tab: "tool_3" },
+        { num: 6, name: "Tool 4: Most Significant Change Story Collection Form", q: 5, reach: `Active`, tab: "tool_4" },
+        { num: 7, name: "Tool 5: Social Network & Influencer Mapping Protocol", q: 19, reach: `Active`, tab: "tool_5" },
+        { num: 8, name: "Tool 6: Photovoice Participatory Documentation Guide & Caption Form", q: 9, reach: `Active`, tab: "tool_6" },
+        { num: 9, name: "Tool 10: School Simulation Drill & Safeguarding Compliance Protocol", q: 19, reach: `Active`, tab: "tool_10" },
+        { num: 10, name: "Tool 8: Preparedness Assessment Tool (PAT)", q: 53, reach: `${appData.filter(d => d.tool === 'PAT Assessment').length} Institutional Audits Complete`, tab: "tool_8" }
       ];
 
       safeSetHtml('toolsManifestBody', toolDefs.map(t => `
@@ -1802,12 +1803,12 @@
           <td><strong>${t.name}</strong></td>
           <td>${t.q} Questions</td>
           <td><strong style="color:var(--primary);">${t.reach}</strong></td>
-          <td><span class="badge-pill ${t.reach.startsWith('0') ? 'badge-warning' : 'badge-success'}">${t.reach.startsWith('0') ? 'Awaiting Data' : 'Active Tool'}</span></td>
+          <td><span class="badge-pill badge-success">Active Tool</span></td>
           <td><button class="btn-action" style="padding:4px 10px; font-size:0.72rem;" onclick="showTab('${t.tab}')">Open Tool Analytics →</button></td>
         </tr>
       `).join(''));
 
-      // District Summary Table (With Visit 1, Visit 2, and Visit 3 Reach columns)
+      // District Summary Table
       safeSetHtml('districtSummaryTableBody', distList.map(d => {
         return `
           <tr>
@@ -1824,7 +1825,7 @@
         `;
       }).join(''));
 
-      // Group school visits by school name to render Visit 1, Visit 2, and Visit 3 columns side by side
+      // Tool 9: School Multi-Visit Table
       const schoolVisitMap = {};
       appData.filter(s => s.tool === 'School Activity').forEach(s => {
         const sKey = (s.school || 'Unknown School').trim();
@@ -1852,7 +1853,7 @@
       });
 
       const schoolMultiVisitRows = Object.values(schoolVisitMap);
-      safeSetHtml('tool1TableBody', schoolMultiVisitRows.length === 0 ? `<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No school session records found in active filter.</td></tr>` : schoolMultiVisitRows.map(s => {
+      safeSetHtml('tool1TableBody', schoolMultiVisitRows.length === 0 ? `<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No school session records found in active date range filter.</td></tr>` : schoolMultiVisitRows.map(s => {
         const v1 = s.visits['Visit 1'] || s.visits['1'] || { total: '—', club: '—' };
         const v2 = s.visits['Visit 2'] || s.visits['2'] || { total: 'Pending', club: '—' };
         const v3 = s.visits['Visit 3'] || s.visits['3'] || { total: 'Pending', club: '—' };
@@ -1883,11 +1884,11 @@
         `;
       }).join(''));
 
-      // Tool 7 Gatekeeper Table
-      safeSetHtml('tool7GatekeeperTableBody', dynamicGatekeeperRecords.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No gatekeeper dialogue records found.</td></tr>` : dynamicGatekeeperRecords.map(g => `
+      // Tool 7: Community Gatekeeper Table
+      safeSetHtml('tool7GatekeeperTableBody', gatekeeperRowsFiltered.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No gatekeeper dialogue records found in active date range filter.</td></tr>` : gatekeeperRowsFiltered.map(g => `
         <tr>
           <td><strong>${g.district || 'Central'} / ${g.parish || '—'}</strong></td>
-          <td>${g.lead || 'Coordinator'}</td>
+          <td>${g.coordinator || 'Coordinator'}</td>
           <td><span class="badge-pill badge-primary">${g.role}</span></td>
           <td>${g.male || 0}</td>
           <td>${g.female || 0}</td>
@@ -1895,8 +1896,9 @@
         </tr>
       `).join(''));
 
-      // Tool 1 Transect Table
-      safeSetHtml('tool3TableBody', dynamicTransectRecords.length === 0 ? `<tr><td colspan="11" style="text-align:center; color:#94a3b8; padding:20px;">No transect walk records found.</td></tr>` : dynamicTransectRecords.map(t => `
+      // Tool 1: Transect Walk Table
+      const filteredTransect = appData.filter(d => d.tool === 'Transect Walk');
+      safeSetHtml('tool3TableBody', filteredTransect.length === 0 ? `<tr><td colspan="11" style="text-align:center; color:#94a3b8; padding:20px;">No transect walk records found in active date range filter.</td></tr>` : filteredTransect.map(t => `
         <tr>
           <td><strong>${t.auditor}</strong></td>
           <td>${t.site}</td>
@@ -1912,74 +1914,9 @@
         </tr>
       `).join(''));
 
-      safeSetHtml('tool4TableBody', dynamicTool4Records.length === 0 ? `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:20px;">No intercept survey records found.</td></tr>` : dynamicTool4Records.map(r => `
-        <tr>
-          <td><strong>${r.id}</strong></td>
-          <td>${r.setting}</td>
-          <td><span class="badge-pill ${r.q1 === 'Yes' ? 'badge-success' : 'badge-danger'}">${r.q1}</span></td>
-          <td>${r.q2}</td>
-          <td><span class="badge-pill ${String(r.q3).includes('Present') ? 'badge-success' : 'badge-warning'}">${r.q3}</span></td>
-          <td>${r.q4}</td>
-          <td><strong style="color:var(--primary);">${r.q5}</strong></td>
-        </tr>
-      `).join(''));
-
-      safeSetHtml('tool5TableBody', dynamicTool5Records.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No diagnostic audit records found.</td></tr>` : dynamicTool5Records.map(t => `
-        <tr>
-          <td><strong>${t.id}</strong></td>
-          <td><span class="badge-pill badge-primary">${t.target}</span></td>
-          <td>${t.claim}</td>
-          <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${t.probe}</td>
-          <td style="max-width:220px; white-space:normal; font-size:0.75rem;">${t.finding}</td>
-          <td><span class="badge-pill badge-success">${t.status}</span></td>
-        </tr>
-      `).join(''));
-
-      safeSetHtml('tool6TableBody', dynamicTool6Records.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No narrative impact stories found.</td></tr>` : dynamicTool6Records.map(m => `
-        <tr>
-          <td><strong>${m.id}</strong></td>
-          <td>${m.who}</td>
-          <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${m.base}</td>
-          <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${m.event}</td>
-          <td style="max-width:200px; white-space:normal; font-size:0.75rem;"><strong>${m.change}</strong></td>
-          <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${m.sig}</td>
-        </tr>
-      `).join(''));
-
-      safeSetHtml('tool7TableBody', dynamicTool7Records.length === 0 ? `<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:20px;">No trust broker mappings found.</td></tr>` : dynamicTool7Records.map(b => `
-        <tr>
-          <td><strong>${b.sector}</strong></td>
-          <td><strong style="color:var(--primary);">${b.broker}</strong></td>
-          <td>${b.contact}</td>
-          <td>${b.strategy}</td>
-        </tr>
-      `).join(''));
-
-      safeSetHtml('tool8TableBody', dynamicTool8Records.length === 0 ? `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:20px;">No photovoice records found.</td></tr>` : dynamicTool8Records.map(p => `
-        <tr>
-          <td><strong>${p.id}</strong></td>
-          <td>${p.participant}</td>
-          <td style="max-width:180px; white-space:normal; font-size:0.75rem;">${p.p}</td>
-          <td style="max-width:180px; white-space:normal; font-size:0.75rem;">${p.h}</td>
-          <td style="max-width:180px; white-space:normal; font-size:0.75rem;">${p.o}</td>
-          <td style="max-width:180px; white-space:normal; font-size:0.75rem;">${p.t}</td>
-          <td style="max-width:180px; white-space:normal; font-size:0.75rem;"><strong>${p.o2 || p.o}</strong></td>
-        </tr>
-      `).join(''));
-
-      safeSetHtml('tool9TableBody', dynamicTool9Records.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No simulation drill logs found.</td></tr>` : dynamicTool9Records.map(d => `
-        <tr>
-          <td><strong>${d.id}</strong></td>
-          <td>${d.school}</td>
-          <td><span class="badge-pill badge-success">${d.distance}</span></td>
-          <td>${d.holding}</td>
-          <td><strong>${d.time}</strong></td>
-          <td>${d.debrief}</td>
-        </tr>
-      `).join(''));
-
-      // Tool 8 Table (PAT Institutional Audit Table)
-      safeSetHtml('tool10TableBody', dynamicPatRecords.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding:20px;">No PAT institutional audits found.</td></tr>` : dynamicPatRecords.map(p => `
+      // Tool 8: PAT Table
+      const filteredPat = appData.filter(d => d.tool === 'PAT Assessment');
+      safeSetHtml('tool10TableBody', filteredPat.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding:20px;">No PAT institutional audits found in active date range filter.</td></tr>` : filteredPat.map(p => `
         <tr>
           <td><strong>${p.name}</strong></td>
           <td>${p.level}</td>
@@ -1993,28 +1930,6 @@
           <td style="font-size:0.75rem;">${p.wasteAudit}<br>Drain: ${p.drainageAudit}</td>
         </tr>
       `).join(''));
-
-      if (dynamicPatRecords.length > 0) {
-        const activeClubs = dynamicPatRecords.filter(p => {
-          const c = String(p.club).toLowerCase();
-          return c.includes('active') || c === 'yes' || c.includes('regularly');
-        }).length;
-        const clubPct = ((activeClubs / dynamicPatRecords.length) * 100).toFixed(1);
-        safeSetText('patClubRate', `${clubPct}%`);
-        safeSetText('patClubSub', `${activeClubs} of ${dynamicPatRecords.length} audited schools active`);
-
-        const formalPlans = dynamicPatRecords.filter(p => String(p.plan).toLowerCase().includes('formal')).length;
-        safeSetText('patPlanRate', `${((formalPlans / dynamicPatRecords.length) * 100).toFixed(1)}%`);
-
-        const hasIsolation = dynamicPatRecords.filter(p => !String(p.space).toLowerCase().includes('no separate')).length;
-        safeSetText('patIsoRate', `${((hasIsolation / dynamicPatRecords.length) * 100).toFixed(1)}%`);
-
-        const upToDatePosters = dynamicPatRecords.filter(p => String(p.poster).toLowerCase().includes('up-to-date')).length;
-        safeSetText('patPosterRate', `${((upToDatePosters / dynamicPatRecords.length) * 100).toFixed(1)}%`);
-
-        const legibleHotlines = dynamicPatRecords.filter(p => String(p.hotlineLegible).toLowerCase().includes('yes')).length;
-        safeSetText('patHotlineRate', `${((legibleHotlines / dynamicPatRecords.length) * 100).toFixed(1)}%`);
-      }
 
       renderBarCharts(distList);
       renderInteractiveMap();
@@ -2120,7 +2035,6 @@
     }
 
     function renderBarCharts(distList) {
-      // 1. Stacked District Reach Bar Chart
       const elDist = document.getElementById('chartDistrictReach');
       if (elDist) {
         chartInstances.districtReach = new Chart(elDist.getContext('2d'), {
@@ -2181,7 +2095,6 @@
         });
       }
 
-      // 2. Proportional Share (Horizontal Bar Chart)
       const elShare = document.getElementById('chartDistrictShare');
       if (elShare) {
         const totalSum = distList.reduce((acc, d) => acc + d.totalReach, 0);
@@ -2222,7 +2135,6 @@
         return c;
       };
 
-      // 3. Tool 9: Warning Signs Bar Chart (Horizontal)
       const elSigns = document.getElementById('chartSignsT1');
       if (elSigns) {
         const signsCount = countProp('signs');
@@ -2248,7 +2160,6 @@
         });
       }
 
-      // 4. Tool 9: Students who know toll free hotline (Horizontal)
       const elHotline = document.getElementById('chartHotlineT1');
       if (elHotline) {
         const hotlineCount = countProp('hotline');
@@ -2274,7 +2185,6 @@
         });
       }
 
-      // 5. Tool 9: Anti-Stigma Attitude Bar Chart (Horizontal)
       const elStigma = document.getElementById('chartStigmaT1');
       if (elStigma) {
         const stigmaCount = countProp('stigma');
@@ -2300,7 +2210,6 @@
         });
       }
 
-      // 6. Tool 9: Handwashing Steps Demo Bar Chart (Horizontal)
       const elHandwash = document.getElementById('chartHandwashT1');
       if (elHandwash) {
         const demoCount = countProp('handwash_demo');
@@ -2326,7 +2235,6 @@
         });
       }
 
-      // 7. Tool 9: Top Schools by Sensitised Population (Horizontal)
       const elTop = document.getElementById('chartTopSchoolsT1');
       if (elTop) {
         const topSchools = [...appData.filter(d => d.tool === 'School Activity')]
@@ -2371,9 +2279,9 @@
         });
       }
 
-      // 8. Tool 1: Handwashing Points Bar Chart (Horizontal)
       const elWash = document.getElementById('chartWashT3');
       if (elWash) {
+        const transectFiltered = appData.filter(d => d.tool === 'Transect Walk');
         chartInstances.washT3 = new Chart(elWash.getContext('2d'), {
           type: 'bar',
           data: {
@@ -2381,9 +2289,9 @@
             datasets: [{
               label: 'Sites Audited',
               data: [
-                dynamicTransectRecords.filter(t => String(t.wash).toLowerCase().includes('functional')).length,
-                dynamicTransectRecords.filter(t => String(t.wash).toLowerCase().includes('no soap')).length,
-                dynamicTransectRecords.filter(t => String(t.wash).toLowerCase().includes('no facility') || String(t.wash).toLowerCase().includes('not present')).length
+                transectFiltered.filter(t => String(t.wash).toLowerCase().includes('functional')).length,
+                transectFiltered.filter(t => String(t.wash).toLowerCase().includes('no soap')).length,
+                transectFiltered.filter(t => String(t.wash).toLowerCase().includes('no facility') || String(t.wash).toLowerCase().includes('not present')).length
               ],
               backgroundColor: ['#10b981', '#f1bc1b', '#ef4444'],
               borderRadius: 4,
@@ -2400,9 +2308,9 @@
         });
       }
 
-      // 9. Tool 1: Posters & Hotline Currency Bar Chart (Horizontal)
       const elPoster = document.getElementById('chartPosterT3');
       if (elPoster) {
+        const transectFiltered = appData.filter(d => d.tool === 'Transect Walk');
         chartInstances.posterT3 = new Chart(elPoster.getContext('2d'), {
           type: 'bar',
           data: {
@@ -2410,124 +2318,12 @@
             datasets: [{
               label: 'Facilities Audited',
               data: [
-                dynamicTransectRecords.filter(t => String(t.poster).toLowerCase().includes('fresh')).length,
-                dynamicTransectRecords.filter(t => String(t.poster).toLowerCase().includes('obsolete')).length,
-                dynamicTransectRecords.filter(t => String(t.poster).toLowerCase().includes('torn')).length,
-                dynamicTransectRecords.filter(t => String(t.poster).toLowerCase().includes('no material') || String(t.poster).toLowerCase().includes('no poster')).length
+                transectFiltered.filter(t => String(t.poster).toLowerCase().includes('fresh')).length,
+                transectFiltered.filter(t => String(t.poster).toLowerCase().includes('obsolete')).length,
+                transectFiltered.filter(t => String(t.poster).toLowerCase().includes('torn')).length,
+                transectFiltered.filter(t => String(t.poster).toLowerCase().includes('no material') || String(t.poster).toLowerCase().includes('no poster')).length
               ],
               backgroundColor: '#282c68',
-              borderRadius: 4,
-              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, grace: '20%' } }
-          }
-        });
-      }
-
-      // 10. Tool 2: Intercept Survey Q1 Bar Chart (Horizontal)
-      const elT4Q1 = document.getElementById('chartT4Q1');
-      if (elT4Q1) {
-        const yesCount = dynamicTool4Records.filter(r => r.q1 === 'Yes').length;
-        const noCount = dynamicTool4Records.length - yesCount;
-        chartInstances.t4Q1 = new Chart(elT4Q1.getContext('2d'), {
-          type: 'bar',
-          data: {
-            labels: ['Heard Messages (Yes)', 'Did Not Hear (No)'],
-            datasets: [{
-              label: 'Respondents',
-              data: [yesCount, noCount],
-              backgroundColor: ['#10b981', '#ef4444'],
-              borderRadius: 4,
-              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, grace: '20%' } }
-          }
-        });
-      }
-
-      // 11. Tool 2: Intercept Survey Q4 Bar Chart (Horizontal)
-      const elT4Q4 = document.getElementById('chartT4Q4');
-      if (elT4Q4) {
-        chartInstances.t4Q4 = new Chart(elT4Q4.getContext('2d'), {
-          type: 'bar',
-          data: {
-            labels: ['Call Toll-Free 0800', 'Notify VHT', 'Private Clinic', 'Isolate / Traditional'],
-            datasets: [{
-              label: 'First Action',
-              data: [
-                dynamicTool4Records.filter(r => String(r.q4).includes('Toll-Free')).length,
-                dynamicTool4Records.filter(r => String(r.q4).includes('VHT')).length,
-                dynamicTool4Records.filter(r => String(r.q4).includes('Clinic')).length,
-                dynamicTool4Records.filter(r => String(r.q4).includes('Isolate') || String(r.q4).includes('Prayers')).length
-              ],
-              backgroundColor: ['#282c68', '#f1bc1b', '#94a3b8', '#ef4444'],
-              borderRadius: 4,
-              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, grace: '20%' } }
-          }
-        });
-      }
-
-      // 12. Tool 3: 'Ask 5' Target Groups Bar Chart (Horizontal)
-      const elT5Target = document.getElementById('chartT5Target');
-      if (elT5Target) {
-        chartInstances.t5Target = new Chart(elT5Target.getContext('2d'), {
-          type: 'bar',
-          data: {
-            labels: ['Market Vendors', 'Transport Ops', 'School Patrons', 'Youth / Boda'],
-            datasets: [{
-              label: 'Audited Group',
-              data: [
-                dynamicTool5Records.filter(r => String(r.target).includes('Vendor')).length,
-                dynamicTool5Records.filter(r => String(r.target).includes('Taxi') || String(r.target).includes('Transport')).length,
-                dynamicTool5Records.filter(r => String(r.target).includes('School') || String(r.target).includes('Patron')).length,
-                dynamicTool5Records.filter(r => String(r.target).includes('Boda') || String(r.target).includes('Youth')).length
-              ],
-              backgroundColor: '#282c68',
-              borderRadius: 4,
-              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
-            }]
-          },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, grace: '20%' } }
-          }
-        });
-      }
-
-      // 13. Tool 3: 'Ask 5' Verification Bar Chart (Horizontal)
-      const elT5Claims = document.getElementById('chartT5Claims');
-      if (elT5Claims) {
-        chartInstances.t5Claims = new Chart(elT5Claims.getContext('2d'), {
-          type: 'bar',
-          data: {
-            labels: ['Fully Verified', 'Partially Verified', 'Unverified'],
-            datasets: [{
-              label: 'Status Count',
-              data: [dynamicTool5Records.length, 0, 0],
-              backgroundColor: ['#10b981', '#f1bc1b', '#ef4444'],
               borderRadius: 4,
               datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
             }]
@@ -2617,7 +2413,7 @@
     window.toggleAdminLogin = toggleAdminLogin;
     window.checkAdminAuth = checkAdminAuth;
 
-    // Boot (Loads from localStorage cache if available, otherwise baseline)
+    // Boot (Loads from localStorage cache if available, otherwise empty)
     window.addEventListener('DOMContentLoaded', () => {
       checkAdminAuth();
       processRawWorkbookRows([], false);
