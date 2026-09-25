@@ -1305,17 +1305,6 @@
 
     let rawMasterData = [];
     let appData = [];
-    let dynamicTransectRecords = [];
-    let dynamicPatRecords = [];
-    let dynamicGatekeeperRecords = [];
-    
-    let dynamicTool4Records = [];
-    let dynamicTool5Records = [];
-    let dynamicTool6Records = [];
-    let dynamicTool7Records = [];
-    let dynamicTool8Records = [];
-    let dynamicTool9Records = [];
-
     let chartInstances = {};
     let leafletMap = null;
     let markersLayer = null;
@@ -1382,7 +1371,7 @@
     }
 
     /**
-     * TIMEZONE-SAFE DATE NORMALIZATION (PREVENTS 1-DAY SHIFT BUG FOR AUGUST DATES)
+     * TIMEZONE-SAFE LOCAL DATE NORMALIZATION
      */
     function normalizeLocalDate(rawVal) {
       if (!rawVal) return '';
@@ -1409,8 +1398,8 @@
       return strVal.substring(0, 10);
     }
 
-    // Persistent Storage Helpers (v10 cache purge)
-    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v10';
+    // Persistent Storage Key
+    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v11';
 
     function saveToLocalStorage(rows) {
       try {
@@ -1433,7 +1422,7 @@
     }
 
     /**
-     * Parse raw workbook rows strictly using 'Date' column and 'Public Health Emergencies' activity column.
+     * Parse raw workbook rows. If new data is uploaded, it cleanly sets the master database.
      */
     function processRawWorkbookRows(rawRows, persist = false) {
       if (!rawRows || rawRows.length === 0) {
@@ -1639,7 +1628,7 @@
     }
 
     /**
-     * START DATE & END DATE RANGE FILTERING ENGINE (ROBUST TO TIMEZONE OFFSETS)
+     * UNIVERSAL START & END DATE RANGE FILTERING ENGINE
      */
     function applyFilters() {
       const selectedDistrict = document.getElementById('filterDistrict')?.value || 'ALL';
