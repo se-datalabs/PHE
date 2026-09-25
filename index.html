@@ -609,7 +609,7 @@
         <p id="screenSubtitle">Cross-tool reach aggregation, district performance, and programmatic coverage</p>
       </div>
 
-      <!-- FILTER CONTROLS BAR WITH START & END DATE RANGE ON 'Date' COLUMN -->
+      <!-- FILTER CONTROLS BAR -->
       <div class="filter-bar">
         <div class="filter-item">
           <label for="filterDistrict">District:</label>
@@ -1398,8 +1398,45 @@
       return strVal.substring(0, 10);
     }
 
-    // Persistent Storage Key (v12)
-    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v12';
+    // ================= PERMANENT EMBEDDED DEFAULT DATASET (ALL 10 TOOLS) =================
+    const DEFAULT_EMBEDDED_DATA = [
+      { id: 1, date: "2026-08-14", tool: "School Activity", district: "Nakawa", parish: "Kiswa", coordinator: "Rebecca", school: "Kiswa Primary School", visit_num: "Visit 1", health_club: "Dormant", boys: 215, girls: 305, enrolment: 1600, teachers: 8, games: 70, signs: "Few hands raised (< 25% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "Ebola has left the country as it was communicated by P.S of MOH", barrier: "Entrance hand washing facility present but not functioning", source: "Community" },
+      { id: 2, date: "2026-08-14", tool: "School Activity", district: "Wakiso", parish: "Nansana", coordinator: "Ben", school: "Nansana catholic primary school", visit_num: "Visit 1", health_club: "Active", boys: 544, girls: 356, enrolment: 900, teachers: 10, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "Most of these disease are brought after elections", barrier: "Non", source: "P6 pupil" },
+      { id: 3, date: "2026-08-14", tool: "School Activity", district: "Wakiso", parish: "Nansana", coordinator: "Beb", school: "Nansana COU primary school", visit_num: "Visit 1", health_club: "Active", boys: 339, girls: 246, enrolment: 585, teachers: 5, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "No hand-washing facilities to ensure continuous hand washing", source: "Peers" },
+      { id: 4, date: "2026-08-16", tool: "School Activity", district: "Nakawa", parish: "Mbuya2", coordinator: "Cogra Mudondo", school: "Amka Classic secondary school", visit_num: "Visit 1", health_club: "Dormant", boys: 102, girls: 112, enrolment: 410, teachers: 3, games: 40, signs: "Most / All raised hands (> 75% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Learners were already on holiday", source: "Students" },
+      { id: 5, date: "2026-08-13", tool: "School Activity", district: "Nakawa", parish: "Mbuya2", coordinator: "Cogra Mudondo", school: "Uganda youth primary school", visit_num: "Visit 1", health_club: "Active", boys: 36, girls: 44, enrolment: 850, teachers: 4, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "Water present, but NO soap available", rumor: "Ebola is in Congo", barrier: "Non", source: "Peers" },
+      { id: 6, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Salaama", coordinator: "Rebecca", school: "St ponsiano primary school", visit_num: "Visit 1", health_club: "Active", boys: 458, girls: 686, enrolment: 1144, teachers: 4, games: 0, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "No hands raised (0%)", handwash_demo: "Missed Key Step", soap: "No handwashing setup available on-site", rumor: "Since we are in slum people take less concern as there is no current case.", barrier: "Entrance hand washing facility present but not functioning", source: "Community" },
+      { id: 7, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Salaama", coordinator: "Rebecca", school: "Life care primary school", visit_num: "Visit 1", health_club: "Dormant", boys: 139, girls: 161, enrolment: 300, teachers: 5, games: 60, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "Ebola no longer kills", barrier: "Financial constraints not allowing purchase of soap", source: "P6 pupil" },
+      { id: 8, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Kibuye", coordinator: "Emmanuel", school: "Katwe Church of Uganda primary school", visit_num: "Visit 1", health_club: "Active", boys: 110, girls: 180, enrolment: 290, teachers: 8, games: 30, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Students" },
+      { id: 9, date: "2026-08-14", tool: "School Activity", district: "Kawempe", parish: "Kikaayq", coordinator: "Emmanuel", school: "Mariam High School", visit_num: "Visit 1", health_club: "No", boys: 0, girls: 645, enrolment: 645, teachers: 12, games: 0, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Functional running water AND soap present", rumor: "Isolation units cause death instead of treatment", barrier: "Fear of forced quarantine", source: "Community" },
+      { id: 10, date: "2026-08-14", tool: "School Activity", district: "Kawempe", parish: "Makerere University", coordinator: "Emmanuel", school: "Makerere university", visit_num: "Visit 1", health_club: "Active", boys: 0, girls: 0, enrolment: 3000, teachers: 6, games: 0, signs: "Most / All raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Peers" },
+      { id: 11, date: "2026-08-15", tool: "School Activity", district: "Kawempe", parish: "Kyebando", coordinator: "Muganwa", school: "Gayaza Road High school", visit_num: "Visit 1", health_club: "Dormant", boys: 15, girls: 19, enrolment: 200, teachers: 4, games: 0, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "PHEs are spiritual/cultural rather than infectious", barrier: "Cultural belief barrier", source: "Peers" },
+      { id: 12, date: "2026-08-15", tool: "School Activity", district: "Kawempe", parish: "Bwaise I", coordinator: "Muganwa", school: "Mamtaz secondary school", visit_num: "Visit 1", health_club: "Active", boys: 14, girls: 22, enrolment: 200, teachers: 5, games: 0, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Few hands raised (< 25% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Slum drainage overflow", source: "Community" },
+      { id: 13, date: "2026-08-16", tool: "School Activity", district: "Kawempe", parish: "Bwaise III", coordinator: "Muganwa", school: "Bwaise parents primary school", visit_num: "Visit 1", health_club: "Active", boys: 25, girls: 39, enrolment: 480, teachers: 3, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Financial constraints not allowing purchase of soap", source: "Students" },
+      { id: 14, date: "2026-08-17", tool: "School Activity", district: "Wakiso", parish: "Nansana west", coordinator: "Muganwa", school: "Nansana SDA primary school", visit_num: "Visit 1", health_club: "Active", boys: 186, girls: 137, enrolment: 511, teachers: 4, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "No hand-washing facilities to ensure continuous hand washing", source: "Peers" },
+      { id: 15, date: "2026-08-17", tool: "School Activity", district: "Central", parish: "Nakasero", coordinator: "Muganwa", school: "Bat Valley", visit_num: "Visit 1", health_club: "Active", boys: 33, girls: 61, enrolment: 410, teachers: 4, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Failed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "No hand-washing facilities to ensure continuous hand washing", source: "Peers" },
+      { id: 16, date: "2026-08-18", tool: "School Activity", district: "Nakawa", parish: "Luzira", coordinator: "Muganwa", school: "Luzira secondary school", visit_num: "Visit 1", health_club: "Active", boys: 114, girls: 92, enrolment: 3330, teachers: 5, games: 70, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Water shortages", source: "Students" },
+      { id: 17, date: "2026-08-18", tool: "School Activity", district: "Rubaga", parish: "Nankulabye", coordinator: "Cogra", school: "Mengo Primary School", visit_num: "Visit 1", health_club: "Active", boys: 378, girls: 358, enrolment: 736, teachers: 9, games: 60, signs: "Most / All raised hands (> 75% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Frequent soap restocking need", source: "Community" },
+      { id: 18, date: "2026-08-19", tool: "School Activity", district: "Nakawa", parish: "Luzira", coordinator: "Cogra", school: "Progressive Junior school", visit_num: "Visit 1", health_club: "Active", boys: 67, girls: 43, enrolment: 560, teachers: 10, games: 65, signs: "Most / All raised hands (> 75% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Missed Key Step", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Financial constraints not allowing purchase of soap", source: "Peers" },
+      { id: 19, date: "2026-08-19", tool: "School Activity", district: "Rubaga", parish: "Lubya", coordinator: "Rebecca", school: "St Joseph Kasubi Memorial Primary School", visit_num: "Visit 1", health_club: "Active", boys: 278, girls: 289, enrolment: 567, teachers: 4, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Entrance hand washing facility present but not functioning", source: "Community" },
+      { id: 20, date: "2026-08-20", tool: "School Activity", district: "Mukono", parish: "Seeta Ward", coordinator: "Rebecca", school: "Seeta Church Of Uganda Primary School", visit_num: "Visit 1", health_club: "Active", boys: 67, girls: 73, enrolment: 736, teachers: 4, games: 10, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Few hands raised (< 25% of crowd)", handwash_demo: "Missed Key Step", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Community" },
+      { id: 21, date: "2026-08-20", tool: "School Activity", district: "Wakiso", parish: "Kkona", coordinator: "David", school: "Trinity Junior School", visit_num: "Visit 1", health_club: "Active", boys: 127, girls: 66, enrolment: 208, teachers: 4, games: 30, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "Outbreaks mostly are foreign", barrier: "Informal settlements", source: "Peers" },
+      { id: 22, date: "2026-08-21", tool: "School Activity", district: "Kawempe", parish: "Kawempe II", coordinator: "David", school: "Gaddafi secondary school", visit_num: "Visit 1", health_club: "Active", boys: 34, girls: 46, enrolment: 553, teachers: 4, games: 80, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Water cuts", source: "Students" },
+      { id: 23, date: "2026-08-21", tool: "School Activity", district: "Rubaga", parish: "Nateete", coordinator: "David", school: "Mackay Memorial College Nateete", visit_num: "Visit 1", health_club: "Active", boys: 1945, girls: 1026, enrolment: 2136, teachers: 5, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Overcrowded stances", source: "Peers" },
+      { id: 24, date: "2026-08-22", tool: "School Activity", district: "Central", parish: "Old Kampala", coordinator: "Aisha", school: "Old Kampala", visit_num: "Visit 1", health_club: "Active", boys: 71, girls: 87, enrolment: 953, teachers: 7, games: 55, signs: "About half raised hands (~50% of crowd)", hotline: "About half raised hands (~50% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Routine replenishment", source: "Peers" },
+      { id: 25, date: "2026-08-22", tool: "School Activity", district: "Central", parish: "Kamwokya", coordinator: "Ben", school: "Kamwokya Community Christian", visit_num: "Visit 1", health_club: "Active", boys: 119, girls: 189, enrolment: 2215, teachers: 6, games: 52, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "PHEs are spiritual/cultural rather than infectious", barrier: "Non", source: "Peers" },
+      // Tool 7: Community Gatekeeper Dialogue
+      { id: 26, date: "2026-08-14", tool: "Gatekeeper Session", district: "Nakawa", parish: "Kiswa", coordinator: "Rebecca", school: "Gatekeeper Session (Local Leader)", role: "Local Leader", commitments: "Promised to support community mobilization and hygiene enforcement.", male: 5, female: 3, boys: 0, girls: 0, enrolment: 0, teachers: 8, games: 0 },
+      { id: 27, date: "2026-08-15", tool: "Gatekeeper Session", district: "Wakiso", parish: "Nansana", coordinator: "Ben", school: "Gatekeeper Session (Market Master)", role: "Market Master", commitments: "Agreed to install public handwashing points at market entrances.", male: 4, female: 6, boys: 0, girls: 0, enrolment: 0, teachers: 10, games: 0 },
+      // Tool 1: Transect Walk & Infrastructure Checklist
+      { id: 28, date: "2026-08-15", tool: "Transect Walk", district: "Kawempe", parish: "Kikaaya", auditor: "Muganwa Peter", site: "Kawempe / Kikaaya", setting: "School", stations: 15, pop: 645, stance_ratio: "43.0:1", notes: "Spacious compound, no congestion", refuse: "Clean / Maintained", wash: "Functional & Supplied", poster: "Fresh & Prominent", holding: "Dedicated & Equipped", staff: "Oriented", boys: 0, girls: 0, enrolment: 0, teachers: 0, games: 0 },
+      { id: 29, date: "2026-08-16", tool: "Transect Walk", district: "Nakawa", parish: "Mbuya2", auditor: "Cogra Mudondo", site: "Nakawa / Mbuya2", setting: "Market Hub", stations: 4, pop: 1200, stance_ratio: "300.0:1", notes: "High crowd density near entrance stalls", refuse: "Overflowing refuse pits", wash: "No soap available", poster: "Obsolete (No hotline)", holding: "Makeshift Only", staff: "Not oriented", boys: 0, girls: 0, enrolment: 0, teachers: 0, games: 0 },
+      // Tool 8: Preparedness Assessment Tool (PAT)
+      { id: 30, date: "2026-08-14", tool: "PAT Assessment", district: "Nakawa", parish: "Kiswa", name: "Kiswa Primary School", level: "Primary", boys: 750, girls: 850, maleStaff: 4, femaleStaff: 18, club: "Active", plan: "Formal Written Plan", space: "Dedicated Isolation Room", stations: 8, bStances: 10, gStances: 12, poster: "Up-to-date MoH posters", washAudit: "Water + Soap Present", stanceAudit: "Adequate and locked", wasteAudit: "Enclosed bins maintained", drainageAudit: "Flowing properly", hotlineLegible: "Yes" },
+      { id: 31, date: "2026-08-14", tool: "PAT Assessment", district: "Wakiso", parish: "Nansana", name: "Nansana Catholic Primary School", level: "Primary", boys: 544, girls: 356, maleStaff: 3, femaleStaff: 12, club: "Active", plan: "Informal Only", space: "Makeshift corner", stations: 5, bStances: 6, gStances: 8, poster: "IEC Present", washAudit: "Water present, no soap", stanceAudit: "Adequate", wasteAudit: "Maintained", drainageAudit: "Flowing", hotlineLegible: "Yes" }
+    ];
+
+    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v16';
 
     function saveToLocalStorage(rows) {
       try {
@@ -1422,7 +1459,7 @@
     }
 
     /**
-     * Parse raw workbook rows. When new data is uploaded, it becomes the active dataset and clears stale cache.
+     * Parse raw workbook rows or load from permanent embedded dataset.
      */
     function processRawWorkbookRows(rawRows, persist = false) {
       if (!rawRows || rawRows.length === 0) {
@@ -1430,8 +1467,7 @@
         if (cached && cached.length > 0) {
           rawRows = cached;
         } else {
-          rawMasterData = [];
-          return;
+          rawRows = DEFAULT_EMBEDDED_DATA;
         }
       }
 
@@ -1442,11 +1478,68 @@
       rawMasterData = [];
 
       rawRows.forEach((row, idx) => {
-        const activityType = String(row['Public Health Emergencies'] || row['Public Health Emergencies '] || '').trim().toLowerCase();
+        const activityType = String(row['Public Health Emergencies'] || row['Public Health Emergencies '] || row['tool'] || '').trim().toLowerCase();
         let rawDateVal = row['Date'] || row['date'] || '';
         const formattedDate = normalizeLocalDate(rawDateVal);
 
-        // 1. SCHOOL SESSIONS / WHEEL SESSIONS (Tool 9)
+        if (row.school && row.tool) {
+          rawMasterData.push({
+            id: row.id || (idx + 1),
+            date: formattedDate || row.date,
+            tool: row.tool,
+            district: row.district || 'Central',
+            parish: row.parish || '',
+            coordinator: row.coordinator || '',
+            school: row.school,
+            visit_num: row.visit_num || 'Visit 1',
+            health_club: row.health_club || 'Active',
+            boys: parseNum(row.boys),
+            girls: parseNum(row.girls),
+            enrolment: parseNum(row.enrolment),
+            teachers: parseNum(row.teachers),
+            games: parseNum(row.games),
+            signs: row.signs || '',
+            hotline: row.hotline || '',
+            stigma: row.stigma || '',
+            handwash_demo: row.handwash_demo || '',
+            soap: row.soap || '',
+            rumor: row.rumor || '',
+            barrier: row.barrier || '',
+            source: row.source || '',
+            role: row.role || '',
+            commitments: row.commitments || '',
+            male: parseNum(row.male),
+            female: parseNum(row.female),
+            auditor: row.auditor || '',
+            site: row.site || '',
+            setting: row.setting || '',
+            stations: parseNum(row.stations),
+            pop: parseNum(row.pop),
+            stance_ratio: row.stance_ratio || '',
+            notes: row.notes || '',
+            refuse: row.refuse || '',
+            wash: row.wash || '',
+            poster: row.poster || '',
+            holding: row.holding || '',
+            staff: row.staff || '',
+            name: row.name || '',
+            level: row.level || '',
+            maleStaff: parseNum(row.maleStaff),
+            femaleStaff: parseNum(row.femaleStaff),
+            plan: row.plan || '',
+            space: row.space || '',
+            bStances: parseNum(row.bStances),
+            gStances: parseNum(row.gStances),
+            washAudit: row.washAudit || '',
+            stanceAudit: row.stanceAudit || '',
+            wasteAudit: row.wasteAudit || '',
+            drainageAudit: row.drainageAudit || '',
+            hotlineLegible: row.hotlineLegible || ''
+          });
+          return;
+        }
+
+        // Parse School Activity from raw Excel upload
         if (activityType.includes('3-visit') || activityType.includes('wheel session') || activityType.includes('school activity') || (!activityType.includes('transect') && !activityType.includes('gatekeeper') && !activityType.includes('preparedness') && getCol(row, 'School Name'))) {
           const sName = getCol(row, 'School Name', 'Name of the school');
           if (sName) {
@@ -1483,12 +1576,10 @@
           }
         }
 
-        // 2. COMMUNITY GATEKEEPER DIALOGUE (Tool 7)
+        // Parse Gatekeeper Session from raw Excel upload
         if (activityType.includes('gatekeeper') || activityType.includes('community gate') || getCol(row, 'what commitments did the gatekeeper make')) {
           const maleGk = parseNum(getCol(row, 'Male Gatekeepers Oriented'));
           const femaleGk = parseNum(getCol(row, 'Female Gatekeepers Oriented'));
-          const totalGk = maleGk + femaleGk;
-
           rawMasterData.push({
             id: getCol(row, '_id') || (idx + 1),
             date: formattedDate,
@@ -1502,12 +1593,12 @@
             male: maleGk,
             female: femaleGk,
             boys: 0, girls: 0, enrolment: 0,
-            teachers: totalGk,
+            teachers: maleGk + femaleGk,
             games: 0
           });
         }
 
-        // 3. TRANSECT WALK (Tool 1)
+        // Parse Transect Walk from raw Excel upload
         if (activityType.includes('transect') || activityType.includes('walk') || activityType.includes('environmental')) {
           const stations = parseNum(getCol(row, 'Record number of functional stations', 'Record number of functional stations '));
           const pop = parseNum(getCol(row, 'Population count of the site'));
@@ -1535,7 +1626,7 @@
           });
         }
 
-        // 4. PREPAREDNESS ASSESSMENT TOOL / PAT (Tool 8)
+        // Parse PAT Assessment from raw Excel upload
         if (activityType.includes('preparedness') || activityType.includes('tool 11') || activityType.includes('pat') || getCol(row, 'Does the school have a Epidemic Preparedness Plan')) {
           rawMasterData.push({
             id: getCol(row, '_id') || (idx + 1),
@@ -2372,11 +2463,11 @@
               return;
             }
 
-            processRawWorkbookRows(rawRows, true); // persist = true saves to localStorage
+            processRawWorkbookRows(rawRows, true);
             populateFilterOptions();
             applyFilters();
 
-            alert('Success! Loaded ' + rawRows.length + ' rows from "' + targetSheetName + '". Data has been saved and dashboard updated.');
+            alert('Success! Loaded ' + rawRows.length + ' rows from "' + targetSheetName + '". New data is now active and saved.');
           } catch (err) {
             console.error('Excel Parsing Error:', err);
             alert('Error parsing uploaded Excel:\n' + err.message + '\n\nPlease check the browser Console (F12) for details.');
@@ -2402,7 +2493,7 @@
     window.toggleAdminLogin = toggleAdminLogin;
     window.checkAdminAuth = checkAdminAuth;
 
-    // Boot (Loads from localStorage cache if available, otherwise empty)
+    // Boot (Loads from localStorage cache if available, otherwise defaults to embedded dataset)
     window.addEventListener('DOMContentLoaded', () => {
       checkAdminAuth();
       processRawWorkbookRows([], false);
