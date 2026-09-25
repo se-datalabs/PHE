@@ -1414,7 +1414,6 @@
         if (cached && cached.length > 0) {
           rawRows = cached;
         } else {
-          // If no cache and no upload, leave arrays empty (no fake/dummy data)
           rawMasterData = [];
           dynamicTransectRecords = [];
           dynamicPatRecords = [];
@@ -1785,8 +1784,8 @@
 
       const schoolActsCount = appData.filter(d => d.tool === 'School Activity').length;
       const toolDefs = [
-        { num: 1, name: "Tool 9: School 3-Visit Model & Knowledge Wheel Session Tracker", q: 26, reach: `${totalLearners.toLocaleString()} Learners (${schoolActsCount} Schools)`, tab: "tool_9" },
-        { num: 2, name: "Tool 7: Community Gatekeeper Dialogue & Commitment Log", q: 8, reach: `${dynamicGatekeeperRecords.length} Sessions Oriented`, tab: "tool_7" },
+        { num: 1, name: "Tool 9: School 3-Visit Model & Knowledge Wheel Session Tracker", q: 26, reach: `${appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.boys||0) + (r.girls||0), 0).toLocaleString()} Learners (${appData.filter(d => d.tool === 'School Activity').length} Schools)`, tab: "tool_9" },
+        { num: 2, name: "Tool 7: Community Gatekeeper Dialogue & Commitment Log", q: 8, reach: `${appData.filter(d => d.tool === 'Gatekeeper Session').length} Sessions Oriented`, tab: "tool_7" },
         { num: 3, name: "Tool 1: Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: `${dynamicTransectRecords.length} Facility Audits`, tab: "tool_1" },
         { num: 4, name: "Tool 2: Rapid Audience Assessment Intercept Survey", q: 15, reach: `${dynamicTool4Records.length} Respondents`, tab: "tool_2" },
         { num: 5, name: "Tool 3: 'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: `${dynamicTool5Records.length} Diagnostic Audits`, tab: "tool_3" },
