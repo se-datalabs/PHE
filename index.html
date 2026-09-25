@@ -1398,8 +1398,8 @@
       return strVal.substring(0, 10);
     }
 
-    // Persistent Storage Key
-    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v11';
+    // Persistent Storage Key (v12)
+    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v12';
 
     function saveToLocalStorage(rows) {
       try {
@@ -1422,7 +1422,7 @@
     }
 
     /**
-     * Parse raw workbook rows. If new data is uploaded, it cleanly sets the master database.
+     * Parse raw workbook rows. When new data is uploaded, it becomes the active dataset and clears stale cache.
      */
     function processRawWorkbookRows(rawRows, persist = false) {
       if (!rawRows || rawRows.length === 0) {
