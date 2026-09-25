@@ -28,12 +28,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EXCEL_FILENAME = 'Public_Health_Emergencies.xlsx'
 EXCEL_PATH = os.path.join(BASE_DIR, EXCEL_FILENAME)
 
-TARGET_DIRS = [
-    os.path.join(BASE_DIR, 'Dashboard'),
-    os.path.join(BASE_DIR, 'PHE Dashboard'),
-    BASE_DIR
-]
-
 PARISH_COORDINATES = {
     'Kiswa': [0.3255, 32.6175],
     'Nansana': [0.3670, 32.5280],
@@ -192,15 +186,17 @@ def parse_excel_records(excel_path):
             stations = parse_num(get_col(r, 'Record number of functional stations', 'Record number of functional stations '))
             pop = parse_num(get_col(r, 'Population count of the site'))
             ratio = f'{(pop/stations):.1f}:1 ({int(pop)} : {int(stations)})' if stations > 0 else f'Critical Gap: {int(pop)} Persons with 0 Stations'
+            setting = get_col(r, 'Setting type', 'specify3') or 'Facility'
             records.append({
                 'id': row_id,
                 'date': d_str,
                 'tool': 'Transect Walk',
                 'district': dist,
                 'parish': parish,
+                'school': f'{dist} - {parish} ({setting})',
                 'auditor': coord or 'Lead Auditor',
                 'site': f'{dist} / {parish}',
-                'setting': get_col(r, 'Setting type', 'specify3') or 'School',
+                'setting': setting,
                 'stations': int(stations),
                 'pop': int(pop),
                 'stance_ratio': ratio,
@@ -220,6 +216,7 @@ def parse_excel_records(excel_path):
                 'tool': 'PAT Assessment',
                 'district': dist,
                 'parish': parish,
+                'school': s_name,
                 'name': s_name,
                 'level': get_col(r, 'School level') or 'Primary',
                 'boys': int(parse_num(get_col(r, 'total enrolment for boys'))),
@@ -258,22 +255,28 @@ def build_updated_html(template_html, records):
         flags=re.DOTALL
     )
 
-    # 2. Remove admin login controls from header and replace with direct Excel loader
+    # 2. Update Header Controls (No Admin, direct Excel load & live indicator)
     header_admin_pattern = r'<!-- PASSWORD PROTECTED UPLOAD BUTTON SECTION -->.*?<!-- AUTHENTICATION TOGGLE BUTTON -->.*?<\/button>'
-    new_header_controls = '''<!-- DIRECT EXCEL LOADER & AUTO-SYNC -->
+    new_header_controls = f'''<!-- DIRECT EXCEL LOADER & AUTO-SYNC -->
         <div style="display: inline-flex; align-items: center; gap: 8px;">
+          <span style="font-size: 0.72rem; color: #10b981; font-weight: 700; background: #ecfdf5; padding: 5px 8px; border-radius: 4px; border: 1px solid #a7f3d0;">
+            ● Connected: {len(records)} Records
+          </span>
           <label for="fileInput" class="btn-action" style="background: var(--gatekeeper); border-color: var(--gatekeeper); cursor: pointer;" title="Load or reload Excel data">
             <span>Upload / Update Excel</span>
           </label>
           <input type="file" id="fileInput" accept=".xlsx, .xls">
-          <button class="btn-action btn-outline" onclick="reloadDefaultExcel()" title="Reset to bundled Excel data">
-            <span>Reset to Default</span>
+          <button class="btn-action btn-outline" onclick="reloadDefaultExcel()" title="Reset and reload the {len(records)} connected records from Excel">
+            <span>↺ Reload Connected Data</span>
           </button>
         </div>'''
+
     if re.search(header_admin_pattern, updated, flags=re.DOTALL):
         updated = re.sub(header_admin_pattern, new_header_controls, updated, flags=re.DOTALL)
+    elif '<!-- DIRECT EXCEL LOADER & AUTO-SYNC -->' in updated:
+        updated = re.sub(r'<!-- DIRECT EXCEL LOADER & AUTO-SYNC -->.*?<\/div>\s*<\/div>', new_header_controls, updated, flags=re.DOTALL)
 
-    # 3. Handle DEFAULT_EMBEDDED_DATA replacement or insertion
+    # 3. Replace DEFAULT_EMBEDDED_DATA
     if 'const DEFAULT_EMBEDDED_DATA' in updated:
         updated = re.sub(
             r'const DEFAULT_EMBEDDED_DATA\s*=\s*\[.*?\];',
@@ -282,25 +285,32 @@ def build_updated_html(template_html, records):
             flags=re.DOTALL
         )
     else:
-        # Insert right above reloadDefaultExcel or STORAGE_KEY
-        if 'function reloadDefaultExcel' in updated:
-            updated = updated.replace(
-                'function reloadDefaultExcel',
-                f'{embedded_block}\n\n    function reloadDefaultExcel'
-            )
-        elif 'const STORAGE_KEY' in updated:
-            updated = updated.replace(
-                'const STORAGE_KEY',
-                f'{embedded_block}\n\n    function reloadDefaultExcel() {{\n      try {{\n        localStorage.removeItem("phe_dashboard_uploaded_data_v17");\n        localStorage.removeItem("phe_dashboard_uploaded_data_v16");\n      }} catch(e) {{}}\n      processRawWorkbookRows(DEFAULT_EMBEDDED_DATA, true);\n      populateFilterOptions();\n      applyFilters();\n      alert("Reset completed. Loaded " + DEFAULT_EMBEDDED_DATA.length + " records from connected Excel dataset.");\n    }}\n\n    const STORAGE_KEY'
-            )
+        if 'const STORAGE_KEY' in updated:
+            updated = updated.replace('const STORAGE_KEY', f'{embedded_block}\n\n    const STORAGE_KEY')
 
-    # 4. Remove any residual SHA-256 and admin authentication code if still present
-    if 'computeSha256' in updated:
-        auth_funcs_pattern = r'// ================= SECURE STANDALONE SHA-256 HASHING =================.*?const STORAGE_KEY ='
-        new_auth_replacement = f'''// ================= DIRECT EXCEL LOADER (NO PASSWORD REQUIRED) =================
-    {embedded_block}
+    # 4. FIX: Change `if (row.school && row.tool)` to `if (row.tool)` so ALL tools (Transect Walk, PAT, etc.) are processed!
+    updated = updated.replace('if (row.school && row.tool)', 'if (row.tool)')
 
-    function reloadDefaultExcel() {{
+    # 5. FIX: Ensure localStorage never gets stuck on old data
+    local_storage_logic = f'''function processRawWorkbookRows(rawRows, persist = false) {{
+      if (!rawRows || rawRows.length === 0) {{
+        const cached = loadFromLocalStorage();
+        if (cached && Array.isArray(cached) && cached.length >= DEFAULT_EMBEDDED_DATA.length) {{
+          rawRows = cached;
+        }} else {{
+          rawRows = DEFAULT_EMBEDDED_DATA;
+          try {{ localStorage.removeItem(STORAGE_KEY); }} catch(e) {{}}
+        }}
+      }}'''
+    updated = re.sub(
+        r'function processRawWorkbookRows\(rawRows,\s*persist\s*=\s*false\)\s*\{.*?rawMasterData\s*=\s*\[\];',
+        f'{local_storage_logic}\n\n      if (persist) {{\n        saveToLocalStorage(rawRows);\n      }}\n\n      rawMasterData = [];',
+        updated,
+        flags=re.DOTALL
+    )
+
+    # 6. Ensure reloadDefaultExcel is defined cleanly
+    reload_func = f'''function reloadDefaultExcel() {{
       try {{
         localStorage.removeItem('phe_dashboard_uploaded_data_v17');
         localStorage.removeItem('phe_dashboard_uploaded_data_v16');
@@ -308,48 +318,17 @@ def build_updated_html(template_html, records):
       processRawWorkbookRows(DEFAULT_EMBEDDED_DATA, true);
       populateFilterOptions();
       applyFilters();
-      alert('Reset completed. Loaded ' + DEFAULT_EMBEDDED_DATA.length + ' records from connected Excel dataset.');
-    }}
+      alert('Loaded all ' + DEFAULT_EMBEDDED_DATA.length + ' records from connected Excel dataset.');
+    }}'''
+    if 'function reloadDefaultExcel' in updated:
+        updated = re.sub(r'function reloadDefaultExcel\(\)\s*\{.*?\}', reload_func, updated, flags=re.DOTALL)
+    else:
+        updated = updated.replace('const STORAGE_KEY =', f'{reload_func}\n\n    const STORAGE_KEY =')
 
-    const STORAGE_KEY ='''
-        updated = re.sub(auth_funcs_pattern, new_auth_replacement, updated, flags=re.DOTALL)
-
-    # 5. Clean up window bindings
+    # 7. Clean up any admin window bindings
     updated = updated.replace('window.toggleAdminLogin = toggleAdminLogin;', '')
     updated = updated.replace('window.checkAdminAuth = checkAdminAuth;', 'window.reloadDefaultExcel = reloadDefaultExcel;')
     updated = updated.replace('checkAdminAuth();', '')
-
-    # 6. Update storage key to v17
-    updated = updated.replace("'phe_dashboard_uploaded_data_v16'", "'phe_dashboard_uploaded_data_v17'")
-
-    # 7. Add auto-fetch on DOMContentLoaded if served via HTTP/HTTPS (e.g. GitHub Pages)
-    auto_fetch_code = '''
-    // Try to auto-fetch Excel or JSON if hosted on GitHub Pages or local web server
-    async function tryAutoFetchServerData() {
-      if (window.location.protocol.startsWith('http')) {
-        try {
-          const resp = await fetch('Public_Health_Emergencies.xlsx');
-          if (resp.ok) {
-            const buf = await resp.arrayBuffer();
-            const wb = XLSX.read(new Uint8Array(buf), { type: 'array', cellDates: true });
-            let targetSheetName = wb.SheetNames.find(s => s.trim().toLowerCase().includes('public health') || s.trim().toLowerCase().includes('emergenc')) || wb.SheetNames[0];
-            const rows = XLSX.utils.sheet_to_json(wb.Sheets[targetSheetName], { defval: "" });
-            if (rows && rows.length > 0) {
-              processRawWorkbookRows(rows, true);
-              populateFilterOptions();
-              applyFilters();
-              console.log('Auto-loaded live Excel from server:', rows.length, 'rows');
-            }
-          }
-        } catch (e) {
-          console.log('Local/fallback data in use.');
-        }
-      }
-    }
-'''
-    if 'tryAutoFetchServerData' not in updated:
-        updated = updated.replace('// Boot', auto_fetch_code + '\n    // Boot')
-        updated = updated.replace('applyFilters();\n    });', 'applyFilters();\n      tryAutoFetchServerData();\n    });')
 
     return updated
 
@@ -362,10 +341,9 @@ def sync():
     records = parse_excel_records(EXCEL_PATH)
     print(f"Parsed {len(records)} records from Public_Health_Emergencies.xlsx.")
 
-    # Find the base template index.html
     template_candidates = [
-        os.path.join(BASE_DIR, 'PHE Dashboard', 'index.html'),
         os.path.join(BASE_DIR, 'Dashboard', 'index.html'),
+        os.path.join(BASE_DIR, 'PHE Dashboard', 'index.html'),
         os.path.join(BASE_DIR, 'index.html')
     ]
 
@@ -383,7 +361,6 @@ def sync():
 
     updated_html = build_updated_html(template_html, records)
 
-    # Write updated index.html, data.json, and copy Excel to all relevant targets
     for target_dir in [os.path.join(BASE_DIR, 'Dashboard'), os.path.join(BASE_DIR, 'PHE Dashboard')]:
         os.makedirs(target_dir, exist_ok=True)
         html_out = os.path.join(target_dir, 'index.html')
@@ -404,9 +381,8 @@ def sync():
             pass
 
     print("\n=======================================================")
-    print(f"SUCCESS! Dashboard successfully synced with {len(records)} records.")
-    print("Admin login removed. Direct Excel loader enabled.")
-    print("You can now commit and push the updated files to GitHub!")
+    print(f"SUCCESS! Dashboard synced with all {len(records)} records.")
+    print("Fixed data parsing bug: all tools and recent entries now active!")
     print("=======================================================\n")
     return True
 
