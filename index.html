@@ -635,18 +635,16 @@
 
         <button class="btn-action btn-outline" onclick="resetFilters()">Reset Filters</button>
 
-        <!-- PASSWORD PROTECTED UPLOAD BUTTON SECTION -->
-        <div id="adminControls" style="display: none; align-items: center; gap: 8px;">
-          <label for="fileInput" class="btn-action" style="background: var(--gatekeeper); border-color: var(--gatekeeper);">
-            <span>+ Upload New Excel</span>
+        <!-- DIRECT EXCEL LOADER & AUTO-SYNC -->
+        <div style="display: inline-flex; align-items: center; gap: 8px;">
+          <label for="fileInput" class="btn-action" style="background: var(--gatekeeper); border-color: var(--gatekeeper); cursor: pointer;" title="Load or reload Excel data">
+            <span>Upload / Update Excel</span>
           </label>
           <input type="file" id="fileInput" accept=".xlsx, .xls">
+          <button class="btn-action btn-outline" onclick="reloadDefaultExcel()" title="Reset to bundled Excel data">
+            <span>Reset to Default</span>
+          </button>
         </div>
-
-        <!-- AUTHENTICATION TOGGLE BUTTON -->
-        <button id="adminLoginBtn" class="btn-action btn-outline" onclick="toggleAdminLogin()">
-          🔒 Admin Login
-        </button>
       </div>
     </header>
 
@@ -1168,275 +1166,1772 @@
   <script>
     Chart.register(ChartDataLabels);
 
-    // ================= SECURE STANDALONE SHA-256 HASHING =================
-    function computeSha256(ascii) {
-      function rightRotate(value, amount) {
-        return (value >>> amount) | (value << (32 - amount));
-      }
-      var mathPow = Math.pow;
-      var maxWord = mathPow(2, 32);
-      var lengthProperty = 'length';
-      var i, j;
-      var result = '';
-
-      var words = [];
-      var asciiBitLength = ascii[lengthProperty] * 8;
-      var hash = [];
-      var k = [];
-      var primeCounter = 0;
-
-      var isComposite = {};
-      for (var candidate = 2; primeCounter < 64; candidate++) {
-        if (!isComposite[candidate]) {
-          for (i = 0; i < 313; i += candidate) {
-            isComposite[i] = candidate;
-          }
-          hash[primeCounter] = (mathPow(candidate, .5) * maxWord) | 0;
-          k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
-        }
-      }
-      
-      ascii += '\x80';
-      while (ascii[lengthProperty] % 64 - 56) ascii += '\x00';
-      for (i = 0; i < ascii[lengthProperty]; i++) {
-        j = ascii.charCodeAt(i);
-        if (j >> 8) return;
-        words[i >> 2] |= j << ((3 - i) % 4) * 8;
-      }
-      words[words[lengthProperty]] = ((asciiBitLength / maxWord) | 0);
-      words[words[lengthProperty]] = (asciiBitLength | 0);
-      
-      for (j = 0; j < words[lengthProperty];) {
-        var w = words.slice(j, j += 16);
-        var oldHash = hash;
-        hash = hash.slice(0, 8);
-        
-        for (i = 0; i < 64; i++) {
-          var i2 = i + j;
-          var w15 = w[i - 15], w2 = w[i - 2];
-
-          var a = hash[0], e = hash[4];
-          var temp1 = hash[7]
-            + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
-            + ((e & hash[5]) ^ ((~e) & hash[6]))
-            + k[i]
-            + (w[i] = (i < 16) ? w[i] : (
-                w[i - 16]
-                + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
-                + w[i - 7]
-                + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
-              ) | 0
-            );
-          var temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
-            + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
-          
-          hash = [(temp1 + temp2) | 0].concat(hash);
-          hash[4] = (hash[4] + temp1) | 0;
-        }
-        
-        for (i = 0; i < 8; i++) {
-          hash[i] = (hash[i] + oldHash[i]) | 0;
-        }
-      }
-      
-      for (i = 0; i < 8; i++) {
-        for (i2 = 3; i2 >= 0; i2--) {
-          var byte = (hash[i] >> (i2 * 8)) & 255;
-          result += ((byte < 16) ? 0 : '') + byte.toString(16);
-        }
-      }
-      return result;
-    }
-
-    const ADMIN_PASSWORD_HASH = "3cffc41d1b2cc6b3d36bdca6bb5be50c1d6585fa74a54df0653d0e6433f0fd2e";
-
-    function checkAdminAuth() {
-      try {
-        const isAuthenticated = sessionStorage.getItem('phe_admin_authenticated') === 'true';
-        const adminControls = document.getElementById('adminControls');
-        const loginBtn = document.getElementById('adminLoginBtn');
-
-        if (isAuthenticated) {
-          if (adminControls) adminControls.style.display = 'inline-flex';
-          if (loginBtn) {
-            loginBtn.innerHTML = '🔓 Admin (Logout)';
-            loginBtn.style.color = '#10b981';
-            loginBtn.style.borderColor = '#10b981';
-          }
-        } else {
-          if (adminControls) adminControls.style.display = 'none';
-          if (loginBtn) {
-            loginBtn.innerHTML = '🔒 Admin Login';
-            loginBtn.style.color = 'var(--primary)';
-            loginBtn.style.borderColor = 'var(--primary)';
-          }
-        }
-      } catch (e) {
-        console.warn('Session storage restricted:', e);
-      }
-    }
-
-    function toggleAdminLogin() {
-      try {
-        const isAuthenticated = sessionStorage.getItem('phe_admin_authenticated') === 'true';
-
-        if (isAuthenticated) {
-          sessionStorage.removeItem('phe_admin_authenticated');
-          checkAdminAuth();
-          alert('Logged out. Admin upload controls are now locked.');
-        } else {
-          const enteredPassword = prompt('Enter Admin Password to enable Excel upload:');
-          if (!enteredPassword) return;
-
-          const hash = computeSha256(enteredPassword);
-
-          if (hash === ADMIN_PASSWORD_HASH) {
-            sessionStorage.setItem('phe_admin_authenticated', 'true');
-            checkAdminAuth();
-            alert('Access granted! The + Upload New Excel button is now enabled.');
-          } else {
-            alert('Access denied: Incorrect password.');
-          }
-        }
-      } catch (err) {
-        alert('Authentication error: ' + err.message);
-      }
-    }
-
-    let rawMasterData = [];
-    let appData = [];
-    let chartInstances = {};
-    let leafletMap = null;
-    let markersLayer = null;
-
-    const parishCoordinates = {
-      'Kiswa': [0.3255, 32.6175],
-      'Nansana': [0.3670, 32.5280],
-      'Nansana west': [0.3685, 32.5210],
-      'Nansana east': [0.3650, 32.5350],
-      'Mbuya2': [0.3300, 32.6280],
-      'Salaama': [0.2780, 32.5920],
-      'Kibuye': [0.2980, 32.5730],
-      'Kikaayq': [0.3650, 32.5990],
-      'Kikaaya': [0.3650, 32.5990],
-      'Makerere University': [0.3340, 32.5680],
-      'Kyebando': [0.3550, 32.5850],
-      'Bwaise I': [0.3520, 32.5610],
-      'Bwaise III': [0.3580, 32.5640],
-      'Nakasero': [0.3200, 32.5780],
-      'Luzira': [0.3010, 32.6450],
-      'Nankulabye': [0.3240, 32.5560],
-      'Lubya': [0.3290, 32.5440],
-      'Seeta Ward': [0.3600, 32.7050],
-      'Kkona': [0.3850, 32.5150],
-      'Kawempe II': [0.3700, 32.5600],
-      'Nateete': [0.2980, 32.5320],
-      'Old Kampala': [0.3140, 32.5690],
-      'Kamwokya': [0.3390, 32.5870],
-      'Bukasa parish': [0.3050, 32.6150]
-    };
-
-    function safeSetText(id, value) {
-      const el = document.getElementById(id);
-      if (el) el.innerText = value;
-    }
-
-    function safeSetHtml(id, html) {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = html;
-    }
-
-    function getCol(row, ...aliases) {
-      const keys = Object.keys(row);
-      for (const alias of aliases) {
-        const cleanAlias = alias.trim().toLowerCase();
-        for (const k of keys) {
-          if (k.trim().toLowerCase() === cleanAlias) {
-            const val = row[k];
-            if (val !== undefined && val !== null) {
-              return typeof val === 'string' ? val.trim() : val;
-            }
-          }
-        }
-      }
-      return '';
-    }
-
-    function parseNum(val) {
-      if (val === undefined || val === null || val === '') return 0;
-      if (typeof val === 'number') return isNaN(val) ? 0 : val;
-      const cleanStr = String(val).replace(/,/g, '').trim();
-      const num = parseFloat(cleanStr);
-      return isNaN(num) ? 0 : num;
-    }
-
-    /**
-     * TIMEZONE-SAFE LOCAL DATE NORMALIZATION
-     */
-    function normalizeLocalDate(rawVal) {
-      if (!rawVal) return '';
-      if (rawVal instanceof Date) {
-        if (isNaN(rawVal.getTime())) return '';
-        const y = rawVal.getFullYear();
-        const m = String(rawVal.getMonth() + 1).padStart(2, '0');
-        const d = String(rawVal.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-      }
-      if (typeof rawVal === 'number') {
-        const utcDays = Math.floor(rawVal - 25569);
-        const dateObj = new Date(utcDays * 86400 * 1000);
-        if (isNaN(dateObj.getTime())) return '';
-        const y = dateObj.getUTCFullYear();
-        const m = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
-        const d = String(dateObj.getUTCDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-      }
-      const strVal = String(rawVal).trim();
-      if (strVal.length >= 10 && strVal.includes('-')) {
-        return strVal.substring(0, 10);
-      }
-      return strVal.substring(0, 10);
-    }
-
-    // ================= PERMANENT EMBEDDED DEFAULT DATASET (ALL 10 TOOLS) =================
+    // ================= DIRECT EXCEL LOADER (NO PASSWORD REQUIRED) =================
     const DEFAULT_EMBEDDED_DATA = [
-      { id: 1, date: "2026-08-14", tool: "School Activity", district: "Nakawa", parish: "Kiswa", coordinator: "Rebecca", school: "Kiswa Primary School", visit_num: "Visit 1", health_club: "Dormant", boys: 215, girls: 305, enrolment: 1600, teachers: 8, games: 70, signs: "Few hands raised (< 25% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "Ebola has left the country as it was communicated by P.S of MOH", barrier: "Entrance hand washing facility present but not functioning", source: "Community" },
-      { id: 2, date: "2026-08-14", tool: "School Activity", district: "Wakiso", parish: "Nansana", coordinator: "Ben", school: "Nansana catholic primary school", visit_num: "Visit 1", health_club: "Active", boys: 544, girls: 356, enrolment: 900, teachers: 10, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "Most of these disease are brought after elections", barrier: "Non", source: "P6 pupil" },
-      { id: 3, date: "2026-08-14", tool: "School Activity", district: "Wakiso", parish: "Nansana", coordinator: "Beb", school: "Nansana COU primary school", visit_num: "Visit 1", health_club: "Active", boys: 339, girls: 246, enrolment: 585, teachers: 5, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "No hand-washing facilities to ensure continuous hand washing", source: "Peers" },
-      { id: 4, date: "2026-08-16", tool: "School Activity", district: "Nakawa", parish: "Mbuya2", coordinator: "Cogra Mudondo", school: "Amka Classic secondary school", visit_num: "Visit 1", health_club: "Dormant", boys: 102, girls: 112, enrolment: 410, teachers: 3, games: 40, signs: "Most / All raised hands (> 75% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Learners were already on holiday", source: "Students" },
-      { id: 5, date: "2026-08-13", tool: "School Activity", district: "Nakawa", parish: "Mbuya2", coordinator: "Cogra Mudondo", school: "Uganda youth primary school", visit_num: "Visit 1", health_club: "Active", boys: 36, girls: 44, enrolment: 850, teachers: 4, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "Water present, but NO soap available", rumor: "Ebola is in Congo", barrier: "Non", source: "Peers" },
-      { id: 6, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Salaama", coordinator: "Rebecca", school: "St ponsiano primary school", visit_num: "Visit 1", health_club: "Active", boys: 458, girls: 686, enrolment: 1144, teachers: 4, games: 0, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "No hands raised (0%)", handwash_demo: "Missed Key Step", soap: "No handwashing setup available on-site", rumor: "Since we are in slum people take less concern as there is no current case.", barrier: "Entrance hand washing facility present but not functioning", source: "Community" },
-      { id: 7, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Salaama", coordinator: "Rebecca", school: "Life care primary school", visit_num: "Visit 1", health_club: "Dormant", boys: 139, girls: 161, enrolment: 300, teachers: 5, games: 60, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "Ebola no longer kills", barrier: "Financial constraints not allowing purchase of soap", source: "P6 pupil" },
-      { id: 8, date: "2026-08-13", tool: "School Activity", district: "Makindye", parish: "Kibuye", coordinator: "Emmanuel", school: "Katwe Church of Uganda primary school", visit_num: "Visit 1", health_club: "Active", boys: 110, girls: 180, enrolment: 290, teachers: 8, games: 30, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Students" },
-      { id: 9, date: "2026-08-14", tool: "School Activity", district: "Kawempe", parish: "Kikaayq", coordinator: "Emmanuel", school: "Mariam High School", visit_num: "Visit 1", health_club: "No", boys: 0, girls: 645, enrolment: 645, teachers: 12, games: 0, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Functional running water AND soap present", rumor: "Isolation units cause death instead of treatment", barrier: "Fear of forced quarantine", source: "Community" },
-      { id: 10, date: "2026-08-14", tool: "School Activity", district: "Kawempe", parish: "Makerere University", coordinator: "Emmanuel", school: "Makerere university", visit_num: "Visit 1", health_club: "Active", boys: 0, girls: 0, enrolment: 3000, teachers: 6, games: 0, signs: "Most / All raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Peers" },
-      { id: 11, date: "2026-08-15", tool: "School Activity", district: "Kawempe", parish: "Kyebando", coordinator: "Muganwa", school: "Gayaza Road High school", visit_num: "Visit 1", health_club: "Dormant", boys: 15, girls: 19, enrolment: 200, teachers: 4, games: 0, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "PHEs are spiritual/cultural rather than infectious", barrier: "Cultural belief barrier", source: "Peers" },
-      { id: 12, date: "2026-08-15", tool: "School Activity", district: "Kawempe", parish: "Bwaise I", coordinator: "Muganwa", school: "Mamtaz secondary school", visit_num: "Visit 1", health_club: "Active", boys: 14, girls: 22, enrolment: 200, teachers: 5, games: 0, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Few hands raised (< 25% of crowd)", handwash_demo: "All Steps Followed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Slum drainage overflow", source: "Community" },
-      { id: 13, date: "2026-08-16", tool: "School Activity", district: "Kawempe", parish: "Bwaise III", coordinator: "Muganwa", school: "Bwaise parents primary school", visit_num: "Visit 1", health_club: "Active", boys: 25, girls: 39, enrolment: 480, teachers: 3, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Financial constraints not allowing purchase of soap", source: "Students" },
-      { id: 14, date: "2026-08-17", tool: "School Activity", district: "Wakiso", parish: "Nansana west", coordinator: "Muganwa", school: "Nansana SDA primary school", visit_num: "Visit 1", health_club: "Active", boys: 186, girls: 137, enrolment: 511, teachers: 4, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "No hand-washing facilities to ensure continuous hand washing", source: "Peers" },
-      { id: 15, date: "2026-08-17", tool: "School Activity", district: "Central", parish: "Nakasero", coordinator: "Muganwa", school: "Bat Valley", visit_num: "Visit 1", health_club: "Active", boys: 33, girls: 61, enrolment: 410, teachers: 4, games: 40, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Failed", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "No hand-washing facilities to ensure continuous hand washing", source: "Peers" },
-      { id: 16, date: "2026-08-18", tool: "School Activity", district: "Nakawa", parish: "Luzira", coordinator: "Muganwa", school: "Luzira secondary school", visit_num: "Visit 1", health_club: "Active", boys: 114, girls: 92, enrolment: 3330, teachers: 5, games: 70, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Water shortages", source: "Students" },
-      { id: 17, date: "2026-08-18", tool: "School Activity", district: "Rubaga", parish: "Nankulabye", coordinator: "Cogra", school: "Mengo Primary School", visit_num: "Visit 1", health_club: "Active", boys: 378, girls: 358, enrolment: 736, teachers: 9, games: 60, signs: "Most / All raised hands (> 75% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Frequent soap restocking need", source: "Community" },
-      { id: 18, date: "2026-08-19", tool: "School Activity", district: "Nakawa", parish: "Luzira", coordinator: "Cogra", school: "Progressive Junior school", visit_num: "Visit 1", health_club: "Active", boys: 67, girls: 43, enrolment: 560, teachers: 10, games: 65, signs: "Most / All raised hands (> 75% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "Most / All raised hands (> 75% of crowd)", handwash_demo: "Missed Key Step", soap: "Functional running water AND soap present", rumor: "The outbreak declaration means zero risk now", barrier: "Financial constraints not allowing purchase of soap", source: "Peers" },
-      { id: 19, date: "2026-08-19", tool: "School Activity", district: "Rubaga", parish: "Lubya", coordinator: "Rebecca", school: "St Joseph Kasubi Memorial Primary School", visit_num: "Visit 1", health_club: "Active", boys: 278, girls: 289, enrolment: 567, teachers: 4, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Entrance hand washing facility present but not functioning", source: "Community" },
-      { id: 20, date: "2026-08-20", tool: "School Activity", district: "Mukono", parish: "Seeta Ward", coordinator: "Rebecca", school: "Seeta Church Of Uganda Primary School", visit_num: "Visit 1", health_club: "Active", boys: 67, girls: 73, enrolment: 736, teachers: 4, games: 10, signs: "Few hands raised (< 25% of crowd)", hotline: "No hands raised (0%)", stigma: "Few hands raised (< 25% of crowd)", handwash_demo: "Missed Key Step", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Lack of hand washing equipment in the community", source: "Community" },
-      { id: 21, date: "2026-08-20", tool: "School Activity", district: "Wakiso", parish: "Kkona", coordinator: "David", school: "Trinity Junior School", visit_num: "Visit 1", health_club: "Active", boys: 127, girls: 66, enrolment: 208, teachers: 4, games: 30, signs: "About half raised hands (~50% of crowd)", hotline: "Few hands raised (< 25% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "Outbreaks mostly are foreign", barrier: "Informal settlements", source: "Peers" },
-      { id: 22, date: "2026-08-21", tool: "School Activity", district: "Kawempe", parish: "Kawempe II", coordinator: "David", school: "Gaddafi secondary school", visit_num: "Visit 1", health_club: "Active", boys: 34, girls: 46, enrolment: 553, teachers: 4, games: 80, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Missed Key Step", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Water cuts", source: "Students" },
-      { id: 23, date: "2026-08-21", tool: "School Activity", district: "Rubaga", parish: "Nateete", coordinator: "David", school: "Mackay Memorial College Nateete", visit_num: "Visit 1", health_club: "Active", boys: 1945, girls: 1026, enrolment: 2136, teachers: 5, games: 60, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "Not done", soap: "No handwashing setup available on-site", rumor: "The outbreak declaration means zero risk now", barrier: "Overcrowded stances", source: "Peers" },
-      { id: 24, date: "2026-08-22", tool: "School Activity", district: "Central", parish: "Old Kampala", coordinator: "Aisha", school: "Old Kampala", visit_num: "Visit 1", health_club: "Active", boys: 71, girls: 87, enrolment: 953, teachers: 7, games: 55, signs: "About half raised hands (~50% of crowd)", hotline: "About half raised hands (~50% of crowd)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "The outbreak declaration means zero risk now", barrier: "Routine replenishment", source: "Peers" },
-      { id: 25, date: "2026-08-22", tool: "School Activity", district: "Central", parish: "Kamwokya", coordinator: "Ben", school: "Kamwokya Community Christian", visit_num: "Visit 1", health_club: "Active", boys: 119, girls: 189, enrolment: 2215, teachers: 6, games: 52, signs: "About half raised hands (~50% of crowd)", hotline: "No hands raised (0%)", stigma: "About half raised hands (~50% of crowd)", handwash_demo: "All Steps Followed", soap: "Water present, but NO soap available", rumor: "PHEs are spiritual/cultural rather than infectious", barrier: "Non", source: "Peers" },
-      // Tool 7: Community Gatekeeper Dialogue
-      { id: 26, date: "2026-08-14", tool: "Gatekeeper Session", district: "Nakawa", parish: "Kiswa", coordinator: "Rebecca", school: "Gatekeeper Session (Local Leader)", role: "Local Leader", commitments: "Promised to support community mobilization and hygiene enforcement.", male: 5, female: 3, boys: 0, girls: 0, enrolment: 0, teachers: 8, games: 0 },
-      { id: 27, date: "2026-08-15", tool: "Gatekeeper Session", district: "Wakiso", parish: "Nansana", coordinator: "Ben", school: "Gatekeeper Session (Market Master)", role: "Market Master", commitments: "Agreed to install public handwashing points at market entrances.", male: 4, female: 6, boys: 0, girls: 0, enrolment: 0, teachers: 10, games: 0 },
-      // Tool 1: Transect Walk & Infrastructure Checklist
-      { id: 28, date: "2026-08-15", tool: "Transect Walk", district: "Kawempe", parish: "Kikaaya", auditor: "Muganwa Peter", site: "Kawempe / Kikaaya", setting: "School", stations: 15, pop: 645, stance_ratio: "43.0:1", notes: "Spacious compound, no congestion", refuse: "Clean / Maintained", wash: "Functional & Supplied", poster: "Fresh & Prominent", holding: "Dedicated & Equipped", staff: "Oriented", boys: 0, girls: 0, enrolment: 0, teachers: 0, games: 0 },
-      { id: 29, date: "2026-08-16", tool: "Transect Walk", district: "Nakawa", parish: "Mbuya2", auditor: "Cogra Mudondo", site: "Nakawa / Mbuya2", setting: "Market Hub", stations: 4, pop: 1200, stance_ratio: "300.0:1", notes: "High crowd density near entrance stalls", refuse: "Overflowing refuse pits", wash: "No soap available", poster: "Obsolete (No hotline)", holding: "Makeshift Only", staff: "Not oriented", boys: 0, girls: 0, enrolment: 0, teachers: 0, games: 0 },
-      // Tool 8: Preparedness Assessment Tool (PAT)
-      { id: 30, date: "2026-08-14", tool: "PAT Assessment", district: "Nakawa", parish: "Kiswa", name: "Kiswa Primary School", level: "Primary", boys: 750, girls: 850, maleStaff: 4, femaleStaff: 18, club: "Active", plan: "Formal Written Plan", space: "Dedicated Isolation Room", stations: 8, bStances: 10, gStances: 12, poster: "Up-to-date MoH posters", washAudit: "Water + Soap Present", stanceAudit: "Adequate and locked", wasteAudit: "Enclosed bins maintained", drainageAudit: "Flowing properly", hotlineLegible: "Yes" },
-      { id: 31, date: "2026-08-14", tool: "PAT Assessment", district: "Wakiso", parish: "Nansana", name: "Nansana Catholic Primary School", level: "Primary", boys: 544, girls: 356, maleStaff: 3, femaleStaff: 12, club: "Active", plan: "Informal Only", space: "Makeshift corner", stations: 5, bStances: 6, gStances: 8, poster: "IEC Present", washAudit: "Water present, no soap", stanceAudit: "Adequate", wasteAudit: "Maintained", drainageAudit: "Flowing", hotlineLegible: "Yes" }
-    ];
+  {
+    "id": 840481278,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Nakawa",
+    "parish": "Kiswa",
+    "coordinator": "Rebecca",
+    "school": "Kiswa Primary School",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 215,
+    "girls": 305,
+    "enrolment": 1600,
+    "teachers": 8,
+    "games": 70,
+    "signs": "Few hands raised (< 25% of crowd)",
+    "hotline": "Few hands raised (< 25% of crowd)",
+    "stigma": "About half raised hands (~50% of crowd)",
+    "handwash_demo": "Not done",
+    "soap": "Water present, but NO soap available",
+    "rumor": "",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 840957062,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Wakiso",
+    "parish": "Nansana",
+    "coordinator": "Ben",
+    "school": "Nansana catholic primary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 544,
+    "girls": 356,
+    "enrolment": 900,
+    "teachers": 10,
+    "games": 60,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Most / All raised hands (> 75% of crowd)",
+    "handwash_demo": "All Steps Followed",
+    "soap": "Water present, but NO soap available",
+    "rumor": "other",
+    "barrier": "",
+    "source": "Peers"
+  },
+  {
+    "id": 840958973,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Wakiso",
+    "parish": "Nansana",
+    "coordinator": "Beb",
+    "school": "Nansana COU primary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 339,
+    "girls": 246,
+    "enrolment": 585,
+    "teachers": 5,
+    "games": 60,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Most / All raised hands (> 75% of crowd)",
+    "handwash_demo": "All Steps Followed",
+    "soap": "Water present, but NO soap available",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "",
+    "source": "Peers"
+  },
+  {
+    "id": 841043499,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Nakawa",
+    "parish": "Mbuya2",
+    "coordinator": "Rebecca",
+    "school": "Amka Classic secondary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 102,
+    "girls": 112,
+    "enrolment": 410,
+    "teachers": 3,
+    "games": 10,
+    "signs": "Few hands raised (< 25% of crowd)",
+    "hotline": "Few hands raised (< 25% of crowd)",
+    "stigma": "About half raised hands (~50% of crowd)",
+    "handwash_demo": "Not done",
+    "soap": "No handwashing setup available on-site",
+    "rumor": "",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 841044896,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Nakawa",
+    "parish": "Mbuya2",
+    "coordinator": "Rebecca",
+    "school": "Uganda youth primary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 36,
+    "girls": 44,
+    "enrolment": 850,
+    "teachers": 2,
+    "games": 40,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "About half raised hands (~50% of crowd)",
+    "handwash_demo": "Missed Key Step",
+    "soap": "Water present, but NO soap available",
+    "rumor": "",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 841097958,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Makindye",
+    "parish": "Salaama",
+    "coordinator": "Cogra Mudondo",
+    "school": "St ponsiano primary  school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 458,
+    "girls": 686,
+    "enrolment": 1144,
+    "teachers": 15,
+    "games": 0,
+    "signs": "",
+    "hotline": "",
+    "stigma": "",
+    "handwash_demo": "Missed Key Step",
+    "soap": "No handwashing setup available on-site",
+    "rumor": "other",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 841101400,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Makindye",
+    "parish": "Salaama",
+    "coordinator": "Cogra",
+    "school": "Life care primary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 139,
+    "girls": 161,
+    "enrolment": 300,
+    "teachers": 3,
+    "games": 60,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Most / All raised hands (> 75% of crowd)",
+    "handwash_demo": "All Steps Followed",
+    "soap": "No handwashing setup available on-site",
+    "rumor": "",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 841103994,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Makindye",
+    "parish": "Salaama",
+    "coordinator": "Cogra",
+    "school": "St ponsiano Primary  school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 458,
+    "girls": 686,
+    "enrolment": 1144,
+    "teachers": 5,
+    "games": 0,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Most / All raised hands (> 75% of crowd)",
+    "handwash_demo": "Missed Key Step",
+    "soap": "Water present, but NO soap available",
+    "rumor": "other",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 841107047,
+    "date": "2026-08-16",
+    "tool": "School Activity",
+    "district": "Makindye",
+    "parish": "Kibuye",
+    "coordinator": "",
+    "school": "Katwe Church  of Uganda primary  school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 110,
+    "girls": 180,
+    "enrolment": 290,
+    "teachers": 5,
+    "games": 30,
+    "signs": "Most / All raised hands (> 75% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Most / All raised hands (> 75% of crowd)",
+    "handwash_demo": "All Steps Followed",
+    "soap": "Water present, but NO soap available",
+    "rumor": "other",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 841178334,
+    "date": "2026-08-13",
+    "tool": "School Activity",
+    "district": "Kawempe",
+    "parish": "Kikaayq",
+    "coordinator": "Muganwa Peter",
+    "school": "Mariam High School",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 0,
+    "girls": 645,
+    "enrolment": 645,
+    "teachers": 1,
+    "games": 0,
+    "signs": "Most / All raised hands (> 75% of crowd)",
+    "hotline": "About half raised hands (~50% of crowd)",
+    "stigma": "About half raised hands (~50% of crowd)",
+    "handwash_demo": "Not done",
+    "soap": "Functional running water AND soap present",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "",
+    "source": "Peers"
+  },
+  {
+    "id": 841185658,
+    "date": "2026-08-13",
+    "tool": "School Activity",
+    "district": "Kawempe",
+    "parish": "Kyebando",
+    "coordinator": "Muganwa Peter",
+    "school": "Gayaza Road High school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 15,
+    "girls": 19,
+    "enrolment": 200,
+    "teachers": 3,
+    "games": 0,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "",
+    "stigma": "",
+    "handwash_demo": "Not done",
+    "soap": "",
+    "rumor": "other",
+    "barrier": "The hand washing facility is present at the entrance but not functioning",
+    "source": "Peers"
+  },
+  {
+    "id": 841192001,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Kawempe",
+    "parish": "Bwaise I",
+    "coordinator": "Muganwa Peter",
+    "school": "Mamtaz secondary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 14,
+    "girls": 22,
+    "enrolment": 200,
+    "teachers": 2,
+    "games": 0,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "",
+    "stigma": "",
+    "handwash_demo": "All Steps Followed",
+    "soap": "No handwashing setup available on-site",
+    "rumor": "",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 841193512,
+    "date": "2026-08-14",
+    "tool": "School Activity",
+    "district": "Kawempe",
+    "parish": "Bwaise III",
+    "coordinator": "Muganwa Peter",
+    "school": "Bwaise parents primary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 25,
+    "girls": 39,
+    "enrolment": 480,
+    "teachers": 1,
+    "games": 40,
+    "signs": "Most / All raised hands (> 75% of crowd)",
+    "hotline": "Few hands raised (< 25% of crowd)",
+    "stigma": "",
+    "handwash_demo": "Missed Key Step",
+    "soap": "No handwashing setup available on-site",
+    "rumor": "",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 841963864,
+    "date": "2026-08-17",
+    "tool": "School Activity",
+    "district": "Wakiso",
+    "parish": "Nansana west",
+    "coordinator": "Ben",
+    "school": "Nansana SDA primary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 186,
+    "girls": 137,
+    "enrolment": 511,
+    "teachers": 5,
+    "games": 60,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Most / All raised hands (> 75% of crowd)",
+    "handwash_demo": "Not done",
+    "soap": "Water present, but NO soap available",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "",
+    "source": "Peers"
+  },
+  {
+    "id": 842557936,
+    "date": "2026-08-17",
+    "tool": "School Activity",
+    "district": "Central",
+    "parish": "Nakasero",
+    "coordinator": "Heather",
+    "school": "Bat Valley",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 33,
+    "girls": 61,
+    "enrolment": 410,
+    "teachers": 5,
+    "games": 40,
+    "signs": "Few hands raised (< 25% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "About half raised hands (~50% of crowd)",
+    "handwash_demo": "Failed",
+    "soap": "No handwashing setup available on-site",
+    "rumor": "The outbreak declaration means zero risk now PHEs are spiritual/cultural rather than infectious",
+    "barrier": "Financial constraints not allowing them.to practice the.basic preventive measures",
+    "source": "Community"
+  },
+  {
+    "id": 845062875,
+    "date": "2026-08-18",
+    "tool": "School Activity",
+    "district": "Nakawa",
+    "parish": "Luzira",
+    "coordinator": "Rebecca",
+    "school": "Luzira secondary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 114,
+    "girls": 92,
+    "enrolment": 620,
+    "teachers": 3,
+    "games": 70,
+    "signs": "Few hands raised (< 25% of crowd)",
+    "hotline": "Few hands raised (< 25% of crowd)",
+    "stigma": "Most / All raised hands (> 75% of crowd)",
+    "handwash_demo": "Missed Key Step",
+    "soap": "Functional running water AND soap present",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "Lack of hand washing equipment in the community",
+    "source": "Community"
+  },
+  {
+    "id": 845072847,
+    "date": "2026-08-18",
+    "tool": "School Activity",
+    "district": "Rubaga",
+    "parish": "Nankulabye",
+    "coordinator": "Caroline",
+    "school": "Mengo Primary School",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 378,
+    "girls": 358,
+    "enrolment": 736,
+    "teachers": 4,
+    "games": 60,
+    "signs": "Most / All raised hands (> 75% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "No hands raised (0%)",
+    "handwash_demo": "Not done",
+    "soap": "Water present, but NO soap available",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 845073467,
+    "date": "2026-08-20",
+    "tool": "School Activity",
+    "district": "Nakawa",
+    "parish": "Luzira",
+    "coordinator": "Rebecca",
+    "school": "Progressive Junior school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 67,
+    "girls": 43,
+    "enrolment": 560,
+    "teachers": 4,
+    "games": 65,
+    "signs": "No hands raised (0%)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Most / All raised hands (> 75% of crowd)",
+    "handwash_demo": "Missed Key Step",
+    "soap": "Functional running water AND soap present",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "They said that some public places in community don't have hand washing equipment",
+    "source": "Peers"
+  },
+  {
+    "id": 845075480,
+    "date": "2026-08-18",
+    "tool": "School Activity",
+    "district": "Rubaga",
+    "parish": "Lubya",
+    "coordinator": "Caroline",
+    "school": "St Joseph Kasubi Memorial Primary School",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 278,
+    "girls": 289,
+    "enrolment": 567,
+    "teachers": 3,
+    "games": 60,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Few hands raised (< 25% of crowd)",
+    "handwash_demo": "Not done",
+    "soap": "Water present, but NO soap available",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "",
+    "source": "Community"
+  },
+  {
+    "id": 845107768,
+    "date": "2026-08-19",
+    "tool": "School Activity",
+    "district": "Mukono",
+    "parish": "Seeta Ward",
+    "coordinator": "Lynn",
+    "school": "Seeta Church Of Uganda Primary School",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 67,
+    "girls": 73,
+    "enrolment": 736,
+    "teachers": 2,
+    "games": 10,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "Few hands raised (< 25% of crowd)",
+    "stigma": "About half raised hands (~50% of crowd)",
+    "handwash_demo": "Missed Key Step",
+    "soap": "Water present, but NO soap available",
+    "rumor": "other",
+    "barrier": "There are no hand-washing facilities at the entrance, around classroom blocks and the play grounds. Water is only provided near the domitries which limits the chances of the learners to practice good actions like regular hand washing.",
+    "source": "Community"
+  },
+  {
+    "id": 845132917,
+    "date": "2026-08-18",
+    "tool": "School Activity",
+    "district": "Wakiso",
+    "parish": "Kkona",
+    "coordinator": "Ben",
+    "school": "Trinity Junior School",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 127,
+    "girls": 66,
+    "enrolment": 208,
+    "teachers": 3,
+    "games": 30,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Most / All raised hands (> 75% of crowd)",
+    "handwash_demo": "All Steps Followed",
+    "soap": "Water present, but NO soap available",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "",
+    "source": "Peers"
+  },
+  {
+    "id": 845153031,
+    "date": "2026-08-19",
+    "tool": "Gatekeeper Session",
+    "district": "Mukono",
+    "parish": "Seeta Ward",
+    "coordinator": "Lynn",
+    "school": "Gatekeeper Session (Teacher)",
+    "role": "Teacher",
+    "commitments": "He promised to ensure that by the start of next term there will be hand washing facilities in place. Promised to ensure that the health club at school is revived. He also promised to ensure that the children adopt and practice the good actions that they have learnt today.",
+    "male": 2,
+    "female": 0,
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 2,
+    "games": 0
+  },
+  {
+    "id": 845181281,
+    "date": "2026-08-20",
+    "tool": "School Activity",
+    "district": "Kawempe",
+    "parish": "Kawempe II",
+    "coordinator": "Muganwa Peter",
+    "school": "Gaddafi secondary school",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 34,
+    "girls": 46,
+    "enrolment": 553,
+    "teachers": 2,
+    "games": 80,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "Few hands raised (< 25% of crowd)",
+    "stigma": "About half raised hands (~50% of crowd)",
+    "handwash_demo": "Missed Key Step",
+    "soap": "Water present, but NO soap available",
+    "rumor": "other",
+    "barrier": "Need of more sensitization on Religious/Islamic radio stations. Need to reactivate the school health club so as to monitor functionality of hand washing facilities",
+    "source": "Peers"
+  },
+  {
+    "id": 845185175,
+    "date": "2026-08-20",
+    "tool": "School Activity",
+    "district": "Rubaga",
+    "parish": "Nateete",
+    "coordinator": "Caroline",
+    "school": "Mackay Memorial College Nateete",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 1945,
+    "girls": 1026,
+    "enrolment": 2136,
+    "teachers": 4,
+    "games": 60,
+    "signs": "Most / All raised hands (> 75% of crowd)",
+    "hotline": "Few hands raised (< 25% of crowd)",
+    "stigma": "No hands raised (0%)",
+    "handwash_demo": "Not done",
+    "soap": "No handwashing setup available on-site",
+    "rumor": "The outbreak declaration means zero risk now PHEs are spiritual/cultural rather than infectious",
+    "barrier": "",
+    "source": "Peers"
+  },
+  {
+    "id": 848299974,
+    "date": "2026-08-21",
+    "tool": "School Activity",
+    "district": "Central",
+    "parish": "Old Kampala",
+    "coordinator": "Heather",
+    "school": "Old Kampala",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 71,
+    "girls": 87,
+    "enrolment": 953,
+    "teachers": 9,
+    "games": 55,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "Few hands raised (< 25% of crowd)",
+    "handwash_demo": "All Steps Followed",
+    "soap": "Water present, but NO soap available",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "The school has very many refuuges(Eritreans/Somalis) there is the challenge of language",
+    "source": "Community"
+  },
+  {
+    "id": 848308991,
+    "date": "2026-08-21",
+    "tool": "School Activity",
+    "district": "Central",
+    "parish": "Kamwokya",
+    "coordinator": "Heather",
+    "school": "Kamwokya Community Christian",
+    "visit_num": "Visit 1",
+    "health_club": "Active",
+    "boys": 119,
+    "girls": 189,
+    "enrolment": 2215,
+    "teachers": 17,
+    "games": 52,
+    "signs": "About half raised hands (~50% of crowd)",
+    "hotline": "No hands raised (0%)",
+    "stigma": "About half raised hands (~50% of crowd)",
+    "handwash_demo": "All Steps Followed",
+    "soap": "Water present, but NO soap available",
+    "rumor": "The outbreak declaration means zero risk now",
+    "barrier": "Financial constraints",
+    "source": "Community"
+  },
+  {
+    "id": 874773023,
+    "date": "2026-09-22",
+    "tool": "Transect Walk",
+    "district": "Kawempe",
+    "parish": "Kikaaya",
+    "auditor": "Muganwa Peter",
+    "site": "Kawempe / Kikaaya",
+    "setting": "School",
+    "stations": 15,
+    "pop": 645,
+    "stance_ratio": "43.0:1 (645 : 15)",
+    "notes": "The school is spacious with enough compound, no congestion in class",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "Obsolete",
+    "holding": "Dedicated & Equipped",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 874783508,
+    "date": "2026-09-22",
+    "tool": "PAT Assessment",
+    "district": "Kawempe",
+    "parish": "Kikaaya",
+    "name": "Mariam High School",
+    "level": "Secondary",
+    "boys": 0,
+    "girls": 645,
+    "maleStaff": 24,
+    "femaleStaff": 20,
+    "club": "No",
+    "plan": "Informal / Verbal procedures only",
+    "space": "Makeshift corner / multipurpose room (e.g., staff room or store",
+    "stations": 15,
+    "bStances": 0,
+    "gStances": 40,
+    "poster": "Outdated posters",
+    "washAudit": "Water + Soap Present",
+    "stanceAudit": "Adequate (<40:1) & clean",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Organised water flow channels",
+    "hotlineLegible": "No",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 874876558,
+    "date": "2026-09-22",
+    "tool": "Transect Walk",
+    "district": "Kawempe",
+    "parish": "Bwaise III",
+    "auditor": "Muganwa Peter",
+    "site": "Kawempe / Bwaise III",
+    "setting": "School",
+    "stations": 6,
+    "pop": 400,
+    "stance_ratio": "66.7:1 (400 : 6)",
+    "notes": "The school follows the basics of sanitation, primary section has its own stances from those of Primary section",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "Fresh & Prominent",
+    "holding": "Makeshift Area Only",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 874881356,
+    "date": "2026-09-22",
+    "tool": "Transect Walk",
+    "district": "Wakiso",
+    "parish": "Nansana east",
+    "auditor": "Ben",
+    "site": "Wakiso / Nansana east",
+    "setting": "School",
+    "stations": 3,
+    "pop": 5,
+    "stance_ratio": "1.7:1 (5 : 3)",
+    "notes": "At the gate",
+    "refuse": "Moderate Stagnation",
+    "wash": "Present, No Soap/Water",
+    "poster": "Fresh & Prominent",
+    "holding": "Makeshift Area Only",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 874882622,
+    "date": "2026-09-22",
+    "tool": "PAT Assessment",
+    "district": "Kawempe",
+    "parish": "Bwaise III",
+    "name": "Bwaise Parents Primary school",
+    "level": "Primary",
+    "boys": 180,
+    "girls": 220,
+    "maleStaff": 4,
+    "femaleStaff": 11,
+    "club": "Yes",
+    "plan": "Informal / Verbal procedures only",
+    "space": "Makeshift corner / multipurpose room (e.g., staff room or store",
+    "stations": 6,
+    "bStances": 6,
+    "gStances": 6,
+    "poster": "Up-to-date MoH posters Torn",
+    "washAudit": "Water + Soap Present",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Open pits / burning",
+    "drainageAudit": "Organised water flow channels",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 874913064,
+    "date": "2026-09-22",
+    "tool": "PAT Assessment",
+    "district": "Wakiso",
+    "parish": "Nansana east",
+    "name": "St Joseph's Nansana catholic primary school",
+    "level": "Primary",
+    "boys": 471,
+    "girls": 449,
+    "maleStaff": 10,
+    "femaleStaff": 23,
+    "club": "Yes",
+    "plan": "No plan in place",
+    "space": "No separate space (sick learners remain in classroom)",
+    "stations": 6,
+    "bStances": 5,
+    "gStances": 5,
+    "poster": "Up-to-date MoH posters",
+    "washAudit": "Water only (No Soap)",
+    "stanceAudit": "Adequate (<40:1) & clean",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Organised water flow channels",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 875764567,
+    "date": "2026-09-23",
+    "tool": "PAT Assessment",
+    "district": "Rubaga",
+    "parish": "Lubya",
+    "name": "Namungoona Kigobe Primary School",
+    "level": "Primary",
+    "boys": 335,
+    "girls": 383,
+    "maleStaff": 5,
+    "femaleStaff": 9,
+    "club": "Yes",
+    "plan": "Informal / Verbal procedures only",
+    "space": "Makeshift corner / multipurpose room (e.g., staff room or store",
+    "stations": 3,
+    "bStances": 6,
+    "gStances": 5,
+    "poster": "No IEC materials seen",
+    "washAudit": "Water + Soap Present",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Free flowing ",
+    "hotlineLegible": "No",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 875800825,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Rubaga",
+    "parish": "Lubya",
+    "auditor": "Caroline",
+    "site": "Rubaga / Lubya",
+    "setting": "Market",
+    "stations": 4,
+    "pop": 200,
+    "stance_ratio": "50.0:1 (200 : 4)",
+    "notes": "The market has spaces and well ventilated",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "No Materials Found",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 875806353,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Makindye",
+    "parish": "Bukasa parish",
+    "auditor": "Cogra Mudondo",
+    "site": "Makindye / Bukasa parish",
+    "setting": "School",
+    "stations": 10,
+    "pop": 497,
+    "stance_ratio": "49.7:1 (497 : 10)",
+    "notes": "The congestion",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "Torn ",
+    "holding": "Makeshift Area Only",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 875843903,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Rubaga",
+    "parish": "Lubya",
+    "auditor": "Caroline",
+    "site": "Rubaga / Lubya",
+    "setting": "Market",
+    "stations": 0,
+    "pop": 70,
+    "stance_ratio": "Critical Gap: 70 Persons with 0 Stations",
+    "notes": "The place that sells chicken is a bit congested but other spaces are moderately open but also those that place Ludo are the ones that are also moderately crowded",
+    "refuse": "Severe Bio-Hazard",
+    "wash": "Completely Absent",
+    "poster": "No Materials Found",
+    "holding": "Space",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 875851207,
+    "date": "2026-09-23",
+    "tool": "PAT Assessment",
+    "district": "Makindye",
+    "parish": "Bukasa",
+    "name": "Bukasa primary school",
+    "level": "Primary",
+    "boys": 217,
+    "girls": 280,
+    "maleStaff": 6,
+    "femaleStaff": 10,
+    "club": "Yes",
+    "plan": "Yes, written plan available and sighted on-site",
+    "space": "Makeshift corner / multipurpose room (e.g., staff room or store",
+    "stations": 10,
+    "bStances": 4,
+    "gStances": 4,
+    "poster": "Torn",
+    "washAudit": "Water + Soap Present",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Free flowing ",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 875920927,
+    "date": "2026-09-23",
+    "tool": "PAT Assessment",
+    "district": "Nakawa",
+    "parish": "Nakawa",
+    "name": "Kiswa Primary School",
+    "level": "Primary",
+    "boys": 804,
+    "girls": 876,
+    "maleStaff": 12,
+    "femaleStaff": 20,
+    "club": "Yes",
+    "plan": "Yes, written plan available and sighted on-site",
+    "space": "No separate space (sick learners remain in classroom)",
+    "stations": 35,
+    "bStances": 23,
+    "gStances": 16,
+    "poster": "Up-to-date MoH posters Torn Outdated posters",
+    "washAudit": "Water + Soap Present",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Free flowing ",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 875947373,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Wakiso",
+    "parish": "Nansana west ward",
+    "auditor": "Ben",
+    "site": "Wakiso / Nansana west ward",
+    "setting": "School",
+    "stations": 11,
+    "pop": 586,
+    "stance_ratio": "53.3:1 (586 : 11)",
+    "notes": "During break time, their is congestion",
+    "refuse": "Clean / Maintained",
+    "wash": "Present, No Soap/Water",
+    "poster": "Obsolete",
+    "holding": "Makeshift Area Only",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876016637,
+    "date": "2026-09-23",
+    "tool": "PAT Assessment",
+    "district": "Wakiso",
+    "parish": "Nansana west",
+    "name": "Nansana SDA PRIMARY SCHOOL",
+    "level": "Primary",
+    "boys": 246,
+    "girls": 265,
+    "maleStaff": 4,
+    "femaleStaff": 7,
+    "club": "Yes",
+    "plan": "No plan in place",
+    "space": "No separate space (sick learners remain in classroom)",
+    "stations": 4,
+    "bStances": 4,
+    "gStances": 8,
+    "poster": "Torn",
+    "washAudit": "Water only (No Soap)",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Organised water flow channels",
+    "hotlineLegible": "No",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876021852,
+    "date": "2026-09-23",
+    "tool": "PAT Assessment",
+    "district": "Nakawa",
+    "parish": "Mbuya2",
+    "name": "Uganda Youth Aid school",
+    "level": "Primary",
+    "boys": 378,
+    "girls": 422,
+    "maleStaff": 11,
+    "femaleStaff": 16,
+    "club": "Yes",
+    "plan": "No plan in place",
+    "space": "No separate space (sick learners remain in classroom)",
+    "stations": 13,
+    "bStances": 4,
+    "gStances": 4,
+    "poster": "Up-to-date MoH posters Torn Outdated posters",
+    "washAudit": "Water only (No Soap)",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Organised water flow channels",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876065360,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Wakiso",
+    "parish": "Ocheng",
+    "auditor": "Ben",
+    "site": "Wakiso / Ocheng",
+    "setting": "Market",
+    "stations": 0,
+    "pop": 500,
+    "stance_ratio": "Critical Gap: 500 Persons with 0 Stations",
+    "notes": "Their is no main entrance to the market, people can enter the market from anyway.",
+    "refuse": "Moderate Stagnation",
+    "wash": "Completely Absent",
+    "poster": "No Materials Found",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876115559,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Central",
+    "parish": "Kisenyi 3",
+    "auditor": "Heather",
+    "site": "Central / Kisenyi 3",
+    "setting": "School",
+    "stations": 7,
+    "pop": 800,
+    "stance_ratio": "114.3:1 (800 : 7)",
+    "notes": "All the class rooms are full beyond capacity",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "Torn ",
+    "holding": "No Protocol ",
+    "staff": "Talked to the school nurse and she said they handle each case as it comes.but mostly sick children are sent back home",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876155204,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Kawempe",
+    "parish": "Bwaise I",
+    "auditor": "Muganwa Peter",
+    "site": "Kawempe / Bwaise I",
+    "setting": "School",
+    "stations": 0,
+    "pop": 48,
+    "stance_ratio": "Critical Gap: 48 Persons with 0 Stations",
+    "notes": "The sanitation and hygiene of the school needs to be improved upon this is to be done by management and through the health club.",
+    "refuse": "Moderate Stagnation",
+    "wash": "Completely Absent",
+    "poster": "No Materials Found",
+    "holding": "Makeshift Area Only",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876164424,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Nakawa",
+    "parish": "Nakawa",
+    "auditor": "Rebecca",
+    "site": "Nakawa / Nakawa",
+    "setting": "Market",
+    "stations": 26,
+    "pop": 4500,
+    "stance_ratio": "173.1:1 (4500 : 26)",
+    "notes": "Because the market is overcrowded distancing is difficult.",
+    "refuse": "Moderate Stagnation",
+    "wash": "Present & Functional",
+    "poster": "Fresh & Prominent",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876173566,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Makindye",
+    "parish": "Nakawa",
+    "auditor": "Rebecca",
+    "site": "Makindye / Nakawa",
+    "setting": "Bus/taxi park",
+    "stations": 0,
+    "pop": 200,
+    "stance_ratio": "Critical Gap: 200 Persons with 0 Stations",
+    "notes": "The people do not mind about washing hands",
+    "refuse": "Moderate Stagnation",
+    "wash": "Present, No Soap/Water",
+    "poster": "No Materials Found",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876320796,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Makindye",
+    "parish": "Bukasa",
+    "auditor": "Cogra",
+    "site": "Makindye / Bukasa",
+    "setting": "Informal settlement",
+    "stations": 2,
+    "pop": 800,
+    "stance_ratio": "400.0:1 (800 : 2)",
+    "notes": "The  houses are highly  congested  but also  market days are highly  congested",
+    "refuse": "Severe Bio-Hazard",
+    "wash": "Present & Functional",
+    "poster": "Torn ",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876384311,
+    "date": "2026-09-23",
+    "tool": "PAT Assessment",
+    "district": "Kawempe",
+    "parish": "Bwaise I",
+    "name": "Mamtaz secondary school",
+    "level": "Secondary",
+    "boys": 20,
+    "girls": 28,
+    "maleStaff": 5,
+    "femaleStaff": 4,
+    "club": "No",
+    "plan": "No plan in place",
+    "space": "Makeshift corner / multipurpose room (e.g., staff room or store",
+    "stations": 2,
+    "bStances": 3,
+    "gStances": 3,
+    "poster": "No IEC materials seen",
+    "washAudit": "Completely absent",
+    "stanceAudit": "Poor / Unhygienic",
+    "wasteAudit": "Open pits / burning",
+    "drainageAudit": "Stagnant ",
+    "hotlineLegible": "No",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876487394,
+    "date": "2026-09-23",
+    "tool": "Transect Walk",
+    "district": "Mukono",
+    "parish": "Seeta",
+    "auditor": "Lynn",
+    "site": "Mukono / Seeta",
+    "setting": "School",
+    "stations": 3,
+    "pop": 1028,
+    "stance_ratio": "342.7:1 (1028 : 3)",
+    "notes": "The school is spacious however much the population of the school is big. The school has one main gate and a small one next to the big one hence chances of contact are really high.",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "No Materials Found",
+    "holding": "Dedicated & Equipped",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876837008,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Nakawa",
+    "parish": "Mugungo",
+    "auditor": "Rebecca",
+    "site": "Nakawa / Mugungo",
+    "setting": "Market",
+    "stations": 2,
+    "pop": 600,
+    "stance_ratio": "300.0:1 (600 : 2)",
+    "notes": "The market is fairly clean but there is no water in the 2 hand washing equipment",
+    "refuse": "Moderate Stagnation",
+    "wash": "Present, No Soap/Water",
+    "poster": "Torn ",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876879285,
+    "date": "2026-09-24",
+    "tool": "PAT Assessment",
+    "district": "Rubaga",
+    "parish": "Nankulabye",
+    "name": "Mengo Primary School",
+    "level": "Primary",
+    "boys": 396,
+    "girls": 385,
+    "maleStaff": 11,
+    "femaleStaff": 15,
+    "club": "Yes",
+    "plan": "Informal / Verbal procedures only",
+    "space": "Dedicated, well-ventilated holding room with clean bed/holding area",
+    "stations": 8,
+    "bStances": 9,
+    "gStances": 8,
+    "poster": "Up-to-date MoH posters",
+    "washAudit": "Water + Soap Present",
+    "stanceAudit": "Adequate (<40:1) & clean",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Stagnant ",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876912605,
+    "date": "2026-09-24",
+    "tool": "PAT Assessment",
+    "district": "Nakawa",
+    "parish": "Mutungo",
+    "name": "Progressive ss kitintale",
+    "level": "Secondary",
+    "boys": 357,
+    "girls": 473,
+    "maleStaff": 34,
+    "femaleStaff": 17,
+    "club": "No",
+    "plan": "Informal / Verbal procedures only",
+    "space": "Makeshift corner / multipurpose room (e.g., staff room or store",
+    "stations": 10,
+    "bStances": 22,
+    "gStances": 22,
+    "poster": "Up-to-date MoH posters",
+    "washAudit": "Water only (No Soap)",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Organised water flow channels",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876936113,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Rubaga",
+    "parish": "Nankulabye",
+    "auditor": "Caroline",
+    "site": "Rubaga / Nankulabye",
+    "setting": "Bus/taxi park",
+    "stations": 0,
+    "pop": 45,
+    "stance_ratio": "Critical Gap: 45 Persons with 0 Stations",
+    "notes": "The people sit acccording to the allowed number of people in the taxi",
+    "refuse": "Clean / Maintained",
+    "wash": "Completely Absent",
+    "poster": "No Materials Found",
+    "holding": "Space",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 876987791,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Rubaga",
+    "parish": "Nankulabye",
+    "auditor": "Caroline",
+    "site": "Rubaga / Nankulabye",
+    "setting": "Market",
+    "stations": 1,
+    "pop": 500,
+    "stance_ratio": "500.0:1 (500 : 1)",
+    "notes": "The market is spaced and well maintained though it only has one hand washing facility",
+    "refuse": "Severe Bio-Hazard",
+    "wash": "Present & Functional",
+    "poster": "No Materials Found",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877018167,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Wakiso",
+    "parish": "Nansana east ward",
+    "auditor": "Ben",
+    "site": "Wakiso / Nansana east ward",
+    "setting": "School",
+    "stations": 20,
+    "pop": 1520,
+    "stance_ratio": "76.0:1 (1520 : 20)",
+    "notes": "Day students are few so their is less congestion",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "No Materials Found",
+    "holding": "Makeshift Area Only",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877070365,
+    "date": "2026-09-24",
+    "tool": "PAT Assessment",
+    "district": "Wakiso",
+    "parish": "Nansana east ward",
+    "name": "Greenlight Islamic Secondary school",
+    "level": "Secondary",
+    "boys": 660,
+    "girls": 860,
+    "maleStaff": 50,
+    "femaleStaff": 29,
+    "club": "No",
+    "plan": "No plan in place",
+    "space": "Dedicated, well-ventilated holding room with clean bed/holding area",
+    "stations": 20,
+    "bStances": 10,
+    "gStances": 10,
+    "poster": "No IEC materials seen",
+    "washAudit": "Water only (No Soap)",
+    "stanceAudit": "Adequate (<40:1) & clean",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Organised water flow channels",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877072921,
+    "date": "2026-09-23",
+    "tool": "PAT Assessment",
+    "district": "Central",
+    "parish": "Kisenyi",
+    "name": "Nakivubo Blue Primary School",
+    "level": "Primary",
+    "boys": 372,
+    "girls": 401,
+    "maleStaff": 9,
+    "femaleStaff": 11,
+    "club": "Yes",
+    "plan": "Informal / Verbal procedures only",
+    "space": "No separate space (sick learners remain in classroom)",
+    "stations": 7,
+    "bStances": 3,
+    "gStances": 3,
+    "poster": "Outdated posters",
+    "washAudit": "Water + Soap Present",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Open pits / burning",
+    "drainageAudit": "Organised water flow channels",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877086788,
+    "date": "2026-09-24",
+    "tool": "PAT Assessment",
+    "district": "Rubaga",
+    "parish": "Nankulabye",
+    "name": "Kasubi Church of Uganda Primary School",
+    "level": "Primary",
+    "boys": 611,
+    "girls": 649,
+    "maleStaff": 19,
+    "femaleStaff": 16,
+    "club": "Yes",
+    "plan": "Informal / Verbal procedures only",
+    "space": "Makeshift corner / multipurpose room (e.g., staff room or store",
+    "stations": 17,
+    "bStances": 10,
+    "gStances": 10,
+    "poster": "Up-to-date MoH posters",
+    "washAudit": "Water only (No Soap)",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Open pits / burning",
+    "drainageAudit": "Free flowing ",
+    "hotlineLegible": "Yes",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877118828,
+    "date": "2026-09-23",
+    "tool": "Gatekeeper Session",
+    "district": "Central",
+    "parish": "Kisenyi 3",
+    "coordinator": "Heather",
+    "school": "Gatekeeper Session (VHT)",
+    "role": "VHT",
+    "commitments": "Support for the campaign",
+    "male": 2,
+    "female": 6,
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 8,
+    "games": 0
+  },
+  {
+    "id": 877129684,
+    "date": "2026-09-23",
+    "tool": "School Activity",
+    "district": "Central",
+    "parish": "Kisenyi 2",
+    "coordinator": "Heather",
+    "school": "Nakivubo Blue Primary School",
+    "visit_num": "Visit 1",
+    "health_club": "Yes",
+    "boys": 317,
+    "girls": 201,
+    "enrolment": 1131,
+    "teachers": 27,
+    "games": 22,
+    "signs": "Few hands raised (< 25% of crowd)",
+    "hotline": "About half raised hands (~50% of crowd)",
+    "stigma": "About half raised hands (~50% of crowd)",
+    "handwash_demo": "Missed Key Step",
+    "soap": "Functional running water AND soap present",
+    "rumor": "",
+    "barrier": "Language barrier for the refugee pupils",
+    "source": "Community"
+  },
+  {
+    "id": 877143513,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Wakiso",
+    "parish": "Nabweru east",
+    "auditor": "Ben",
+    "site": "Wakiso / Nabweru east",
+    "setting": "School",
+    "stations": 10,
+    "pop": 625,
+    "stance_ratio": "62.5:1 (625 : 10)",
+    "notes": "At the gate, the students are always many",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "No Materials Found",
+    "holding": "Makeshift Area Only",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877247326,
+    "date": "2026-09-24",
+    "tool": "PAT Assessment",
+    "district": "Rubaga",
+    "parish": "Nateete",
+    "name": "Nateete Muslim High School",
+    "level": "Secondary",
+    "boys": 723,
+    "girls": 732,
+    "maleStaff": 29,
+    "femaleStaff": 34,
+    "club": "Yes",
+    "plan": "Informal / Verbal procedures only",
+    "space": "Makeshift corner / multipurpose room (e.g., staff room or store",
+    "stations": 4,
+    "bStances": 10,
+    "gStances": 10,
+    "poster": "No IEC materials seen",
+    "washAudit": "Water only (No Soap)",
+    "stanceAudit": "Congested (>50:1)",
+    "wasteAudit": "Open pits / burning",
+    "drainageAudit": "Stagnant ",
+    "hotlineLegible": "No",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877287282,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Nakawa",
+    "parish": "Luzira",
+    "auditor": "Rebecca",
+    "site": "Nakawa / Luzira",
+    "setting": "Market",
+    "stations": 2,
+    "pop": 350,
+    "stance_ratio": "175.0:1 (350 : 2)",
+    "notes": "The trenches had stagnant water",
+    "refuse": "Moderate Stagnation",
+    "wash": "Present, No Soap/Water",
+    "poster": "No Materials Found",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877453238,
+    "date": "2026-09-24",
+    "tool": "Gatekeeper Session",
+    "district": "Wakiso",
+    "parish": "East",
+    "coordinator": "Ben",
+    "school": "Gatekeeper Session (Headteachers)",
+    "role": "Headteachers",
+    "commitments": "They all committed to promote handwashing in their schools",
+    "male": 56,
+    "female": 24,
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 80,
+    "games": 0
+  },
+  {
+    "id": 877472931,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Makindye",
+    "parish": "Bukasa , Yoka",
+    "auditor": "Cogra",
+    "site": "Makindye / Bukasa , Yoka",
+    "setting": "Informal settlement",
+    "stations": 3,
+    "pop": 500,
+    "stance_ratio": "166.7:1 (500 : 3)",
+    "notes": "The  housing is densely populated   housing big families",
+    "refuse": "Moderate Stagnation",
+    "wash": "Present, No Soap/Water",
+    "poster": "Torn ",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877480049,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Makindye",
+    "parish": "Namwongo B, Bukasa",
+    "auditor": "Cogra",
+    "site": "Makindye / Namwongo B, Bukasa",
+    "setting": "Informal settlement",
+    "stations": 3,
+    "pop": 700,
+    "stance_ratio": "233.3:1 (700 : 3)",
+    "notes": "The houses are densely populated with a large family sleeping in one room or two rooms",
+    "refuse": "Severe Bio-Hazard",
+    "wash": "Completely Absent",
+    "poster": "Torn ",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877498058,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Kawempe",
+    "parish": "Kawempe II",
+    "auditor": "Muganwa Peter",
+    "site": "Kawempe / Kawempe II",
+    "setting": "Market",
+    "stations": 2,
+    "pop": 120,
+    "stance_ratio": "60.0:1 (120 : 2)",
+    "notes": "During day the place is not congested as compared to pick hours where even some vendors use roadside space for business",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "No Materials Found",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877503259,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Makindye",
+    "parish": "Nsambya central",
+    "auditor": "Cogra",
+    "site": "Makindye / Nsambya central",
+    "setting": "Informal settlement",
+    "stations": 2,
+    "pop": 600,
+    "stance_ratio": "300.0:1 (600 : 2)",
+    "notes": "Place is densely populated",
+    "refuse": "Moderate Stagnation",
+    "wash": "Present, No Soap/Water",
+    "poster": "Torn ",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877529222,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Kawempe",
+    "parish": "Kawempe II",
+    "auditor": "Muganwa Peter",
+    "site": "Kawempe / Kawempe II",
+    "setting": "School",
+    "stations": 1,
+    "pop": 210,
+    "stance_ratio": "210.0:1 (210 : 1)",
+    "notes": "The school has a hand washing facility at the gate though this wasnt in use.",
+    "refuse": "Clean / Maintained",
+    "wash": "Present, No Soap/Water",
+    "poster": "No Materials Found",
+    "holding": "Makeshift Area Only",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877549427,
+    "date": "2026-09-24",
+    "tool": "PAT Assessment",
+    "district": "Kawempe",
+    "parish": "Kyebando",
+    "name": "Gayaza Road Secondary School",
+    "level": "Secondary",
+    "boys": 90,
+    "girls": 120,
+    "maleStaff": 19,
+    "femaleStaff": 16,
+    "club": "No",
+    "plan": "Informal / Verbal procedures only",
+    "space": "Makeshift corner / multipurpose room (e.g., staff room or store",
+    "stations": 1,
+    "bStances": 4,
+    "gStances": 6,
+    "poster": "No IEC materials seen",
+    "washAudit": "Water + Soap Present",
+    "stanceAudit": "Adequate (<40:1) & clean",
+    "wasteAudit": "Maintained & covered",
+    "drainageAudit": "Free flowing ",
+    "hotlineLegible": "No",
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  },
+  {
+    "id": 877580946,
+    "date": "2026-09-24",
+    "tool": "Transect Walk",
+    "district": "Kawempe",
+    "parish": "Makerere III",
+    "auditor": "Muganwa Peter",
+    "site": "Kawempe / Makerere III",
+    "setting": "Bus/taxi park",
+    "stations": 23,
+    "pop": 1595,
+    "stance_ratio": "69.3:1 (1595 : 23)",
+    "notes": "The taxi park has functinional hand washing facilities at 18 stages. There are bins in the taxi park for dumping rubbish.",
+    "refuse": "Clean / Maintained",
+    "wash": "Present & Functional",
+    "poster": "No Materials Found",
+    "holding": "No Protocol ",
+    "staff": "Not oriented",
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 0,
+    "games": 0
+  }
+];
 
-    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v16';
+    function reloadDefaultExcel() {
+      try {
+        localStorage.removeItem('phe_dashboard_uploaded_data_v17');
+        localStorage.removeItem('phe_dashboard_uploaded_data_v17');
+      } catch(e) {}
+      processRawWorkbookRows(DEFAULT_EMBEDDED_DATA, true);
+      populateFilterOptions();
+      applyFilters();
+      alert('Reset completed. Loaded ' + DEFAULT_EMBEDDED_DATA.length + ' records from connected Excel dataset.');
+    }
+
+    const STORAGE_KEY = 'phe_dashboard_uploaded_data_v17';
 
     function saveToLocalStorage(rows) {
       try {
@@ -2490,15 +3985,40 @@
     window.showTab = showTab;
     window.applyFilters = applyFilters;
     window.resetFilters = resetFilters;
-    window.toggleAdminLogin = toggleAdminLogin;
-    window.checkAdminAuth = checkAdminAuth;
+    
+    window.reloadDefaultExcel = reloadDefaultExcel;
+
+    
+    // Try to auto-fetch Excel or JSON if hosted on GitHub Pages or local web server
+    async function tryAutoFetchServerData() {
+      if (window.location.protocol.startsWith('http')) {
+        try {
+          const resp = await fetch('Public_Health_Emergencies.xlsx');
+          if (resp.ok) {
+            const buf = await resp.arrayBuffer();
+            const wb = XLSX.read(new Uint8Array(buf), { type: 'array', cellDates: true });
+            let targetSheetName = wb.SheetNames.find(s => s.trim().toLowerCase().includes('public health') || s.trim().toLowerCase().includes('emergenc')) || wb.SheetNames[0];
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[targetSheetName], { defval: "" });
+            if (rows && rows.length > 0) {
+              processRawWorkbookRows(rows, true);
+              populateFilterOptions();
+              applyFilters();
+              console.log('Auto-loaded live Excel from server:', rows.length, 'rows');
+            }
+          }
+        } catch (e) {
+          console.log('Local/fallback data in use.');
+        }
+      }
+    }
 
     // Boot (Loads from localStorage cache if available, otherwise defaults to embedded dataset)
     window.addEventListener('DOMContentLoaded', () => {
-      checkAdminAuth();
+      
       processRawWorkbookRows([], false);
       populateFilterOptions();
       applyFilters();
+      tryAutoFetchServerData();
     });
   </script>
 </body>
