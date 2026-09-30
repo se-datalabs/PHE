@@ -381,6 +381,33 @@ header {
   margin-bottom: 22px;
 }
 
+/* 5-Column Grid Layout for 5 Claims */
+.five-col-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 1200px) {
+  .five-col-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .five-col-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 500px) {
+  .five-col-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .kpi-card {
   background: var(--card-bg);
   border: 1px solid var(--border);

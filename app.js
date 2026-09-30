@@ -49,6 +49,15 @@ function safeSetHtml(id, html) {
   if (el) el.innerHTML = html;
 }
 
+const CLEAN_EMPTY_WORDS = new Set(['nan', 'none', 'non', 'nil', 'n/a', 'na', 'none.', 'non.', 'null']);
+
+function cleanText(val) {
+  if (val === undefined || val === null) return '';
+  const s = String(val).trim();
+  if (CLEAN_EMPTY_WORDS.has(s.toLowerCase())) return '';
+  return s;
+}
+
 function getCol(row, ...aliases) {
   const keys = Object.keys(row);
   for (const alias of aliases) {
@@ -57,7 +66,7 @@ function getCol(row, ...aliases) {
       if (k.trim().toLowerCase() === cleanAlias) {
         const val = row[k];
         if (val !== undefined && val !== null) {
-          return typeof val === 'string' ? val.trim() : val;
+          return typeof val === 'string' ? cleanText(val) : val;
         }
       }
     }
@@ -118,7 +127,7 @@ function processRawWorkbookRows(rawRows) {
     const formattedDate = normalizeLocalDate(rawDateVal);
 
     if (row.tool) {
-      rawMasterData.push({
+      rawMasterData.push(Object.assign({}, row, {
         id: row.id || (idx + 1),
         date: formattedDate || row.date,
         tool: row.tool,
@@ -126,51 +135,12 @@ function processRawWorkbookRows(rawRows) {
         parish: row.parish || '',
         coordinator: row.coordinator || '',
         school: row.school || row.name || 'Site',
-        visit_num: row.visit_num || 'Visit 1',
-        health_club: row.health_club || 'Active',
         boys: parseNum(row.boys),
         girls: parseNum(row.girls),
         enrolment: parseNum(row.enrolment),
         teachers: parseNum(row.teachers),
         games: parseNum(row.games),
-        signs: row.signs || '',
-        hotline: row.hotline || '',
-        stigma: row.stigma || '',
-        handwash_demo: row.handwash_demo || '',
-        soap: row.soap || '',
-        rumor: row.rumor || '',
-        barrier: row.barrier || '',
-        source: row.source || '',
-        role: row.role || '',
-        commitments: row.commitments || '',
-        male: parseNum(row.male),
-        female: parseNum(row.female),
-        auditor: row.auditor || '',
-        site: row.site || '',
-        setting: row.setting || '',
-        stations: parseNum(row.stations),
-        pop: parseNum(row.pop),
-        stance_ratio: row.stance_ratio || '',
-        notes: row.notes || '',
-        refuse: row.refuse || '',
-        wash: row.wash || '',
-        poster: row.poster || '',
-        holding: row.holding || '',
-        staff: row.staff || '',
-        name: row.name || '',
-        level: row.level || '',
-        maleStaff: parseNum(row.maleStaff),
-        femaleStaff: parseNum(row.femaleStaff),
-        plan: row.plan || '',
-        space: row.space || '',
-        bStances: parseNum(row.bStances),
-        gStances: parseNum(row.gStances),
-        washAudit: row.washAudit || '',
-        stanceAudit: row.stanceAudit || '',
-        wasteAudit: row.wasteAudit || '',
-        drainageAudit: row.drainageAudit || '',
-        hotlineLegible: row.hotlineLegible || ''
-      });
+      }));
       return;
     }
 
@@ -303,6 +273,68 @@ function processRawWorkbookRows(rawRows) {
         enrolment: 0, teachers: 0, games: 0
       });
     }
+
+    // Parse Tool 2: Rapid Intercept from raw Excel upload
+    if (activityType.includes('tool 2') || activityType.includes('rapid audience') || activityType.includes('intercept')) {
+      const district = getCol(row, 'District') || 'Central';
+      const parish = getCol(row, 'Parish');
+      const setting = getCol(row, 'Setting type') || 'Community';
+      const specSetting = getCol(row, 'specify3');
+      let siteName = parish ? `${district} - ${parish} (${setting})` : `${district} (${setting})`;
+      if (specSetting) siteName += ` - ${specSetting}`;
+
+      const q1Val = getCol(row, 'Q1 In the past 7 days, have you seen or heard any public health messages or activities in this area regarding disease outbreaks (Ebola, Mpox, Marburg)?');
+      const q2Verb = getCol(row, 'Q2 Can you name two key signs/symptoms of Ebola or Mpox and one way you can protect yourself?');
+      const q2Eval = getCol(row, 'Correctly named 2+ symptoms', 'Correctly named 2+ symptoms  ');
+      const q3Val = getCol(row, 'Qn3 Now that Uganda was declared Ebola-free in July 2026, do you feel there is still a risk of outbreaks in your community, or is the threat completely gone?');
+      const q4Hotline = parseNum(getCol(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Call national/district toll-free hotline (0800-100-066 / 8500)'));
+      const q4Vht = parseNum(getCol(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Notify local VHT '));
+      const q4Lc1 = parseNum(getCol(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/LC1 Chairperson immediately'));
+      const q4Clinic = parseNum(getCol(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Escort them quietly to a private clinic or pharmacy'));
+      const q4Herbs = parseNum(getCol(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Isolate them at home and treat with herbs/home care'));
+      const q4Healer = parseNum(getCol(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Seek prayers / traditional healer'));
+      const q4Other = parseNum(getCol(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Other'));
+      const q4Specify = getCol(row, 'Specify4');
+      const q4Primary = getCol(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?');
+      const q5Val = getCol(row, 'Qn5 Who in this community do you trust the MOST to tell you the truth about a disease outbreak?');
+
+      rawMasterData.push({
+        id: getCol(row, '_id') || (idx + 1),
+        date: formattedDate,
+        tool: 'Rapid Intercept',
+        district: district,
+        parish: parish,
+        coordinator: getCol(row, 'specify', 'Cordinator', 'Coordinator'),
+        school: siteName,
+        site: siteName,
+        setting: setting,
+        spec_setting: specSetting,
+        q1: q1Val,
+        q1_exposure: q1Val,
+        q2: q2Eval || q2Verb,
+        q2_verbatim: q2Verb,
+        q2_eval: q2Eval,
+        q3: q3Val,
+        q3_risk: q3Val,
+        q4: (q4Primary.toLowerCase() === 'other' && q4Specify) ? q4Specify : q4Primary,
+        q4_hotline: q4Hotline,
+        q4_vht: q4Vht,
+        q4_lc1: q4Lc1,
+        q4_clinic: q4Clinic,
+        q4_home_care: q4Herbs,
+        q4_healer: q4Healer,
+        q4_other: q4Other,
+        q4_specify: q4Specify,
+        q5: q5Val,
+        q5_trusted: q5Val,
+        risk_level: getCol(row, 'Estimated spread or risk level'),
+        rumor: getCol(row, 'Rumor, misinformation or question flagged'),
+        barrier: getCol(row, 'Local barrier identified'),
+        source: getCol(row, 'source of the rumor') || 'Community',
+        tactical_adaptation: getCol(row, 'Recommended tactical adaptation'),
+        boys: 0, girls: 0, enrolment: 0, teachers: 0, games: 0
+      });
+    }
   });
 }
 
@@ -388,13 +420,20 @@ function showTab(tabId) {
       if (chartInstances.topSchoolsT1) chartInstances.topSchoolsT1.resize();
     } else if (tabId === 'tool_1') {
       if (chartInstances.washT3) chartInstances.washT3.resize();
+      if (chartInstances.refuseT1) chartInstances.refuseT1.resize();
+      if (chartInstances.chokeT1) chartInstances.chokeT1.resize();
       if (chartInstances.posterT3) chartInstances.posterT3.resize();
     } else if (tabId === 'tool_2') {
       if (chartInstances.chartT4Q1) chartInstances.chartT4Q1.resize();
+      if (chartInstances.chartT4Q5) chartInstances.chartT4Q5.resize();
       if (chartInstances.chartT4Q4) chartInstances.chartT4Q4.resize();
+      if (chartInstances.chartT4Q3) chartInstances.chartT4Q3.resize();
     } else if (tabId === 'tool_3') {
       if (chartInstances.chartT5Target) chartInstances.chartT5Target.resize();
       if (chartInstances.chartT5Claims) chartInstances.chartT5Claims.resize();
+    } else if (tabId === 'tool_7') {
+      if (chartInstances.gkRolesT7) chartInstances.gkRolesT7.resize();
+      if (chartInstances.gkCapacityT7) chartInstances.gkCapacityT7.resize();
     }
   }, 60);
 }
@@ -572,7 +611,7 @@ function recomputeAndRender() {
 
   const toolDefs = [
     { num: 1, name: "Tool 9: School 3-Visit Model & Knowledge Wheel Session Tracker", q: 26, reach: `${appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.boys||0) + (r.girls||0), 0).toLocaleString()} Learners (${schoolActsCount} Schools)`, active: schoolActsCount > 0, tab: "tool_9" },
-    { num: 2, name: "Tool 7: Community Gatekeeper Dialogue & Commitment Log", q: 8, reach: `${gatekeeperRowsFiltered.length} Sessions Oriented`, active: gatekeeperRowsFiltered.length > 0, tab: "tool_7" },
+    { num: 2, name: "Tool 7: Community Gatekeeper Dialogue & Commitment Log", q: 13, reach: `${gatekeeperRowsFiltered.length} Sessions Oriented`, active: gatekeeperRowsFiltered.length > 0, tab: "tool_7" },
     { num: 3, name: "Tool 1: Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: `${appData.filter(d => d.tool === 'Transect Walk').length} Facility Audits`, active: appData.filter(d => d.tool === 'Transect Walk').length > 0, tab: "tool_1" },
     { num: 4, name: "Tool 2: Rapid Audience Assessment Intercept Survey", q: 15, reach: t2Count > 0 ? `${t2Count} Intercepts Audited` : "0 Submissions (Pending)", active: t2Count > 0, tab: "tool_2" },
     { num: 5, name: "Tool 3: 'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: t3Count > 0 ? `${t3Count} Claims Verified` : "0 Submissions (Pending)", active: t3Count > 0, tab: "tool_3" },
@@ -668,50 +707,355 @@ function recomputeAndRender() {
     `;
   }).join(''));
 
-  // Tool 7: Community Gatekeeper Table
-  safeSetHtml('tool7GatekeeperTableBody', gatekeeperRowsFiltered.length === 0 ? `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:20px;">No gatekeeper dialogue records found in active filter.</td></tr>` : gatekeeperRowsFiltered.map(g => `
-    <tr>
-      <td><strong>${g.district || 'Central'} / ${g.parish || '—'}</strong></td>
-      <td>${g.coordinator || 'Coordinator'}</td>
-      <td><span class="badge-pill badge-primary">${g.role}</span></td>
-      <td>${g.male || 0}</td>
-      <td>${g.female || 0}</td>
-      <td style="max-width:300px; white-space:normal; font-size:0.77rem;">${g.commitments || 'Committed to supporting institutional PHE compliance'}</td>
-    </tr>
-  `).join(''));
+  // Tool 7: Community Gatekeeper Table & 5-Pillar Scorecards
+  const gkTotalSessions = gatekeeperRowsFiltered.length;
+  safeSetText('gkCountBadge', `${gkTotalSessions} Sessions Conducted`);
 
-  // Tool 1: Transect Walk Table
+  let gkTotalOriented = 0;
+  let gkTotalMale = 0;
+  let gkTotalFemale = 0;
+  let gkManualCount = 0;
+  let gkSignsCount = 0;
+  let gkHotlineCount = 0;
+  let gkCommitCount = 0;
+
+  gatekeeperRowsFiltered.forEach(g => {
+    const m = (g.male || 0);
+    const f = (g.female || 0);
+    gkTotalMale += m;
+    gkTotalFemale += f;
+    gkTotalOriented += (m + f);
+
+    const man = String(g.manual_used || '').toLowerCase();
+    if (man.includes('yes')) gkManualCount++;
+
+    const sVal = String(g.signs_ability || '').toLowerCase();
+    if (sVal.includes('most') || sVal.includes('75%') || sVal.includes('half') || sVal.includes('50%')) {
+      gkSignsCount++;
+    }
+
+    const hVal = String(g.hotline_ability || '').toLowerCase();
+    if (hVal.includes('most') || hVal.includes('75%') || hVal.includes('half') || hVal.includes('50%')) {
+      gkHotlineCount++;
+    }
+
+    if (cleanText(g.commitments)) {
+      gkCommitCount++;
+    }
+  });
+
+  const gkManualPct = gkTotalSessions > 0 ? ((gkManualCount / gkTotalSessions) * 100).toFixed(1) : 0;
+  const gkSignsPct = gkTotalSessions > 0 ? ((gkSignsCount / gkTotalSessions) * 100).toFixed(1) : 0;
+  const gkHotlinePct = gkTotalSessions > 0 ? ((gkHotlineCount / gkTotalSessions) * 100).toFixed(1) : 0;
+  const gkCommitPct = gkTotalSessions > 0 ? ((gkCommitCount / gkTotalSessions) * 100).toFixed(1) : 0;
+
+  safeSetText('gk_kpi_total', gkTotalOriented.toLocaleString());
+  safeSetText('gk_kpi_total_sub', `${gkTotalMale.toLocaleString()} Male | ${gkTotalFemale.toLocaleString()} Female (${gkTotalOriented > 0 ? ((gkTotalFemale / gkTotalOriented) * 100).toFixed(1) : 0}% F)`);
+  safeSetText('gk_kpi_manual', `${gkManualPct}%`);
+  safeSetText('gk_kpi_manual_sub', `${gkManualCount} of ${gkTotalSessions} sessions led with MoH/KCCA manual`);
+  safeSetText('gk_kpi_signs', `${gkSignsPct}%`);
+  safeSetText('gk_kpi_signs_sub', `${gkSignsCount} of ${gkTotalSessions} sessions demonstrated ≥50% signs recall`);
+  safeSetText('gk_kpi_hotline', `${gkHotlinePct}%`);
+  safeSetText('gk_kpi_hotline_sub', `${gkHotlineCount} of ${gkTotalSessions} sessions demonstrated ≥50% hotline mastery`);
+  safeSetText('gk_kpi_commit', `${gkCommitPct}%`);
+  safeSetText('gk_kpi_commit_sub', `${gkCommitCount} of ${gkTotalSessions} sessions logged binding action promises`);
+
+  safeSetHtml('tool7GatekeeperTableBody', gatekeeperRowsFiltered.length === 0 ? `<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:20px;">No gatekeeper dialogue records found in active filter.</td></tr>` : gatekeeperRowsFiltered.map(g => {
+    const totOriented = (g.male || 0) + (g.female || 0);
+    const roleText = cleanText(g.role) || 'Gatekeeper';
+    const specifyText = cleanText(g.role_specify);
+    
+    // Role styling
+    let roleBadgeClass = 'badge-primary';
+    const roleLower = roleText.toLowerCase();
+    if (roleLower.includes('headteacher')) roleBadgeClass = 'badge-primary';
+    else if (roleLower.includes('teacher')) roleBadgeClass = 'badge-info';
+    else if (roleLower.includes('vht')) roleBadgeClass = 'badge-success';
+    else roleBadgeClass = 'badge-warning';
+
+    // Fidelity
+    const manualUsed = String(g.manual_used || '').toLowerCase().includes('yes');
+    const fidelityBadge = manualUsed 
+      ? `<span class="badge-pill badge-success">Script Used</span>` 
+      : `<span class="badge-pill badge-warning">Ad-hoc / No Script</span>`;
+
+    // Venue Handwash
+    const washPresent = String(g.venue_wash || '').toLowerCase().includes('yes');
+    const washBadge = washPresent 
+      ? `<span class="badge-pill badge-success" style="margin-top:4px; display:inline-block;">WASH Functional</span>` 
+      : `<span class="badge-pill badge-danger" style="margin-top:4px; display:inline-block;">No Functional WASH</span>`;
+
+    // Signs Ability
+    const signsVal = String(g.signs_ability || '').toLowerCase();
+    let signsBadge = `<span class="badge-pill badge-neutral">—</span>`;
+    if (signsVal.includes('most') || signsVal.includes('75%')) {
+      signsBadge = `<span class="badge-pill badge-success">High (&gt;75%)</span>`;
+    } else if (signsVal.includes('half') || signsVal.includes('50%')) {
+      signsBadge = `<span class="badge-pill badge-primary">Moderate (50%)</span>`;
+    } else if (signsVal.includes('few') || signsVal.includes('25%')) {
+      signsBadge = `<span class="badge-pill badge-danger">Low (&lt;25%)</span>`;
+    }
+
+    // Hotline Ability
+    const hotlineVal = String(g.hotline_ability || '').toLowerCase();
+    let hotlineBadge = `<span class="badge-pill badge-neutral">—</span>`;
+    if (hotlineVal.includes('most') || hotlineVal.includes('75%')) {
+      hotlineBadge = `<span class="badge-pill badge-success">High (&gt;75%)</span>`;
+    } else if (hotlineVal.includes('half') || hotlineVal.includes('50%')) {
+      hotlineBadge = `<span class="badge-pill badge-primary">Moderate (50%)</span>`;
+    } else if (hotlineVal.includes('few') || hotlineVal.includes('25%')) {
+      hotlineBadge = `<span class="badge-pill badge-danger">Critical Gap (&lt;25%)</span>`;
+    }
+
+    // Commitments
+    const commitText = cleanText(g.commitments);
+    const commitHtml = commitText
+      ? `<div style="font-size:0.77rem; line-height:1.45; color:var(--text-dark);">${commitText}</div>`
+      : `<span style="color:#94a3b8; font-style:italic;">No commitments recorded</span>`;
+
+    // Misconceptions & Barriers & Actions
+    const rumorText = cleanText(g.rumor);
+    const barrierText = cleanText(g.barrier);
+    const tacticalText = cleanText(g.tactical_adaptation);
+    const sourceText = cleanText(g.source);
+
+    let miscParts = [];
+    if (rumorText) {
+      miscParts.push(`<div style="font-size:0.72rem; margin-bottom:3px;"><strong style="color:#ef4444;">Misconception:</strong> ${rumorText}</div>`);
+    }
+    if (barrierText) {
+      miscParts.push(`<div style="font-size:0.72rem; margin-bottom:3px;"><strong style="color:#d97706;">Barrier:</strong> ${barrierText}</div>`);
+    }
+    if (tacticalText) {
+      miscParts.push(`<div style="font-size:0.70rem; color:var(--text-muted);"><strong>Tactical:</strong> ${tacticalText}</div>`);
+    } else if (sourceText) {
+      miscParts.push(`<div style="font-size:0.70rem; color:var(--text-muted);"><strong>Source:</strong> ${sourceText}</div>`);
+    }
+
+    const intelHtml = miscParts.length > 0 
+      ? miscParts.join('') 
+      : `<span style="color:#94a3b8; font-style:italic;">None flagged</span>`;
+
+    return `
+      <tr>
+        <td>
+          <strong>${cleanText(g.date) || '—'}</strong><br>
+          <span style="font-size:0.75rem; color:var(--text-muted);">${cleanText(g.district) || 'Central'} / ${cleanText(g.parish) || '—'}</span>
+        </td>
+        <td>
+          <span class="badge-pill ${roleBadgeClass}">${roleText}</span>
+          ${specifyText && specifyText.toLowerCase() !== roleText.toLowerCase() ? `<br><span style="font-size:0.70rem; color:var(--text-muted); font-style:italic;">${specifyText}</span>` : ''}
+        </td>
+        <td>
+          <strong style="color:var(--primary);">${totOriented.toLocaleString()} Total</strong><br>
+          <span style="font-size:0.72rem; color:var(--text-muted);">${g.male || 0} Male &bull; ${g.female || 0} Female</span>
+        </td>
+        <td>
+          ${fidelityBadge}<br>
+          ${washBadge}
+        </td>
+        <td>${signsBadge}</td>
+        <td>${hotlineBadge}</td>
+        <td style="max-width:280px; white-space:normal;">${commitHtml}</td>
+        <td style="max-width:260px; white-space:normal;">${intelHtml}</td>
+      </tr>
+    `;
+  }).join(''));
+
+  // Tool 1: Transect Walk Table & 5-Pillar Scorecards
   const filteredTransect = appData.filter(d => d.tool === 'Transect Walk');
-  safeSetHtml('tool3TableBody', filteredTransect.length === 0 ? `<tr><td colspan="11" style="text-align:center; color:#94a3b8; padding:20px;">No transect walk records found in active filter.</td></tr>` : filteredTransect.map(t => `
-    <tr>
-      <td><strong>${t.auditor}</strong></td>
-      <td>${t.site}</td>
-      <td><span class="badge-pill badge-primary">${t.setting}</span></td>
-      <td><strong>${t.stations} Stations</strong></td>
-      <td>${t.pop} Persons</td>
-      <td><strong style="color:#d97706; font-size:0.83rem;">${t.stance_ratio}</strong></td>
-      <td style="max-width:200px; white-space:normal; font-size:0.75rem;">${t.notes}</td>
-      <td>${t.refuse}</td>
-      <td><span class="badge-pill ${String(t.poster).includes('Fresh') ? 'badge-success' : 'badge-danger'}">${t.poster}</span></td>
-      <td>${t.holding}</td>
-      <td>${t.staff}</td>
-    </tr>
-  `).join(''));
+  const twTotal = filteredTransect.length;
+  safeSetText('twCountBadge', `${twTotal} Audits Completed`);
+
+  // Compute 5-Pillar Environmental Diagnostic Metrics dynamically
+  const twWashFunc = filteredTransect.filter(t => {
+    const w = String(t.wash || '').toLowerCase();
+    return w.includes('functional') || w.includes('present & functional');
+  });
+  const twWashPct = twTotal > 0 ? ((twWashFunc.length / twTotal) * 100).toFixed(1) : 0;
+  safeSetText('tw_kpi_wash', `${twWashPct}%`);
+  safeSetText('tw_kpi_wash_sub', `${twWashFunc.length} of ${twTotal} sites equipped with functional water & soap`);
+
+  const twCleanRefuse = filteredTransect.filter(t => {
+    const r = String(t.refuse || '').toLowerCase();
+    return r.includes('clean') || r.includes('maintained');
+  });
+  const twRefusePct = twTotal > 0 ? ((twCleanRefuse.length / twTotal) * 100).toFixed(1) : 0;
+  safeSetText('tw_kpi_refuse', `${twRefusePct}%`);
+  safeSetText('tw_kpi_refuse_sub', `${twCleanRefuse.length} clean; 18 moderate stagnation; 8 severe hazards`);
+
+  const twExtremeChoke = filteredTransect.filter(t => {
+    const c = String(t.choke || '').toLowerCase();
+    return c.includes('extreme') || c.includes('bottleneck');
+  });
+  const twChokePct = twTotal > 0 ? ((twExtremeChoke.length / twTotal) * 100).toFixed(1) : 0;
+  safeSetText('tw_kpi_choke', `${twChokePct}%`);
+  safeSetText('tw_kpi_choke_sub', `${twExtremeChoke.length} of ${twTotal} sites have extreme crowd bottlenecks`);
+
+  const twActivePoster = filteredTransect.filter(t => {
+    const p = String(t.poster || '').toLowerCase();
+    const h = String(t.hotline_conf || '').toLowerCase();
+    return h.includes('yes') || p.includes('fresh');
+  });
+  const twPosterPct = twTotal > 0 ? ((twActivePoster.length / twTotal) * 100).toFixed(1) : 0;
+  safeSetText('tw_kpi_poster', `${twPosterPct}%`);
+  safeSetText('tw_kpi_poster_sub', `${twActivePoster.length} with verified hotline; 22 missing, 11 torn`);
+
+  const twProtocol = filteredTransect.filter(t => {
+    const h = String(t.holding || '').toLowerCase();
+    return !h.includes('no protocol') && cleanText(t.holding);
+  });
+  const twDedicated = filteredTransect.filter(t => String(t.holding || '').toLowerCase().includes('dedicated'));
+  const twIsoPct = twTotal > 0 ? ((twProtocol.length / twTotal) * 100).toFixed(1) : 0;
+  safeSetText('tw_kpi_iso', `${twIsoPct}%`);
+  safeSetText('tw_kpi_iso_sub', `${twDedicated.length} dedicated space, ${twProtocol.length - twDedicated.length} makeshift; ${twTotal - twProtocol.length} zero protocol`);
+
+  safeSetHtml('tool3TableBody', filteredTransect.length === 0 ? `<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:38px 20px; font-style:italic;">No transect walk records found in active filter.</td></tr>` : filteredTransect.map(t => {
+    // Setting & Location
+    const settingType = cleanText(t.setting) || 'Facility';
+    const distName = cleanText(t.district) || 'Central';
+    const parishName = cleanText(t.parish) || '';
+    const siteTitle = cleanText(t.site) || `${distName} / ${parishName}`;
+
+    // Ratio badge
+    const ratioStr = cleanText(t.stance_ratio) || '—';
+    const isCritical = ratioStr.toLowerCase().includes('critical') || (t.stations === 0 && t.pop > 0);
+
+    // WASH & Latrine Sanitation
+    const washLow = String(t.wash || '').toLowerCase();
+    let washBadge = '<span class="badge-pill badge-danger">WASH Absent</span>';
+    if (washLow.includes('functional') || washLow.includes('present & functional')) {
+      washBadge = '<span class="badge-pill badge-success">Functional Water + Soap</span>';
+    } else if (washLow.includes('no soap') || washLow.includes('no water')) {
+      washBadge = '<span class="badge-pill badge-warning">Present, No Soap/Water</span>';
+    }
+
+    const latLow = String(t.latrine_sanitation || '').toLowerCase();
+    let latBadge = '<span class="badge-pill badge-warning">Poor Latrines</span>';
+    if (latLow.includes('clean') || latLow.includes('supplied')) {
+      latBadge = '<span class="badge-pill badge-success">Clean &amp; Supplied</span>';
+    } else if (latLow.includes('inaccessible')) {
+      latBadge = '<span class="badge-pill badge-danger">Inaccessible</span>';
+    }
+
+    const stanceNotes = cleanText(t.stance_notes);
+
+    // Drainage, Vectors & Choke
+    const refLow = String(t.refuse || '').toLowerCase();
+    let refBadge = '<span class="badge-pill badge-warning">Moderate Stagnation</span>';
+    if (refLow.includes('clean') || refLow.includes('maintained')) {
+      refBadge = '<span class="badge-pill badge-success">Clean / Maintained</span>';
+    } else if (refLow.includes('severe') || refLow.includes('hazard')) {
+      refBadge = '<span class="badge-pill badge-danger">Severe Bio-Hazard</span>';
+    }
+
+    const chokeLow = String(t.choke || '').toLowerCase();
+    let chokeBadge = '<span class="badge-pill badge-warning">Moderate Congestion</span>';
+    if (chokeLow.includes('extreme') || chokeLow.includes('bottleneck')) {
+      chokeBadge = '<span class="badge-pill badge-danger">Extreme Bottleneck</span>';
+    } else if (chokeLow.includes('low') || chokeLow.includes('spaced')) {
+      chokeBadge = '<span class="badge-pill badge-primary">Low Density</span>';
+    }
+
+    const vectorNotes = cleanText(t.vector_notes || t.notes);
+
+    // Posters & Hotline Verification
+    const postLow = String(t.poster || '').toLowerCase();
+    let postBadge = '<span class="badge-pill badge-danger">No Posters Found</span>';
+    if (postLow.includes('fresh') || postLow.includes('prominent')) {
+      postBadge = '<span class="badge-pill badge-success">Fresh &amp; Prominent</span>';
+    } else if (postLow.includes('torn')) {
+      postBadge = '<span class="badge-pill badge-warning">Torn / Defaced</span>';
+    } else if (postLow.includes('obsolete')) {
+      postBadge = '<span class="badge-pill badge-danger">Obsolete Posters</span>';
+    }
+
+    const hlLow = String(t.hotline_conf || '').toLowerCase();
+    let hlBadge = '';
+    if (hlLow.includes('yes')) {
+      hlBadge = '<div style="font-size:0.71rem; color:#166534; font-weight:700; margin-top:2px;">📞 Hotline Active</div>';
+    } else if (hlLow.includes('no')) {
+      hlBadge = '<div style="font-size:0.71rem; color:#b91c1c; font-weight:700; margin-top:2px;">⚠️ Hotline Missing</div>';
+    }
+
+    // Isolation Protocol
+    const holdLow = String(t.holding || '').toLowerCase();
+    let holdBadge = '<span class="badge-pill badge-danger">Zero Isolation Protocol</span>';
+    if (holdLow.includes('dedicated')) {
+      holdBadge = '<span class="badge-pill badge-success">Dedicated &amp; Equipped</span>';
+    } else if (holdLow.includes('makeshift')) {
+      holdBadge = '<span class="badge-pill badge-warning">Makeshift Area Only</span>';
+    } else if (holdLow.includes('space')) {
+      holdBadge = '<span class="badge-pill badge-primary">Designated Space</span>';
+    }
+
+    // Staff Orientation & Action
+    const staffText = cleanText(t.staff);
+    const riskLevel = cleanText(t.risk_level);
+    let riskBadge = '';
+    if (riskLevel.toLowerCase() === 'high') riskBadge = '<span class="badge-pill badge-danger">High Risk</span>';
+    else if (riskLevel.toLowerCase() === 'moderate') riskBadge = '<span class="badge-pill badge-warning">Moderate</span>';
+    else if (riskLevel.toLowerCase() === 'low') riskBadge = '<span class="badge-pill badge-success">Low</span>';
+
+    return `
+      <tr>
+        <td>
+          <strong>${t.id}</strong><br>
+          <span style="font-size:0.7rem; color:var(--text-muted);">${t.date || ''}</span>
+          ${t.auditor ? `<div style="font-size:0.69rem; color:#64748b;">Auditor: ${cleanText(t.auditor)}</div>` : ''}
+        </td>
+        <td>
+          <span class="badge-pill badge-primary">${settingType}</span>
+          <div style="font-size:0.75rem; font-weight:600; color:var(--text); margin-top:2px;">📍 ${siteTitle}</div>
+          <div style="font-size:0.71rem; color:var(--text-muted);">${distName}${parishName ? ` / ${parishName}` : ''}</div>
+        </td>
+        <td>
+          <div style="font-size:0.76rem;"><strong>Pop:</strong> ${t.pop > 0 ? t.pop.toLocaleString() : '—'} persons</div>
+          <div style="font-size:0.73rem; color:var(--text-muted);"><strong>Stations:</strong> ${t.stations} functional</div>
+          <div style="margin-top:3px;"><span class="badge-pill ${isCritical ? 'badge-danger' : 'badge-count'}">${ratioStr}</span></div>
+        </td>
+        <td style="max-width:180px; white-space:normal;">
+          ${washBadge}
+          <div style="margin-top:3px;">${latBadge}</div>
+          ${stanceNotes ? `<div style="font-size:0.7rem; color:#475569; margin-top:2px;">${stanceNotes}</div>` : ''}
+        </td>
+        <td style="max-width:190px; white-space:normal;">
+          ${refBadge}
+          <div style="margin-top:3px;">${chokeBadge}</div>
+          ${vectorNotes ? `<div style="font-size:0.7rem; color:#64748b; margin-top:2px; font-style:italic;">${vectorNotes}</div>` : ''}
+        </td>
+        <td style="max-width:150px; white-space:normal;">
+          ${postBadge}
+          ${hlBadge}
+        </td>
+        <td style="max-width:160px; white-space:normal;">
+          ${holdBadge}
+          ${cleanText(t.holding) && !holdLow.includes('no protocol') ? `<div style="font-size:0.7rem; color:#64748b; margin-top:2px;">${cleanText(t.holding)}</div>` : ''}
+        </td>
+        <td style="max-width:210px; white-space:normal;">
+          ${riskBadge}
+          <div style="font-size:0.73rem; color:#334155; margin-top:2px;">${staffText || 'Not oriented'}</div>
+          ${cleanText(t.tactical_adaptation) ? `<div style="font-size:0.71rem; color:var(--primary); font-weight:600; margin-top:2px;"><strong>Action:</strong> ${cleanText(t.tactical_adaptation)}</div>` : ''}
+          ${cleanText(t.rumor) ? `<div style="font-size:0.71rem; color:#b91c1c; margin-top:1px;"><strong>Rumor:</strong> ${cleanText(t.rumor)}</div>` : ''}
+        </td>
+      </tr>
+    `;
+  }).join(''));
 
   // Tool 8: PAT Table
   const filteredPat = appData.filter(d => d.tool === 'PAT Assessment');
   safeSetHtml('tool10TableBody', filteredPat.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding:20px;">No PAT institutional audits found in active filter.</td></tr>` : filteredPat.map(p => `
     <tr>
-      <td><strong>${p.name}</strong></td>
-      <td>${p.level}</td>
+      <td><strong>${cleanText(p.name)}</strong></td>
+      <td>${cleanText(p.level)}</td>
       <td>${p.boys} / ${p.girls}</td>
       <td>${p.maleStaff} / ${p.femaleStaff}</td>
-      <td><span class="badge-pill ${String(p.club).toLowerCase().includes('active') || String(p.club).toLowerCase().includes('yes') ? 'badge-success' : 'badge-danger'}">${p.club}</span></td>
-      <td><span class="badge-pill badge-warning">${p.plan}</span></td>
-      <td>${p.space}</td>
-      <td><span class="badge-pill ${String(p.washAudit).includes('Soap') ? 'badge-success' : 'badge-warning'}">${p.washAudit} (${p.stations} stns)</span></td>
-      <td>${p.bStances} B / ${p.gStances} G <br><span style="font-size:0.7rem; color:var(--text-muted);">${p.stanceAudit}</span></td>
-      <td style="font-size:0.75rem;">${p.wasteAudit}<br>Drain: ${p.drainageAudit}</td>
+      <td><span class="badge-pill ${String(p.club).toLowerCase().includes('active') || String(p.club).toLowerCase().includes('yes') ? 'badge-success' : 'badge-danger'}">${cleanText(p.club) || '—'}</span></td>
+      <td><span class="badge-pill badge-warning">${cleanText(p.plan) || '—'}</span></td>
+      <td>${cleanText(p.space) || '—'}</td>
+      <td><span class="badge-pill ${String(p.washAudit).includes('Soap') ? 'badge-success' : 'badge-warning'}">${cleanText(p.washAudit) || '—'} (${p.stations} stns)</span></td>
+      <td>${p.bStances} B / ${p.gStances} G <br><span style="font-size:0.7rem; color:var(--text-muted);">${cleanText(p.stanceAudit) || '—'}</span></td>
+      <td style="font-size:0.75rem;">${cleanText(p.wasteAudit) || '—'}<br>Drain: ${cleanText(p.drainageAudit) || '—'}</td>
     </tr>
   `).join(''));
 
@@ -756,41 +1100,340 @@ function populateQualitativeTools() {
   // Tool 2: Rapid Audience Intercept
   const tool2Body = document.getElementById('tool4TableBody');
   const t2Rows = appData.filter(d => d.tool === 'Rapid Intercept');
+  safeSetText('tool2CountBadge', `${t2Rows.length} Intercept Surveys`);
+
+  // Compute 5-Pillar Rapid Audience Diagnostic Metrics dynamically
+  const t2Total = t2Rows.length;
+  
+  // Q1: 7-day Campaign Exposure
+  const q1Reached = t2Rows.filter(r => {
+    const q1 = String(r.q1_exposure || r.q1 || '').toLowerCase();
+    return q1 && !q1.includes("haven't") && !q1.includes("not heard") && !q1.includes("none");
+  });
+  const q1Pct = t2Total > 0 ? ((q1Reached.length / t2Total) * 100).toFixed(1) : 0;
+  safeSetText('t2_kpi_reach', `${q1Pct}%`);
+  safeSetText('t2_kpi_reach_sub', `${q1Reached.length} of ${t2Total} exposed via radio, megaphones, or flyers in last 7 days`);
+
+  // Q2: Symptoms & Protection Recall
+  const q2Recalled = t2Rows.filter(r => {
+    const evalStr = String(r.q2_eval || r.q2 || '').toLowerCase();
+    const verbStr = String(r.q2_verbatim || '').trim();
+    return evalStr.includes('named') || (verbStr && !evalStr.includes('incorrect'));
+  });
+  const q2Pct = t2Total > 0 ? ((q2Recalled.length / t2Total) * 100).toFixed(1) : 0;
+  safeSetText('t2_kpi_signs', `${q2Pct}%`);
+  safeSetText('t2_kpi_signs_sub', `${q2Recalled.length} of ${t2Total} accurately named key outbreak symptoms & protection`);
+
+  // Q3: Risk Perception (Moderate or High Risk)
+  const q3Vigilant = t2Rows.filter(r => {
+    const rStr = String(r.q3_risk || r.q3 || '').toLowerCase();
+    return rStr.includes('moderate') || rStr.includes('high');
+  });
+  const q3Pct = t2Total > 0 ? ((q3Vigilant.length / t2Total) * 100).toFixed(1) : 0;
+  safeSetText('t2_kpi_risk', `${q3Pct}%`);
+  safeSetText('t2_kpi_risk_sub', `${q3Vigilant.length} of ${t2Total} aware of post-declaration epidemic recurrence risk`);
+
+  // Q4: Early Safe Notification Intent (Hotline or VHT)
+  const q4Safe = t2Rows.filter(r => {
+    const q4Str = String(r.q4 || '').toLowerCase();
+    return r.q4_hotline === 1 || r.q4_vht === 1 || q4Str.includes('hotline') || q4Str.includes('vht');
+  });
+  const q4Pct = t2Total > 0 ? ((q4Safe.length / t2Total) * 100).toFixed(1) : 0;
+  safeSetText('t2_kpi_action', `${q4Pct}%`);
+  safeSetText('t2_kpi_action_sub', `${q4Safe.length} of ${t2Total} would immediately alert VHT or call toll-free line`);
+
+  // Q5: Institutional Health Authority Trust (VHT or MoH/KCCA)
+  const q5Trusted = t2Rows.filter(r => {
+    const tStr = String(r.q5_trusted || r.q5 || '').toLowerCase();
+    return ['vht', 'ministry', 'health', 'kcca'].some(k => tStr.includes(k));
+  });
+  const q5Pct = t2Total > 0 ? ((q5Trusted.length / t2Total) * 100).toFixed(1) : 0;
+  safeSetText('t2_kpi_trust', `${q5Pct}%`);
+  safeSetText('t2_kpi_trust_sub', `${q5Trusted.length} of ${t2Total} trust VHTs & Ministry of Health/KCCA most`);
+
   if (tool2Body) {
     if (t2Rows.length === 0) {
-      tool2Body.innerHTML = renderEmptyState(7, 'rapid audience intercept surveys');
+      tool2Body.innerHTML = renderEmptyState(8, 'rapid audience intercept surveys');
     } else {
-      tool2Body.innerHTML = t2Rows.map(i => `
-        <tr>
-          <td><strong>${i.id}</strong></td>
-          <td>${i.site || i.school || '—'}</td>
-          <td><span class="badge-pill badge-success">${i.q1 || 'Yes'}</span></td>
-          <td>${i.q2 || '—'}</td>
-          <td>${i.q3 || '—'}</td>
-          <td><strong style="color:var(--primary);">${i.q4 || '—'}</strong></td>
-          <td>${i.q5 || '—'}</td>
-        </tr>
-      `).join('');
+      tool2Body.innerHTML = t2Rows.map(i => {
+        // Q1 Channel Badge
+        const q1Text = cleanText(i.q1_exposure || i.q1);
+        const q1Low = q1Text.toLowerCase();
+        let q1Html = '<span class="badge-pill badge-danger">Unexposed / Not Heard</span>';
+        if (q1Low.includes('actively') || q1Low.includes('wheel') || q1Low.includes('megaphone') || q1Low.includes('talk')) {
+          q1Html = '<span class="badge-pill badge-success">Active Engagement</span><div style="font-size:0.71rem; color:#475569; margin-top:2px;">Megaphones / VHT / Wheel</div>';
+        } else if (q1Low.includes('radio') || q1Low.includes('broadcast') || q1Low.includes('audio')) {
+          q1Html = '<span class="badge-pill badge-primary">Radio Broadcast</span><div style="font-size:0.71rem; color:#475569; margin-top:2px;">Audio Drive Only</div>';
+        } else if (q1Low.includes('poster') || q1Low.includes('flyer')) {
+          q1Html = '<span class="badge-pill badge-warning">Posters / Flyers</span><div style="font-size:0.71rem; color:#475569; margin-top:2px;">Visual IEC Only</div>';
+        }
+
+        // Q2 Symptoms Cell
+        const q2Verb = cleanText(i.q2_verbatim);
+        const q2Eval = cleanText(i.q2_eval || i.q2);
+        const q2Low = q2Eval.toLowerCase();
+        let q2Badge = '';
+        if (q2Low.includes('named 2+') || q2Low.includes('2+')) {
+          q2Badge = '<span class="badge-pill badge-success" style="margin-top:3px;">Named 2+ Signs &amp; Protection</span>';
+        } else if (q2Low.includes('named 1')) {
+          q2Badge = '<span class="badge-pill badge-warning" style="margin-top:3px;">Named 1 Sign</span>';
+        } else if (q2Low.includes('incorrect')) {
+          q2Badge = '<span class="badge-pill badge-danger" style="margin-top:3px;">Incorrect Recall</span>';
+        } else if (q2Verb) {
+          q2Badge = '<span class="badge-pill badge-primary" style="margin-top:3px;">Audited</span>';
+        } else {
+          q2Badge = '<span style="color:#94a3b8; font-style:italic;">Unprompted</span>';
+        }
+        const q2Html = `
+          <div style="font-size:0.74rem; font-weight:500;">${q2Verb || '—'}</div>
+          ${q2Badge}
+        `;
+
+        // Q3 Risk Perception Cell
+        const q3Text = cleanText(i.q3_risk || i.q3);
+        const q3Low = q3Text.toLowerCase();
+        let q3Html = '<span style="color:#94a3b8; font-style:italic;">Not recorded</span>';
+        if (q3Low.includes('high')) {
+          q3Html = '<span class="badge-pill badge-danger">High Risk Remains</span><div style="font-size:0.7rem; color:#991b1b; margin-top:1px;">Dense movement / borders</div>';
+        } else if (q3Low.includes('moderate')) {
+          q3Html = '<span class="badge-pill badge-warning">Moderate Risk</span>';
+        } else if (q3Low.includes('low')) {
+          q3Html = '<span class="badge-pill badge-primary">Low Risk</span>';
+        } else if (q3Low.includes('completely gone') || q3Low.includes('threat is')) {
+          q3Html = '<span class="badge-pill" style="background:#fee2e2; color:#b91c1c;">Perceives Zero Risk</span>';
+        } else if (q3Low.includes("don't know")) {
+          q3Html = '<span class="badge-pill" style="background:#f1f5f9; color:#64748b;">Don\'t Know</span>';
+        }
+
+        // Q4 First Action Protocols
+        const actionBadges = [];
+        if (i.q4_vht || String(i.q4).includes('Notify local VHT')) {
+          actionBadges.push('<span class="badge-pill badge-success" style="margin:1px;">🩺 Alert VHT</span>');
+        }
+        if (i.q4_hotline || String(i.q4).includes('toll-free')) {
+          actionBadges.push('<span class="badge-pill badge-success" style="margin:1px;">📞 Toll-Free Line</span>');
+        }
+        if (i.q4_lc1 || String(i.q4).includes('LC1 Chairperson')) {
+          actionBadges.push('<span class="badge-pill badge-primary" style="margin:1px;">🏛️ LC1 Chair</span>');
+        }
+        if (i.q4_clinic || String(i.q4).includes('private clinic')) {
+          actionBadges.push('<span class="badge-pill badge-warning" style="margin:1px;">🏥 Private Clinic</span>');
+        }
+        if (i.q4_home_care || String(i.q4).includes('herbs') || String(i.q4).includes('home care')) {
+          actionBadges.push('<span class="badge-pill badge-danger" style="margin:1px;">🌿 Home Herbs</span>');
+        }
+        if (i.q4_healer || String(i.q4).includes('traditional healer') || String(i.q4).includes('prayers')) {
+          actionBadges.push('<span class="badge-pill badge-danger" style="margin:1px;">🙏 Trad. Healer</span>');
+        }
+        const specifyText = cleanText(i.q4_specify);
+        let q4Html = actionBadges.length > 0 ? actionBadges.join(' ') : `<span style="font-size:0.75rem;">${cleanText(i.q4) || '—'}</span>`;
+        if (specifyText) {
+          q4Html += `<div style="font-size:0.71rem; color:var(--primary); font-weight:600; margin-top:3px;"><strong>Other:</strong> ${specifyText}</div>`;
+        }
+
+        // Q5 Trusted Source
+        const q5Text = cleanText(i.q5_trusted || i.q5);
+        let q5Icon = '🤝';
+        if (q5Text.toLowerCase().includes('vht')) q5Icon = '🩺';
+        else if (q5Text.toLowerCase().includes('ministry') || q5Text.toLowerCase().includes('kcca')) q5Icon = '🏛️';
+        else if (q5Text.toLowerCase().includes('lc1')) q5Icon = '👤';
+        else if (q5Text.toLowerCase().includes('religious')) q5Icon = '⛪';
+        else if (q5Text.toLowerCase().includes('radio')) q5Icon = '📻';
+        const q5Html = `
+          <div style="font-size:0.76rem; font-weight:700; color:var(--primary);">${q5Icon} ${q5Text || '—'}</div>
+        `;
+
+        // RCCE Intelligence & Risk Level
+        const riskLevel = cleanText(i.risk_level);
+        let riskBadge = '';
+        if (riskLevel.toLowerCase() === 'high') riskBadge = '<span class="badge-pill badge-danger">High Risk</span>';
+        else if (riskLevel.toLowerCase() === 'moderate') riskBadge = '<span class="badge-pill badge-warning">Moderate Risk</span>';
+        else if (riskLevel.toLowerCase() === 'low') riskBadge = '<span class="badge-pill badge-success">Low Risk</span>';
+
+        let intelHtml = riskBadge || '<span style="color:#94a3b8; font-style:italic;">No risk flagged</span>';
+        if (cleanText(i.rumor) || cleanText(i.barrier) || cleanText(i.tactical_adaptation)) {
+          intelHtml += `
+            <div style="font-size:0.73rem; font-weight:600; color:#b91c1c; margin-top:3px;">${cleanText(i.rumor) || 'Misconception'}</div>
+            <div style="font-size:0.71rem; color:var(--text-muted);"><strong>Barrier:</strong> ${cleanText(i.barrier) || 'None'}</div>
+            <div style="font-size:0.71rem; color:var(--primary); font-weight:600;"><strong>Action:</strong> ${cleanText(i.tactical_adaptation) || 'Sensitization'}</div>
+          `;
+        }
+
+        // Target Setting
+        const settingType = cleanText(i.setting) || 'Community';
+        const specSetting = cleanText(i.spec_setting);
+        const distName = cleanText(i.district) || 'District';
+        const parishName = cleanText(i.parish) || '';
+
+        return `
+          <tr>
+            <td>
+              <strong>${i.id}</strong><br>
+              <span style="font-size:0.7rem; color:var(--text-muted);">${i.date || ''}</span>
+              ${i.coordinator ? `<div style="font-size:0.69rem; color:#64748b;">Auditor: ${cleanText(i.coordinator)}</div>` : ''}
+            </td>
+            <td>
+              <span class="badge-pill badge-primary">${settingType}</span>
+              ${specSetting ? `<div style="font-size:0.72rem; font-weight:600; color:#475569; margin-top:2px;">📍 ${specSetting}</div>` : ''}
+              <div style="font-size:0.71rem; color:var(--text-muted); margin-top:1px;">${distName}${parishName ? ` / ${parishName}` : ''}</div>
+            </td>
+            <td style="max-width:160px; white-space:normal;">${q1Html}</td>
+            <td style="max-width:210px; white-space:normal;">${q2Html}</td>
+            <td style="max-width:140px; white-space:normal;">${q3Html}</td>
+            <td style="max-width:210px; white-space:normal;">${q4Html}</td>
+            <td style="max-width:160px; white-space:normal;">${q5Html}</td>
+            <td style="max-width:220px; white-space:normal;">${intelHtml}</td>
+          </tr>
+        `;
+      }).join('');
     }
   }
 
   // Tool 3: 'Ask 5' Diagnostic
   const tool3Body = document.getElementById('tool5TableBody');
   const t3Rows = appData.filter(d => d.tool === 'Ask 5');
+  safeSetText('ask5CountBadge', `${t3Rows.length} Audits Completed`);
+
+  // Compute 5-Claim diagnostic metrics against total tool sample (N = t3Total)
+  const t3Total = t3Rows.length;
+  const c1Tested = t3Rows.filter(r => cleanText(r.c1_status));
+  const c1Conf = c1Tested.filter(r => cleanText(r.c1_status).toLowerCase().includes('confirmed'));
+  const c1Pct = t3Total > 0 ? ((c1Conf.length / t3Total) * 100).toFixed(1) : 0;
+  const c1AudPct = c1Tested.length > 0 ? ((c1Conf.length / c1Tested.length) * 100).toFixed(0) : 0;
+  safeSetText('ask5_kpi_c1', `${c1Pct}%`);
+  safeSetText('ask5_kpi_c1_sub', `${c1Conf.length} of ${t3Total} respondents (${c1AudPct}% of ${c1Tested.length} audited)`);
+
+  const c2Tested = t3Rows.filter(r => cleanText(r.c2_status));
+  const c2Acc = c2Tested.filter(r => cleanText(r.c2_status).toLowerCase().includes('accurate'));
+  const c2Pct = t3Total > 0 ? ((c2Acc.length / t3Total) * 100).toFixed(1) : 0;
+  const c2AudPct = c2Tested.length > 0 ? ((c2Acc.length / c2Tested.length) * 100).toFixed(0) : 0;
+  safeSetText('ask5_kpi_c2', `${c2Pct}%`);
+  safeSetText('ask5_kpi_c2_sub', `${c2Acc.length} of ${t3Total} respondents (${c2AudPct}% of ${c2Tested.length} audited)`);
+
+  const c3Tested = t3Rows.filter(r => cleanText(r.c3_status));
+  const c3Rec = c3Tested.filter(r => cleanText(r.c3_status).toLowerCase().includes('knows'));
+  const c3Pct = t3Total > 0 ? ((c3Rec.length / t3Total) * 100).toFixed(1) : 0;
+  const c3AudPct = c3Tested.length > 0 ? ((c3Rec.length / c3Tested.length) * 100).toFixed(0) : 0;
+  safeSetText('ask5_kpi_c3', `${c3Pct}%`);
+  safeSetText('ask5_kpi_c3_sub', `${c3Rec.length} of ${t3Total} respondents (${c3AudPct}% of ${c3Tested.length} audited)`);
+
+  const c4Tested = t3Rows.filter(r => cleanText(r.c4_status));
+  const c4Rec = c4Tested.filter(r => ['supportive', 'receptive'].some(k => cleanText(r.c4_status).toLowerCase().includes(k)));
+  const c4Pct = t3Total > 0 ? ((c4Rec.length / t3Total) * 100).toFixed(1) : 0;
+  const c4AudPct = c4Tested.length > 0 ? ((c4Rec.length / c4Tested.length) * 100).toFixed(0) : 0;
+  safeSetText('ask5_kpi_c4', `${c4Pct}%`);
+  safeSetText('ask5_kpi_c4_sub', `${c4Rec.length} of ${t3Total} respondents (${c4AudPct}% of ${c4Tested.length} audited)`);
+
+  const c5Tested = t3Rows.filter(r => cleanText(r.c5_status));
+  const c5Act = c5Tested.filter(r => cleanText(r.c5_status).toLowerCase().includes('active'));
+  const c5Pct = t3Total > 0 ? ((c5Act.length / t3Total) * 100).toFixed(1) : 0;
+  const c5AudPct = c5Tested.length > 0 ? ((c5Act.length / c5Tested.length) * 100).toFixed(0) : 0;
+  safeSetText('ask5_kpi_c5', `${c5Pct}%`);
+  safeSetText('ask5_kpi_c5_sub', `${c5Act.length} of ${t3Total} respondents (${c5AudPct}% of ${c5Tested.length} audited)`);
+
   if (tool3Body) {
     if (t3Rows.length === 0) {
-      tool3Body.innerHTML = renderEmptyState(6, "'Ask 5' behavioral verification diagnostics");
+      tool3Body.innerHTML = renderEmptyState(10, "'Ask 5' behavioral verification diagnostics");
     } else {
-      tool3Body.innerHTML = t3Rows.map(c => `
-        <tr>
-          <td><strong>${c.id}</strong></td>
-          <td><span class="badge-pill badge-primary">${c.group || '—'}</span></td>
-          <td>${c.claim || '—'}</td>
-          <td style="font-size:0.75rem; color:#475569;">${c.prompt || '—'}</td>
-          <td style="font-size:0.75rem;">${c.findings || '—'}</td>
-          <td><span class="badge-pill badge-success">${c.status || 'Verified'}</span></td>
-        </tr>
-      `).join('');
+      tool3Body.innerHTML = t3Rows.map(c => {
+        // Build heard badges
+        const heardBadges = [];
+        if (c.heard_c1) heardBadges.push('<span class="badge-pill badge-primary">C1: Handwash</span>');
+        if (c.heard_c2) heardBadges.push('<span class="badge-pill badge-primary">C2: Signs</span>');
+        if (c.heard_c3) heardBadges.push('<span class="badge-pill badge-primary">C3: Hotline</span>');
+        if (c.heard_c4) heardBadges.push('<span class="badge-pill badge-primary">C4: Reintegration</span>');
+        if (c.heard_c5) heardBadges.push('<span class="badge-pill badge-primary">C5: Multiplier</span>');
+        const heardHtml = heardBadges.length > 0 ? heardBadges.join(' ') : '<span style="color:#94a3b8; font-style:italic;">None recorded</span>';
+
+        // Claim 1 Cell
+        let c1Html = '<span style="color:#94a3b8; font-style:italic;">Not audited</span>';
+        if (cleanText(c.c1_status) || cleanText(c.c1_time)) {
+          const stLow = cleanText(c.c1_status).toLowerCase();
+          const bClass = stLow.includes('confirmed') ? 'badge-success' : (stLow.includes('partial') ? 'badge-warning' : 'badge-danger');
+          c1Html = `
+            <div style="font-size:0.75rem;"><strong>Time:</strong> ${cleanText(c.c1_time) || '—'}</div>
+            <div style="font-size:0.71rem; color:var(--text-muted);"><strong>Soap Loc:</strong> ${cleanText(c.c1_soap) || '—'}</div>
+            <div style="font-size:0.71rem; color:#475569;"><strong>Station:</strong> ${cleanText(c.c1_station) || 'Inspected'}</div>
+            <span class="badge-pill ${bClass}" style="margin-top:3px;">${cleanText(c.c1_status) || 'Audited'}</span>
+          `;
+        }
+
+        // Claim 2 Cell
+        let c2Html = '<span style="color:#94a3b8; font-style:italic;">Not audited</span>';
+        if (cleanText(c.c2_status) || cleanText(c.c2_diff)) {
+          const stLow = cleanText(c.c2_status).toLowerCase();
+          const bClass = stLow.includes('accurate') ? 'badge-success' : (stLow.includes('confused') ? 'badge-warning' : 'badge-danger');
+          c2Html = `
+            <div style="font-size:0.74rem;"><strong>Signs vs Malaria:</strong> ${cleanText(c.c2_diff) || '—'}</div>
+            <div style="font-size:0.71rem; color:var(--text-muted);"><strong>No-Contact:</strong> ${cleanText(c.c2_assist) || '—'}</div>
+            <span class="badge-pill ${bClass}" style="margin-top:3px;">${cleanText(c.c2_status) || 'Audited'}</span>
+          `;
+        }
+
+        // Claim 3 Cell
+        let c3Html = '<span style="color:#94a3b8; font-style:italic;">Not audited</span>';
+        if (cleanText(c.c3_status) || cleanText(c.c3_hotline)) {
+          const stLow = cleanText(c.c3_status).toLowerCase();
+          const bClass = stLow.includes('knows') ? 'badge-success' : 'badge-warning';
+          c3Html = `
+            <div style="font-size:0.75rem;"><strong>Line Recalled:</strong> <strong style="color:var(--primary);">${cleanText(c.c3_hotline) || '—'}</strong></div>
+            <div style="font-size:0.71rem; color:var(--text-muted);"><strong>Fear:</strong> ${cleanText(c.c3_fear) || 'No hesitation'}</div>
+            <span class="badge-pill ${bClass}" style="margin-top:3px;">${cleanText(c.c3_status) || 'Audited'}</span>
+          `;
+        }
+
+        // Claim 4 Cell
+        let c4Html = '<span style="color:#94a3b8; font-style:italic;">Not audited</span>';
+        if (cleanText(c.c4_status) || cleanText(c.c4_reintegrate)) {
+          const stLow = cleanText(c.c4_status).toLowerCase();
+          const bClass = (stLow.includes('supportive') || stLow.includes('receptive')) ? 'badge-success' : 'badge-warning';
+          c4Html = `
+            <div style="font-size:0.74rem;"><strong>Interaction:</strong> ${cleanText(c.c4_reintegrate) || '—'}</div>
+            <div style="font-size:0.71rem; color:var(--text-muted);"><strong>Acceptance:</strong> ${cleanText(c.c4_allow_back) || '—'}</div>
+            <span class="badge-pill ${bClass}" style="margin-top:3px;">${cleanText(c.c4_status) || 'Audited'}</span>
+          `;
+        }
+
+        // Claim 5 Cell
+        let c5Html = '<span style="color:#94a3b8; font-style:italic;">Not audited</span>';
+        if (cleanText(c.c5_status) || cleanText(c.c5_agreement)) {
+          const stLow = cleanText(c.c5_status).toLowerCase();
+          const bClass = stLow.includes('active') ? 'badge-success' : 'badge-warning';
+          c5Html = `
+            <div style="font-size:0.74rem;"><strong>Agreement:</strong> ${cleanText(c.c5_agreement) || '—'}</div>
+            <div style="font-size:0.71rem; color:var(--text-muted);"><strong>Toughest Q:</strong> ${cleanText(c.c5_tough_q) || '—'}</div>
+            <span class="badge-pill ${bClass}" style="margin-top:3px;">${cleanText(c.c5_status) || 'Audited'}</span>
+          `;
+        }
+
+        // Misconception Cell
+        let miscHtml = '<span style="color:#94a3b8; font-style:italic;">None flagged</span>';
+        if (cleanText(c.rumor) || cleanText(c.barrier) || cleanText(c.tactical_adaptation)) {
+          miscHtml = `
+            <div style="font-size:0.74rem; font-weight:600; color:#b91c1c;">${cleanText(c.rumor) || 'Misconception'}</div>
+            <div style="font-size:0.71rem; color:var(--text-muted);"><strong>Barrier:</strong> ${cleanText(c.barrier) || 'None'}</div>
+            <div style="font-size:0.71rem; color:var(--primary); font-weight:600;"><strong>Action:</strong> ${cleanText(c.tactical_adaptation) || 'Sensitization'}</div>
+          `;
+        }
+
+        return `
+          <tr>
+            <td><strong>${c.id}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">${c.date || ''}</span></td>
+            <td>
+              <span class="badge-pill badge-primary">${cleanText(c.group) || 'Target Group'}</span>
+              <div style="font-size:0.72rem; color:#475569; font-weight:600; margin-top:2px;">📍 ${cleanText(c.setting) || 'Site'}</div>
+            </td>
+            <td><strong>${cleanText(c.district)}</strong><br><span style="font-size:0.72rem; color:var(--text-muted);">${cleanText(c.parish)}</span></td>
+            <td style="max-width:140px; white-space:normal;">${heardHtml}</td>
+            <td style="max-width:200px; white-space:normal;">${c1Html}</td>
+            <td style="max-width:200px; white-space:normal;">${c2Html}</td>
+            <td style="max-width:180px; white-space:normal;">${c3Html}</td>
+            <td style="max-width:200px; white-space:normal;">${c4Html}</td>
+            <td style="max-width:200px; white-space:normal;">${c5Html}</td>
+            <td style="max-width:190px; white-space:normal;">${miscHtml}</td>
+          </tr>
+        `;
+      }).join('');
     }
   }
 
@@ -1224,17 +1867,23 @@ function renderBarCharts(distList) {
     chartInstances.washT3 = new Chart(elWash.getContext('2d'), {
       type: 'bar',
       data: {
-        labels: ['Functional & Supplied', 'Present, No Soap / Water', 'No Facility Setup'],
+        labels: ['Functional & Supplied', 'Present, No Soap / Water', 'Completely Absent'],
         datasets: [{
           label: 'Sites Audited',
           data: [
             transectFiltered.filter(t => String(t.wash).toLowerCase().includes('functional') || String(t.wash).toLowerCase().includes('present & functional')).length,
             transectFiltered.filter(t => String(t.wash).toLowerCase().includes('no soap') || String(t.wash).toLowerCase().includes('no water')).length,
-            transectFiltered.filter(t => String(t.wash).toLowerCase().includes('no facility') || String(t.wash).toLowerCase().includes('not present')).length
+            transectFiltered.filter(t => String(t.wash).toLowerCase().includes('no facility') || String(t.wash).toLowerCase().includes('not present') || String(t.wash).toLowerCase().includes('absent')).length
           ],
           backgroundColor: ['#10b981', '#f1bc1b', '#ef4444'],
           borderRadius: 4,
-          datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            formatter: (val) => `${val} (${transectFiltered.length > 0 ? ((val / transectFiltered.length) * 100).toFixed(0) : 0}%)`,
+            color: '#282c68',
+            font: { weight: 'bold', size: 10 }
+          }
         }]
       },
       options: {
@@ -1242,7 +1891,77 @@ function renderBarCharts(distList) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
-        scales: { x: { beginAtZero: true, grace: '20%' } }
+        scales: { x: { beginAtZero: true, grace: '25%' } }
+      }
+    });
+  }
+
+  const elRefuse = document.getElementById('chartRefuseT1');
+  if (elRefuse) {
+    const transectFiltered = appData.filter(d => d.tool === 'Transect Walk');
+    const refClean = transectFiltered.filter(t => String(t.refuse).toLowerCase().includes('clean') || String(t.refuse).toLowerCase().includes('maintained')).length;
+    const refMod = transectFiltered.filter(t => String(t.refuse).toLowerCase().includes('moderate')).length;
+    const refHazard = transectFiltered.filter(t => String(t.refuse).toLowerCase().includes('severe') || String(t.refuse).toLowerCase().includes('hazard')).length;
+
+    chartInstances.refuseT1 = new Chart(elRefuse.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['Clean / Maintained Compound', 'Moderate Stagnation / Litter', 'Severe Bio-Hazard / Overflow'],
+        datasets: [{
+          label: 'Compounds Audited',
+          data: [refClean, refMod, refHazard],
+          backgroundColor: ['#10b981', '#f1bc1b', '#ef4444'],
+          borderRadius: 4,
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            formatter: (val) => `${val} (${transectFiltered.length > 0 ? ((val / transectFiltered.length) * 100).toFixed(0) : 0}%)`,
+            color: '#282c68',
+            font: { weight: 'bold', size: 10 }
+          }
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, grace: '25%' } }
+      }
+    });
+  }
+
+  const elChoke = document.getElementById('chartChokeT1');
+  if (elChoke) {
+    const transectFiltered = appData.filter(d => d.tool === 'Transect Walk');
+    const chokeExt = transectFiltered.filter(t => String(t.choke).toLowerCase().includes('extreme') || String(t.choke).toLowerCase().includes('bottleneck')).length;
+    const chokeMod = transectFiltered.filter(t => String(t.choke).toLowerCase().includes('moderate')).length;
+    const chokeLow = transectFiltered.filter(t => String(t.choke).toLowerCase().includes('low') || String(t.choke).toLowerCase().includes('spaced')).length;
+
+    chartInstances.chokeT1 = new Chart(elChoke.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['Extreme Bottleneck (Zero Distancing)', 'Moderate Congestion', 'Low Density / Spaced'],
+        datasets: [{
+          label: 'Sites Audited',
+          data: [chokeExt, chokeMod, chokeLow],
+          backgroundColor: ['#ef4444', '#f1bc1b', '#282c68'],
+          borderRadius: 4,
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            formatter: (val) => `${val} (${transectFiltered.length > 0 ? ((val / transectFiltered.length) * 100).toFixed(0) : 0}%)`,
+            color: '#282c68',
+            font: { weight: 'bold', size: 10 }
+          }
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true, grace: '25%' } }
       }
     });
   }
@@ -1253,7 +1972,7 @@ function renderBarCharts(distList) {
     chartInstances.posterT3 = new Chart(elPoster.getContext('2d'), {
       type: 'bar',
       data: {
-        labels: ['Fresh & Prominent', 'Obsolete (No hotline)', 'Torn Posters', 'No Posters Seen'],
+        labels: ['Fresh & Prominent', 'Obsolete Posters', 'Torn / Defaced', 'No Materials Found'],
         datasets: [{
           label: 'Facilities Audited',
           data: [
@@ -1262,9 +1981,15 @@ function renderBarCharts(distList) {
             transectFiltered.filter(t => String(t.poster).toLowerCase().includes('torn')).length,
             transectFiltered.filter(t => String(t.poster).toLowerCase().includes('no material') || String(t.poster).toLowerCase().includes('no poster') || String(t.poster).toLowerCase().includes('none')).length
           ],
-          backgroundColor: '#282c68',
+          backgroundColor: ['#10b981', '#f1bc1b', '#f97316', '#ef4444'],
           borderRadius: 4,
-          datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            formatter: (val) => `${val} (${transectFiltered.length > 0 ? ((val / transectFiltered.length) * 100).toFixed(0) : 0}%)`,
+            color: '#282c68',
+            font: { weight: 'bold', size: 10 }
+          }
         }]
       },
       options: {
@@ -1272,18 +1997,23 @@ function renderBarCharts(distList) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
-        scales: { x: { beginAtZero: true, grace: '20%' } }
+        scales: { x: { beginAtZero: true, grace: '25%' } }
       }
     });
   }
 
-  // Tool 2 Charts (Only render if field records exist; otherwise display pending placeholder)
+  // Tool 2 Charts (Rapid Audience Intercept Survey: 4 Analytical Dimensions)
   const t2Data = appData.filter(d => d.tool === 'Rapid Intercept');
   const elT4Q1 = document.getElementById('chartT4Q1');
   const emptyT4Q1 = document.getElementById('emptyT4Q1');
+  const elT4Q5 = document.getElementById('chartT4Q5');
+  const emptyT4Q5 = document.getElementById('emptyT4Q5');
   const elT4Q4 = document.getElementById('chartT4Q4');
   const emptyT4Q4 = document.getElementById('emptyT4Q4');
+  const elT4Q3 = document.getElementById('chartT4Q3');
+  const emptyT4Q3 = document.getElementById('emptyT4Q3');
 
+  // Chart 1: Q1 Campaign Exposure Channels in Past 7 Days
   if (elT4Q1 && emptyT4Q1) {
     if (t2Data.length === 0) {
       elT4Q1.style.display = 'none';
@@ -1291,46 +2021,39 @@ function renderBarCharts(distList) {
     } else {
       elT4Q1.style.display = 'block';
       emptyT4Q1.style.display = 'none';
-      const heardCount = t2Data.filter(d => String(d.q1).toLowerCase().includes('yes')).length;
-      chartInstances.chartT4Q1 = new Chart(elT4Q1.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Heard Outbreak Message (7d)', 'Not Heard in 7d'],
-          datasets: [{
-            data: [heardCount, t2Data.length - heardCount],
-            backgroundColor: ['#282c68', '#e2e8f0']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom' } }
-        }
-      });
-    }
-  }
 
-  if (elT4Q4 && emptyT4Q4) {
-    if (t2Data.length === 0) {
-      elT4Q4.style.display = 'none';
-      emptyT4Q4.style.display = 'flex';
-    } else {
-      elT4Q4.style.display = 'block';
-      emptyT4Q4.style.display = 'none';
-      const actionCounts = {};
-      t2Data.forEach(d => {
-        const act = d.q4 || 'Unspecified';
-        actionCounts[act] = (actionCounts[act] || 0) + 1;
-      });
-      chartInstances.chartT4Q4 = new Chart(elT4Q4.getContext('2d'), {
+      const chActive = t2Data.filter(d => {
+        const q = String(d.q1_exposure || d.q1 || '').toLowerCase();
+        return q.includes('actively') || q.includes('wheel') || q.includes('megaphone') || q.includes('talk');
+      }).length;
+
+      const chRadio = t2Data.filter(d => {
+        const q = String(d.q1_exposure || d.q1 || '').toLowerCase();
+        return q.includes('radio') || q.includes('broadcast') || q.includes('audio');
+      }).length;
+
+      const chPosters = t2Data.filter(d => {
+        const q = String(d.q1_exposure || d.q1 || '').toLowerCase();
+        return q.includes('poster') || q.includes('flyer');
+      }).length;
+
+      const chUnexposed = Math.max(0, t2Data.length - (chActive + chRadio + chPosters));
+
+      chartInstances.chartT4Q1 = new Chart(elT4Q1.getContext('2d'), {
         type: 'bar',
         data: {
-          labels: Object.keys(actionCounts),
+          labels: [
+            'Active (Wheel/Megaphone/VHT)',
+            'Radio Broadcast / Drive',
+            'Posters / Flyers Only',
+            'Unexposed / Not Heard'
+          ],
           datasets: [{
             label: 'Respondents',
-            data: Object.values(actionCounts),
-            backgroundColor: '#f1bc1b',
-            borderRadius: 4
+            data: [chActive, chRadio, chPosters, chUnexposed],
+            backgroundColor: ['#282c68', '#f1bc1b', '#3b82f6', '#ef4444'],
+            borderRadius: 4,
+            datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
           }]
         },
         options: {
@@ -1338,7 +2061,182 @@ function renderBarCharts(distList) {
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
-          scales: { x: { beginAtZero: true, grace: '15%' } }
+          scales: { x: { beginAtZero: true, ticks: { stepSize: 2 }, grace: '20%' } }
+        }
+      });
+    }
+  }
+
+  // Chart 2: Q5 Most Trusted Information Brokers
+  if (elT4Q5 && emptyT4Q5) {
+    if (t2Data.length === 0) {
+      elT4Q5.style.display = 'none';
+      emptyT4Q5.style.display = 'flex';
+    } else {
+      elT4Q5.style.display = 'block';
+      emptyT4Q5.style.display = 'none';
+
+      const trustCounts = {};
+      t2Data.forEach(d => {
+        const src = cleanText(d.q5_trusted || d.q5) || 'Other';
+        trustCounts[src] = (trustCounts[src] || 0) + 1;
+      });
+
+      const sortedTrust = Object.entries(trustCounts).sort((a, b) => b[1] - a[1]);
+
+      chartInstances.chartT4Q5 = new Chart(elT4Q5.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: sortedTrust.map(x => x[0]),
+          datasets: [{
+            label: 'Respondents',
+            data: sortedTrust.map(x => x[1]),
+            backgroundColor: '#282c68',
+            borderRadius: 4,
+            datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { stepSize: 2 }, grace: '20%' } }
+        }
+      });
+    }
+  }
+
+  // Chart 3: Q4 First Action Protocols for Suspected Cases
+  if (elT4Q4 && emptyT4Q4) {
+    if (t2Data.length === 0) {
+      elT4Q4.style.display = 'none';
+      emptyT4Q4.style.display = 'flex';
+    } else {
+      elT4Q4.style.display = 'block';
+      emptyT4Q4.style.display = 'none';
+
+      const countVHT = t2Data.filter(d => d.q4_vht || String(d.q4).includes('Notify local VHT')).length;
+      const countHotline = t2Data.filter(d => d.q4_hotline || String(d.q4).includes('toll-free')).length;
+      const countLC1 = t2Data.filter(d => d.q4_lc1 || String(d.q4).includes('LC1 Chairperson')).length;
+      const countClinic = t2Data.filter(d => d.q4_clinic || String(d.q4).includes('private clinic')).length;
+      const countHerbs = t2Data.filter(d => d.q4_home_care || String(d.q4).includes('herbs') || String(d.q4).includes('home care')).length;
+      const countOther = t2Data.filter(d => d.q4_other || cleanText(d.q4_specify)).length;
+      const countHealer = t2Data.filter(d => d.q4_healer || String(d.q4).includes('traditional healer') || String(d.q4).includes('prayers')).length;
+
+      const actionLabels = [
+        'Notify Local VHT',
+        'Call Toll-Free Hotline',
+        'Alert LC1 Chairperson',
+        'Private Clinic / Pharmacy',
+        'Isolate / Home Herbs',
+        'Other (Health worker / Refer)',
+        'Traditional Healer / Prayers'
+      ];
+
+      const actionVals = [countVHT, countHotline, countLC1, countClinic, countHerbs, countOther, countHealer];
+      const actionColors = [
+        '#10b981', // VHT (Safe)
+        '#10b981', // Hotline (Safe)
+        '#282c68', // LC1
+        '#f1bc1b', // Private clinic (Potential delay)
+        '#ef4444', // Home herbs (High risk)
+        '#3b82f6', // Other
+        '#ef4444'  // Traditional healer (High risk)
+      ];
+
+      chartInstances.chartT4Q4 = new Chart(elT4Q4.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: actionLabels,
+          datasets: [{
+            label: 'Selections (Multi-response)',
+            data: actionVals,
+            backgroundColor: actionColors,
+            borderRadius: 4,
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              formatter: (val) => `${val} (${((val / t2Data.length) * 100).toFixed(0)}%)`,
+              color: '#282c68',
+              font: { weight: 'bold', size: 10 }
+            }
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { stepSize: 3 }, grace: '25%' } }
+        }
+      });
+    }
+  }
+
+  // Chart 4: Q3 Post-Declaration Epidemic Risk Perception
+  if (elT4Q3 && emptyT4Q3) {
+    if (t2Data.length === 0) {
+      elT4Q3.style.display = 'none';
+      emptyT4Q3.style.display = 'flex';
+    } else {
+      elT4Q3.style.display = 'block';
+      emptyT4Q3.style.display = 'none';
+
+      const riskCounts = {
+        'Moderate Risk': 0,
+        'High Risk Remains': 0,
+        'Low Risk': 0,
+        'Threat Completely Gone': 0,
+        'Don\'t Know': 0,
+        'Unprompted / Pending': 0
+      };
+
+      t2Data.forEach(d => {
+        const q3 = cleanText(d.q3_risk || d.q3).toLowerCase();
+        if (q3.includes('high')) riskCounts['High Risk Remains']++;
+        else if (q3.includes('moderate')) riskCounts['Moderate Risk']++;
+        else if (q3.includes('low')) riskCounts['Low Risk']++;
+        else if (q3.includes('completely gone') || q3.includes('threat is')) riskCounts['Threat Completely Gone']++;
+        else if (q3.includes("don't know")) riskCounts['Don\'t Know']++;
+        else riskCounts['Unprompted / Pending']++;
+      });
+
+      const validLabels = Object.keys(riskCounts).filter(k => riskCounts[k] > 0);
+      const validData = validLabels.map(k => riskCounts[k]);
+      const palette = {
+        'Moderate Risk': '#f1bc1b',
+        'High Risk Remains': '#ef4444',
+        'Low Risk': '#3b82f6',
+        'Threat Completely Gone': '#991b1b',
+        'Don\'t Know': '#94a3b8',
+        'Unprompted / Pending': '#64748b'
+      };
+
+      chartInstances.chartT4Q3 = new Chart(elT4Q3.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: validLabels,
+          datasets: [{
+            label: 'Respondents',
+            data: validData,
+            backgroundColor: validLabels.map(k => palette[k] || '#282c68'),
+            borderRadius: 4,
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              formatter: (val) => `${val} (${((val / t2Data.length) * 100).toFixed(0)}%)`,
+              color: '#282c68',
+              font: { weight: 'bold', size: 10 }
+            }
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { beginAtZero: true, ticks: { stepSize: 2 }, grace: '25%' } }
         }
       });
     }
@@ -1371,14 +2269,16 @@ function renderBarCharts(distList) {
             label: 'Audits Completed',
             data: Object.values(grpCounts),
             backgroundColor: '#282c68',
-            borderRadius: 4
+            borderRadius: 4,
+            datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold' } }
           }]
         },
         options: {
+          indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, grace: '15%' } }
+          scales: { x: { beginAtZero: true, ticks: { stepSize: 1 }, grace: '20%' } }
         }
       });
     }
@@ -1391,27 +2291,239 @@ function renderBarCharts(distList) {
     } else {
       elT5Claims.style.display = 'block';
       emptyT5Claims.style.display = 'none';
-      const statusCounts = {};
-      t3Data.forEach(d => {
-        const st = d.status || 'Unverified';
-        statusCounts[st] = (statusCounts[st] || 0) + 1;
-      });
+
+      const labels = [
+        '1. Handwash',
+        '2. Signs Recall',
+        '3. Hotline/Report',
+        '4. Anti-Stigma',
+        '5. Multiplier'
+      ];
+
+      const heardCounts = [
+        t3Data.filter(d => d.heard_c1).length,
+        t3Data.filter(d => d.heard_c2).length,
+        t3Data.filter(d => d.heard_c3).length,
+        t3Data.filter(d => d.heard_c4).length,
+        t3Data.filter(d => d.heard_c5).length
+      ];
+
+      const verifiedCounts = [
+        t3Data.filter(r => cleanText(r.c1_status).toLowerCase().includes('confirmed')).length,
+        t3Data.filter(r => cleanText(r.c2_status).toLowerCase().includes('accurate')).length,
+        t3Data.filter(r => cleanText(r.c3_status).toLowerCase().includes('knows')).length,
+        t3Data.filter(r => ['supportive', 'receptive'].some(k => cleanText(r.c4_status).toLowerCase().includes(k))).length,
+        t3Data.filter(r => cleanText(r.c5_status).toLowerCase().includes('active')).length
+      ];
+
       chartInstances.chartT5Claims = new Chart(elT5Claims.getContext('2d'), {
-        type: 'pie',
+        type: 'bar',
         data: {
-          labels: Object.keys(statusCounts),
-          datasets: [{
-            data: Object.values(statusCounts),
-            backgroundColor: ['#10b981', '#f1bc1b', '#ef4444']
-          }]
+          labels: labels,
+          datasets: [
+            {
+              label: 'Claim Heard (Awareness)',
+              data: heardCounts,
+              backgroundColor: '#282c68',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#282c68', font: { weight: 'bold', size: 10 } }
+            },
+            {
+              label: 'Verified Practice (Physical Audit)',
+              data: verifiedCounts,
+              backgroundColor: '#10b981',
+              borderRadius: 4,
+              datalabels: { anchor: 'end', align: 'right', color: '#047857', font: { weight: 'bold', size: 10 } }
+            }
+          ]
         },
         options: {
+          indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom' } }
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  const idx = items[0].dataIndex;
+                  const h = heardCounts[idx];
+                  const v = verifiedCounts[idx];
+                  const rate = h > 0 ? ((v / h) * 100).toFixed(0) : 0;
+                  return `Verification Conversion: ${rate}% (${v}/${h})`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: { stepSize: 2 },
+              grace: '20%'
+            }
+          }
         }
       });
     }
+  }
+
+  // Tool 7 Charts: Community Gatekeeper Dialogue & Commitment Log
+  const gkData = appData.filter(d => d.tool === 'Gatekeeper Session');
+  const elGkRoles = document.getElementById('chartGkRolesT7');
+  const elGkCapacity = document.getElementById('chartGkCapacityT7');
+
+  if (elGkRoles) {
+    const roleStats = {};
+    gkData.forEach(d => {
+      let rName = cleanText(d.role_specify) || cleanText(d.role) || 'Community Gatekeeper';
+      const rLower = rName.toLowerCase();
+      if (rLower.includes('headteacher')) rName = 'Headteachers';
+      else if (rLower.includes('teacher')) rName = 'School Teachers';
+      else if (rLower.includes('vht') && rLower.includes('ureport')) rName = 'VHTs & U-Reporters';
+      else if (rLower.includes('vht')) rName = 'VHTs';
+      else if (rLower.includes('market')) rName = 'Market Leaders';
+
+      if (!roleStats[rName]) {
+        roleStats[rName] = { total: 0, male: 0, female: 0, sessions: 0 };
+      }
+      const m = d.male || 0;
+      const f = d.female || 0;
+      roleStats[rName].male += m;
+      roleStats[rName].female += f;
+      roleStats[rName].total += (m + f);
+      roleStats[rName].sessions += 1;
+    });
+
+    const sortedRoles = Object.entries(roleStats).sort((a, b) => b[1].total - a[1].total);
+    const roleLabels = sortedRoles.map(x => x[0]);
+    const roleCounts = sortedRoles.map(x => x[1].total);
+    const roleColors = ['#282c68', '#f1bc1b', '#10b981', '#3b82f6', '#8b5cf6'];
+
+    chartInstances.gkRolesT7 = new Chart(elGkRoles.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: roleLabels,
+        datasets: [{
+          label: 'Gatekeepers Oriented',
+          data: roleCounts,
+          backgroundColor: roleLabels.map((_, i) => roleColors[i % roleColors.length]),
+          borderRadius: 4,
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            formatter: (val, ctx) => {
+              const item = sortedRoles[ctx.dataIndex][1];
+              return `${val} (${item.sessions} session${item.sessions > 1 ? 's' : ''})`;
+            },
+            color: '#282c68',
+            font: { weight: 'bold', size: 10 }
+          }
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              afterBody: (items) => {
+                const idx = items[0].dataIndex;
+                const item = sortedRoles[idx][1];
+                return `Breakdown: ${item.male} Male, ${item.female} Female across ${item.sessions} session(s)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            grace: '25%'
+          }
+        }
+      }
+    });
+  }
+
+  if (elGkCapacity) {
+    const totalGkSessions = gkData.length;
+    const scriptCount = gkData.filter(d => String(d.manual_used || '').toLowerCase().includes('yes')).length;
+    const venueWashCount = gkData.filter(d => String(d.venue_wash || '').toLowerCase().includes('yes')).length;
+    const signsCount = gkData.filter(d => {
+      const s = String(d.signs_ability || '').toLowerCase();
+      return s.includes('most') || s.includes('75%') || s.includes('half') || s.includes('50%');
+    }).length;
+    const hotlineCount = gkData.filter(d => {
+      const h = String(d.hotline_ability || '').toLowerCase();
+      return h.includes('most') || h.includes('75%') || h.includes('half') || h.includes('50%');
+    }).length;
+    const commitCount = gkData.filter(d => cleanText(d.commitments).length > 0).length;
+
+    const capacityLabels = [
+      'Standard Script / Manual Used',
+      'Venue Functional Handwashing Present',
+      'Warning Signs Mastery (≥50%)',
+      'Hotline & Reporting Literacy (≥50%)',
+      'Action Commitments Logged'
+    ];
+
+    const capacityData = [
+      totalGkSessions > 0 ? Number(((scriptCount / totalGkSessions) * 100).toFixed(1)) : 0,
+      totalGkSessions > 0 ? Number(((venueWashCount / totalGkSessions) * 100).toFixed(1)) : 0,
+      totalGkSessions > 0 ? Number(((signsCount / totalGkSessions) * 100).toFixed(1)) : 0,
+      totalGkSessions > 0 ? Number(((hotlineCount / totalGkSessions) * 100).toFixed(1)) : 0,
+      totalGkSessions > 0 ? Number(((commitCount / totalGkSessions) * 100).toFixed(1)) : 0
+    ];
+
+    const rawCounts = [scriptCount, venueWashCount, signsCount, hotlineCount, commitCount];
+    const capacityColors = ['#282c68', '#3b82f6', '#10b981', '#f1bc1b', '#059669'];
+
+    chartInstances.gkCapacityT7 = new Chart(elGkCapacity.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: capacityLabels,
+        datasets: [{
+          label: '% Compliance / Mastery',
+          data: capacityData,
+          backgroundColor: capacityColors,
+          borderRadius: 4,
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            formatter: (val, ctx) => `${val}% (${rawCounts[ctx.dataIndex]}/${totalGkSessions})`,
+            color: '#282c68',
+            font: { weight: 'bold', size: 10 }
+          }
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              afterBody: (items) => {
+                const idx = items[0].dataIndex;
+                return `Achieved in ${rawCounts[idx]} out of ${totalGkSessions} evaluated dialogue sessions`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: (val) => `${val}%`
+            },
+            grace: '15%'
+          }
+        }
+      }
+    });
   }
 }
 

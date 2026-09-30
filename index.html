@@ -305,20 +305,68 @@
       <!-- ================= TOOL 7: COMMUNITY GATEKEEPER DIALOGUE ================= -->
       <section id="tab-tool_7" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 7 Scope (Community Gatekeeper Dialogue):</strong> Tracking orientation sessions conducted with local leaders, religious figures, market masters, and elders.
+          <strong>Tool 7 Scope (Community Gatekeeper Dialogue &amp; Commitment Log):</strong> Longitudinal engagement and institutional commitment tracker for key community decision-makers, school administrators, headteachers, teachers, market masters, and Village Health Teams (VHTs). Evaluates facilitation fidelity with MoH/KCCA standard scripts, diagnostic grasp of epidemic warning signs, toll-free reporting literacy, and local biosecurity barriers.
         </div>
-        <div class="card">
-          <div class="card-title">Community Gatekeeper Dialogue &amp; Commitment Log</div>
+
+        <!-- 5-PILLAR GATEKEEPER ENGAGEMENT SCORECARDS -->
+        <div class="five-col-grid">
+          <div class="kpi-card accent">
+            <div class="kpi-title">Gatekeepers Oriented</div>
+            <div class="kpi-value" id="gk_kpi_total">0</div>
+            <div class="kpi-subtitle" id="gk_kpi_total_sub">Across all dialogue sessions</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Standard Script Fidelity</div>
+            <div class="kpi-value" id="gk_kpi_manual">0%</div>
+            <div class="kpi-subtitle" id="gk_kpi_manual_sub">Led using standard MoH/KCCA manual</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">PHE Warning Signs Mastery</div>
+            <div class="kpi-value" id="gk_kpi_signs">0%</div>
+            <div class="kpi-subtitle" id="gk_kpi_signs_sub">Sessions with &ge;50% identifying 3 signs</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Hotline &amp; Reporting Literacy</div>
+            <div class="kpi-value" id="gk_kpi_hotline">0%</div>
+            <div class="kpi-subtitle" id="gk_kpi_hotline_sub">Sessions with &ge;50% reporting steps mastery</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Binding Commitments Logged</div>
+            <div class="kpi-value" id="gk_kpi_commit">0%</div>
+            <div class="kpi-subtitle" id="gk_kpi_commit_sub">Documented action plans secured</div>
+          </div>
+        </div>
+
+        <!-- 2 DEDICATED HORIZONTAL BAR CHARTS -->
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-title">Gatekeeper Reach by Influencer Category (Cadre)</div>
+            <div class="chart-box"><canvas id="chartGkRolesT7"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Gatekeeper Knowledge Grasp &amp; Venue Compliance</div>
+            <div class="chart-box"><canvas id="chartGkCapacityT7"></canvas></div>
+          </div>
+        </div>
+
+        <!-- COMPREHENSIVE MASTER GATEKEEPER DIALOGUE REGISTRY TABLE -->
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">
+            <span>Community Gatekeeper Dialogue &amp; Commitment Master Registry</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);" id="gkCountBadge">0 Sessions</span>
+          </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>District / Parish</th>
-                  <th>Coordinator / Lead</th>
-                  <th>Type of Gatekeeper</th>
-                  <th>Male Oriented</th>
-                  <th>Female Oriented</th>
-                  <th>Commitments &amp; Action Promises</th>
+                  <th>Date &amp; Location</th>
+                  <th>Cadre &amp; Target Group</th>
+                  <th>Attendance (M / F)</th>
+                  <th>Fidelity &amp; Venue WASH</th>
+                  <th>PHE Warning Signs Mastery</th>
+                  <th>Hotline &amp; Reporting Steps</th>
+                  <th>Action Commitments Made</th>
+                  <th>Misconceptions &amp; Barriers</th>
                 </tr>
               </thead>
               <tbody id="tool7GatekeeperTableBody"></tbody>
@@ -330,39 +378,79 @@
       <!-- ================= TOOL 1: TRANSECT WALK & INFRASTRUCTURE CHECKLIST ================= -->
       <section id="tab-tool_1" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 1 Scope (Transect Walk Environmental & Infrastructure Checklist):</strong> Observational mapping of physical infrastructure, WASH facilities, crowd congestion, and visible IEC artefacts across markets, transport hubs, and compounds.
+          <strong>Tool 1 Scope (Transect Walk Environmental & Infrastructure Checklist):</strong> Systematic physical audit protocol assessing environmental biosecurity, handwashing infrastructure, crowd congestion choke points, latrine stance ratios, poster currency with active MoH/KCCA toll-free hotlines, and dedicated isolation capacity across schools, markets, bus/taxi parks, and informal settlements.
         </div>
+
+        <!-- 5-PILLAR ENVIRONMENTAL & INFRASTRUCTURE SCORECARDS -->
+        <div class="five-col-grid">
+          <div class="kpi-card accent">
+            <div class="kpi-title">Functional WASH Coverage</div>
+            <div class="kpi-value" id="tw_kpi_wash">0%</div>
+            <div class="kpi-subtitle" id="tw_kpi_wash_sub">Points present with soap and clean running water</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Clean Drainage &amp; Vector Control</div>
+            <div class="kpi-value" id="tw_kpi_refuse">0%</div>
+            <div class="kpi-subtitle" id="tw_kpi_refuse_sub">Absence of open refuse heaps or stagnant sewage</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Extreme Crowding Bottlenecks</div>
+            <div class="kpi-value" id="tw_kpi_choke">0%</div>
+            <div class="kpi-subtitle" id="tw_kpi_choke_sub">High-transmission choke points with zero distancing</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Active Hotline Posters (IEC)</div>
+            <div class="kpi-value" id="tw_kpi_poster">0%</div>
+            <div class="kpi-subtitle" id="tw_kpi_poster_sub">Fresh materials displaying active toll-free lines</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Case Holding Protocol</div>
+            <div class="kpi-value" id="tw_kpi_iso">0%</div>
+            <div class="kpi-subtitle" id="tw_kpi_iso_sub">Dedicated or makeshift separation space ready</div>
+          </div>
+        </div>
+
+        <!-- CHARTS SECTION: 2x2 GRID (4 ENVIRONMENTAL DIMENSIONS) -->
         <div class="dashboard-grid">
           <div class="card">
-            <div class="card-title">Handwashing Points at Gates, Latrines & Canteens (Status Count)</div>
+            <div class="card-title">Handwashing Points at Gates, Latrines &amp; Canteens</div>
             <div class="chart-box"><canvas id="chartWashT3"></canvas></div>
           </div>
           <div class="card">
-            <div class="card-title">Poster Currency & Presence of Toll-Free Hotlines</div>
+            <div class="card-title">Environmental Drainage &amp; Vector Bio-Hazard Risk</div>
+            <div class="chart-box"><canvas id="chartRefuseT1"></canvas></div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid" style="margin-top:16px;">
+          <div class="card">
+            <div class="card-title">Choke Points &amp; Physical Distancing Bottlenecks</div>
+            <div class="chart-box"><canvas id="chartChokeT1"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Poster Currency &amp; Presence of Toll-Free Hotlines</div>
             <div class="chart-box"><canvas id="chartPosterT3"></canvas></div>
           </div>
         </div>
         
-        <div class="card">
+        <!-- COMPREHENSIVE MASTER TRANSECT WALK REGISTRY TABLE -->
+        <div class="card" style="margin-top:16px;">
           <div class="card-title">
-            <span>Tool 1: Infrastructure Observational Mapping Log</span>
-            <span style="font-size:0.75rem; color:var(--text-muted);">Ratio derived strictly as: Population count of the site &divide; Record number of functional stations</span>
+            <span>Tool 1: Environmental &amp; Physical Infrastructure Master Audit Registry</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);" id="twCountBadge">0 Audits</span>
           </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Auditor / Lead</th>
-                  <th>District / Parish</th>
-                  <th>Type of Setting</th>
-                  <th>Functional Stations</th>
-                  <th>Population Served</th>
-                  <th>Ratio (Population &divide; Functional Stations)</th>
-                  <th>Observation Notes</th>
-                  <th>Drainage & Refuse</th>
-                  <th>Posters & Hotlines</th>
-                  <th>Isolation Unit Protocol</th>
-                  <th>Staff Trained</th>
+                  <th>Audit ID &amp; Date</th>
+                  <th>Setting &amp; Location</th>
+                  <th>Population &amp; Stations Ratio</th>
+                  <th>WASH &amp; Latrine Sanitation</th>
+                  <th>Drainage, Vectors &amp; Choke Points</th>
+                  <th>Posters &amp; Hotline Verification</th>
+                  <th>Isolation / Separation Protocol</th>
+                  <th>Staff Orientation &amp; Action</th>
                 </tr>
               </thead>
               <tbody id="tool3TableBody"></tbody>
@@ -374,47 +462,103 @@
       <!-- ================= TOOL 2: RAPID AUDIENCE ASSESSMENT INTERCEPT SURVEY ================= -->
       <section id="tab-tool_2" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 2 Scope (Rapid Audience Assessment Intercept Survey):</strong> Rapid audience assessment intercept survey (20 exposed respondents per setting) to verify campaign reach, symptom recall, post-declaration risk perception, and early notification intent.
+          <strong>Tool 2 Scope (Rapid Audience Assessment Intercept Survey):</strong> Rapid intercept diagnostic administered across informal settlements, markets, transit hubs, clinics, and school vicinities. Systematically measures <strong>5 Core RCCE Dimensions</strong>: (1) 7-day multi-channel campaign exposure, (2) unprompted clinical signs and protection recall, (3) post-declaration epidemic risk perception, (4) emergency first-action protocols for hemorrhagic symptoms, and (5) trusted community information brokers.
         </div>
-        
+
+        <!-- 5-PILLAR RAPID AUDIENCE DIAGNOSTIC SCORECARDS -->
+        <div class="five-col-grid">
+          <div class="kpi-card accent">
+            <div class="kpi-title">Q1: 7-Day Campaign Reach</div>
+            <div class="kpi-value" id="t2_kpi_reach">0%</div>
+            <div class="kpi-subtitle" id="t2_kpi_reach_sub">Exposed via megaphones, radio, flyers or wheel</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Q2: Signs &amp; Protection Recall</div>
+            <div class="kpi-value" id="t2_kpi_signs">0%</div>
+            <div class="kpi-subtitle" id="t2_kpi_signs_sub">Recalled 1+ key signs and protective measures</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Q3: Ongoing Risk Perception</div>
+            <div class="kpi-value" id="t2_kpi_risk">0%</div>
+            <div class="kpi-subtitle" id="t2_kpi_risk_sub">Perceive ongoing moderate or high outbreak risk</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Q4: Safe Notification Intent</div>
+            <div class="kpi-value" id="t2_kpi_action">0%</div>
+            <div class="kpi-subtitle" id="t2_kpi_action_sub">Would notify VHT or call toll-free emergency line</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Q5: Health Authority Trust</div>
+            <div class="kpi-value" id="t2_kpi_trust">0%</div>
+            <div class="kpi-subtitle" id="t2_kpi_trust_sub">Trust VHTs or Ministry of Health/KCCA most</div>
+          </div>
+        </div>
+
+        <!-- CHARTS SECTION: 2x2 GRID (4 ANALYTICAL DIMENSIONS) -->
         <div class="dashboard-grid">
           <div class="card">
-            <div class="card-title">Q1: Exposure to Outbreak Messages in Past 7 Days</div>
+            <div class="card-title">Q1: Exposure to Outbreak Messages in Past 7 Days (Channels)</div>
             <div class="chart-box">
               <canvas id="chartT4Q1"></canvas>
               <div id="emptyT4Q1" style="display:none; height:100%; align-items:center; justify-content:center; flex-direction:column; color:#94a3b8; font-size:0.82rem; text-align:center;">
                 <span style="font-size:1.5rem; margin-bottom:6px;">📊</span>
                 No survey responses recorded yet.
-                <span style="font-size:0.72rem; color:#cbd5e1; margin-top:4px;">Will render automatically when entries are added to Excel.</span>
               </div>
             </div>
           </div>
           <div class="card">
-            <div class="card-title">Q4: First Action if Fever/Bleeding Observed</div>
+            <div class="card-title">Q5: Most Trusted Community Information Brokers</div>
             <div class="chart-box">
-              <canvas id="chartT4Q4"></canvas>
-              <div id="emptyT4Q4" style="display:none; height:100%; align-items:center; justify-content:center; flex-direction:column; color:#94a3b8; font-size:0.82rem; text-align:center;">
+              <canvas id="chartT4Q5"></canvas>
+              <div id="emptyT4Q5" style="display:none; height:100%; align-items:center; justify-content:center; flex-direction:column; color:#94a3b8; font-size:0.82rem; text-align:center;">
                 <span style="font-size:1.5rem; margin-bottom:6px;">📊</span>
                 No survey responses recorded yet.
-                <span style="font-size:0.72rem; color:#cbd5e1; margin-top:4px;">Will render automatically when entries are added to Excel.</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-title">Rapid Audience Intercept Survey: Complete Response Matrix</div>
+        <div class="dashboard-grid" style="margin-top:16px;">
+          <div class="card">
+            <div class="card-title">Q4: First Action Protocols if Outbreak Symptoms Observed</div>
+            <div class="chart-box">
+              <canvas id="chartT4Q4"></canvas>
+              <div id="emptyT4Q4" style="display:none; height:100%; align-items:center; justify-content:center; flex-direction:column; color:#94a3b8; font-size:0.82rem; text-align:center;">
+                <span style="font-size:1.5rem; margin-bottom:6px;">📊</span>
+                No survey responses recorded yet.
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Q3: Post-Declaration Epidemic Risk Perception</div>
+            <div class="chart-box">
+              <canvas id="chartT4Q3"></canvas>
+              <div id="emptyT4Q3" style="display:none; height:100%; align-items:center; justify-content:center; flex-direction:column; color:#94a3b8; font-size:0.82rem; text-align:center;">
+                <span style="font-size:1.5rem; margin-bottom:6px;">📊</span>
+                No survey responses recorded yet.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPREHENSIVE MASTER INTERCEPT REGISTRY TABLE -->
+        <div class="card" style="margin-top:16px;">
+          <div class="card-title">
+            <span>Rapid Audience Intercept Survey: Master Diagnostic Registry (All Tool Questions &amp; Intelligence)</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);" id="tool2CountBadge">0 Audits</span>
+          </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Resp ID</th>
-                  <th>Setting &amp; Location</th>
-                  <th>Q1: Outbreak Msg (7d)</th>
-                  <th>Q2: Named 2+ Signs</th>
+                  <th>Resp ID &amp; Date</th>
+                  <th>Target Setting &amp; Location</th>
+                  <th>Q1: 7-Day Campaign Channel</th>
+                  <th>Q2: Signs &amp; Protection Recalled</th>
                   <th>Q3: Post-Decl. Risk Perception</th>
-                  <th>Q4: First Action Taken</th>
+                  <th>Q4: Emergency Action Protocol</th>
                   <th>Q5: Most Trusted Source</th>
+                  <th>RCCE Intelligence &amp; Risk Level</th>
                 </tr>
               </thead>
               <tbody id="tool4TableBody"></tbody>
@@ -426,46 +570,82 @@
       <!-- ================= TOOL 3: 'ASK 5' BEHAVIORAL VERIFICATION DIAGNOSTIC ================= -->
       <section id="tab-tool_3" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 3 Scope ('Ask 5' Behavioral Verification Diagnostic):</strong> 'Ask 5' rapid probing qualitative diagnostic administered to gatekeepers, market vendors, transport operators, teachers, and school health patrons to verify genuine behavioral adoption.
+          <strong>Tool 3 Scope ('Ask 5' Behavioral Verification Diagnostic):</strong> Rapid probing qualitative diagnostic administered across key community influencers (Pupil leaders, Teachers/patrons, Boda riders, VHTs, Taxi drivers, Market vendors). Rather than taking reported claims at face value, field auditors physically probe and inspect evidence across <strong>5 Core Claims</strong> to detect social desirability bias and verify genuine community-level behavior adoption.
         </div>
 
+        <!-- 5-CLAIM DIAGNOSTIC VERIFICATION SCORECARDS -->
+        <div class="five-col-grid">
+          <div class="kpi-card accent">
+            <div class="kpi-title">Claim 1: Handwashing Practice</div>
+            <div class="kpi-value" id="ask5_kpi_c1">0%</div>
+            <div class="kpi-subtitle" id="ask5_kpi_c1_sub">Verified against station, soap residues &amp; filled vessel</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Claim 2: Early Warning Signs</div>
+            <div class="kpi-value" id="ask5_kpi_c2">0%</div>
+            <div class="kpi-subtitle" id="ask5_kpi_c2_sub">Clinical difference from malaria &amp; no-contact protocol</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Claim 3: Hotline Reporting</div>
+            <div class="kpi-value" id="ask5_kpi_c3">0%</div>
+            <div class="kpi-subtitle" id="ask5_kpi_c3_sub">Toll-free line recalled without checking phone</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Claim 4: Anti-Stigma</div>
+            <div class="kpi-value" id="ask5_kpi_c4">0%</div>
+            <div class="kpi-subtitle" id="ask5_kpi_c4_sub">Supportive of discharged survivors in study &amp; trade</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Claim 5: Dialogue Multiplier</div>
+            <div class="kpi-value" id="ask5_kpi_c5">0%</div>
+            <div class="kpi-subtitle" id="ask5_kpi_c5_sub">Household agreements &amp; tough questions answered</div>
+          </div>
+        </div>
+
+        <!-- CHARTS SECTION -->
         <div class="dashboard-grid">
           <div class="card">
-            <div class="card-title">Audited Target Groups</div>
+            <div class="card-title">Audited Target Groups &amp; Settings</div>
             <div class="chart-box">
               <canvas id="chartT5Target"></canvas>
               <div id="emptyT5Target" style="display:none; height:100%; align-items:center; justify-content:center; flex-direction:column; color:#94a3b8; font-size:0.82rem; text-align:center;">
                 <span style="font-size:1.5rem; margin-bottom:6px;">📊</span>
                 No diagnostic audits recorded yet.
-                <span style="font-size:0.72rem; color:#cbd5e1; margin-top:4px;">Will render automatically when entries are added to Excel.</span>
               </div>
             </div>
           </div>
           <div class="card">
-            <div class="card-title">Verification Status of 5 Claims</div>
+            <div class="card-title">5 Core Claims: Awareness Heard vs. Verified Practice</div>
             <div class="chart-box">
               <canvas id="chartT5Claims"></canvas>
               <div id="emptyT5Claims" style="display:none; height:100%; align-items:center; justify-content:center; flex-direction:column; color:#94a3b8; font-size:0.82rem; text-align:center;">
                 <span style="font-size:1.5rem; margin-bottom:6px;">📊</span>
                 No diagnostic audits recorded yet.
-                <span style="font-size:0.72rem; color:#cbd5e1; margin-top:4px;">Will render automatically when entries are added to Excel.</span>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- COMPREHENSIVE 'ASK 5' FIELD AUDIT MASTER REGISTRY TABLE -->
         <div class="card">
-          <div class="card-title">'Ask 5' Field Probing & Physical Verification Log</div>
+          <div class="card-title">
+            <span>'Ask 5' Behavioral Verification Diagnostic Registry (All Tool Questions &amp; Findings)</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);" id="ask5CountBadge">0 Audits</span>
+          </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Diag ID</th>
-                  <th>Target Group</th>
-                  <th>Claim Audited</th>
-                  <th>Probing Question Prompt</th>
-                  <th>Physical Verification Findings</th>
-                  <th>Verification Status</th>
+                  <th>Diag ID &amp; Date</th>
+                  <th>Target Group &amp; Setting</th>
+                  <th>District / Parish</th>
+                  <th>Core Claims Heard</th>
+                  <th>Claim 1: Handwash Probe &amp; Station Audit</th>
+                  <th>Claim 2: Early Warning Signs &amp; No-Contact</th>
+                  <th>Claim 3: Reporting &amp; Hotline Recall</th>
+                  <th>Claim 4: Anti-Stigma &amp; Survivor Reintegration</th>
+                  <th>Claim 5: Household Agreement &amp; Multiplier</th>
+                  <th>Flagged Misconception &amp; Action</th>
                 </tr>
               </thead>
               <tbody id="tool5TableBody"></tbody>

@@ -87,6 +87,16 @@ def parse_num(val):
     except:
         return 0
 
+CLEAN_EMPTY_WORDS = {'nan', 'none', 'non', 'nil', 'n/a', 'na', 'none.', 'non.', 'null'}
+
+def clean_val(v):
+    if isinstance(v, str):
+        s = v.strip()
+        if s.lower() in CLEAN_EMPTY_WORDS:
+            return ''
+        return s
+    return v
+
 def get_col(row, *aliases):
     for alias in aliases:
         clean_alias = alias.strip().lower()
@@ -95,7 +105,7 @@ def get_col(row, *aliases):
                 v = row[k]
                 if pd.notna(v):
                     s = str(v).strip()
-                    if s.lower() != 'nan':
+                    if s.lower() not in CLEAN_EMPTY_WORDS:
                         return s
     return ''
 
@@ -176,6 +186,18 @@ def parse_workbook(excel_path):
             male_gk = parse_num(get_col(row, 'Male Gatekeepers Oriented'))
             female_gk = parse_num(get_col(row, 'Female Gatekeepers Oriented'))
             role = get_col(row, 'Type of gatekeeper') or 'Teacher / Patron'
+            role_specify = get_col(row, 'specify2')
+            manual_used = get_col(row, 'Did the gatekeeper lead the session using the Standard Manual/Script')
+            commitments = get_col(row, 'what commitments did the gatekeeper make')
+            signs_ability = get_col(row, 'Are the gatekepers able to identify the three PHE warning signs')
+            hotline_ability = get_col(row, 'Do the gatekeeprs know the exact hotline and reporting steps')
+            venue_wash = get_col(row, 'Is functional handwashing present at this venue?')
+            rumor = get_col(row, 'Rumor, misinformation or question flagged')
+            barrier = get_col(row, 'Local barrier identified')
+            source = get_col(row, 'source of the rumor') or 'Community'
+            risk_level = get_col(row, 'Estimated spread or risk level')
+            tactical_adaptation = get_col(row, 'Recommended tactical adaptation')
+
             records.append({
                 'id': row_id,
                 'date': formatted_date,
@@ -185,7 +207,17 @@ def parse_workbook(excel_path):
                 'coordinator': coordinator,
                 'school': f'Gatekeeper Session ({role})',
                 'role': role,
-                'commitments': get_col(row, 'what commitments did the gatekeeper make'),
+                'role_specify': role_specify,
+                'commitments': commitments,
+                'manual_used': manual_used,
+                'signs_ability': signs_ability,
+                'hotline_ability': hotline_ability,
+                'venue_wash': venue_wash,
+                'rumor': rumor,
+                'barrier': barrier,
+                'source': source,
+                'risk_level': risk_level,
+                'tactical_adaptation': tactical_adaptation,
                 'male': male_gk,
                 'female': female_gk,
                 'boys': 0, 'girls': 0, 'enrolment': 0,
@@ -203,6 +235,25 @@ def parse_workbook(excel_path):
             setting = get_col(row, 'Setting type', 'specify3') or 'School'
             district = get_col(row, 'District') or 'Central'
             parish = get_col(row, 'Parish')
+
+            wash_val = get_col(row, 'Functional handwashing points at gates, latrines, and dining/canteen areas with soap and running water.') or 'Present'
+            refuse_val = get_col(row, 'Open refuse heaps, stagnant water, overflowing drainage channels near classrooms, food stalls, or passenger bays.') or 'Maintained'
+            choke_val = get_col(row, 'Choke points where physical distancing is impossible (school gates, market aisles, taxi boarding bays).') or 'Moderate Congestion'
+            poster_val = get_col(row, 'Presence, legibility, and currency of MoH/KCCA posters on Ebola, Mpox, and Marburg with active toll-free lines.') or 'Observed'
+            hotline_conf = get_col(row, 'Confirm if these IEC materials have presence of hotlines (0800-100-066 / 8500).')
+            latrine_val = get_col(row, 'Cleanliness, separation of facilities, water availability, and handwash basins at latrines/toilets.') or 'Clean & Supplied'
+            stance_notes = get_col(row, 'Note student-to-stance ratio or market vendor access.')
+            holding_val = get_col(row, 'Designated space, ventilation, clean bedding, and written separation protocol for suspected symptomatic cases.') or 'Makeshift Only'
+            staff_val = get_col(row, 'Verify if school nurse/matron or market head has ever received orientation on epidemics.', 'Verify school nurse/matron or market head orientation.') or 'Not oriented'
+            vector_notes = get_col(row, 'Check vector breeding sites and safety near food points.')
+            obs_notes = get_col(row, 'Observation notes')
+
+            risk_level = get_col(row, 'Estimated spread or risk level')
+            rumor = get_col(row, 'Rumor, misinformation or question flagged')
+            barrier = get_col(row, 'Local barrier identified')
+            source = get_col(row, 'source of the rumor') or 'Community'
+            tactical_adaptation = get_col(row, 'Recommended tactical adaptation')
+
             records.append({
                 'id': row_id,
                 'date': formatted_date,
@@ -216,12 +267,22 @@ def parse_workbook(excel_path):
                 'stations': stations,
                 'pop': pop,
                 'stance_ratio': stance_ratio,
-                'notes': get_col(row, 'Observation notes', 'Check vector breeding sites and safety near food points.') or 'No notes',
-                'refuse': get_col(row, 'Open refuse heaps, stagnant water, overflowing drainage channels near classrooms, food stalls, or passenger bays.') or 'Maintained',
-                'wash': get_col(row, 'Functional handwashing points at gates, latrines, and dining/canteen areas with soap and running water.') or 'Present',
-                'poster': get_col(row, 'Presence, legibility, and currency of MoH/KCCA posters on Ebola, Mpox, and Marburg with active toll-free lines.') or 'Observed',
-                'holding': get_col(row, 'Designated space, ventilation, clean bedding, and written separation protocol for suspected symptomatic cases.') or 'Makeshift Only',
-                'staff': get_col(row, 'Verify if school nurse/matron or market head has ever received orientation on epidemics.') or 'Not oriented',
+                'wash': wash_val,
+                'refuse': refuse_val,
+                'choke': choke_val,
+                'poster': poster_val,
+                'hotline_conf': hotline_conf,
+                'latrine_sanitation': latrine_val,
+                'stance_notes': stance_notes,
+                'holding': holding_val,
+                'staff': staff_val,
+                'vector_notes': vector_notes,
+                'notes': obs_notes or vector_notes or 'No notes recorded',
+                'risk_level': risk_level,
+                'rumor': rumor,
+                'barrier': barrier,
+                'source': source,
+                'tactical_adaptation': tactical_adaptation,
                 'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
             })
             tool_counts['Transect Walk'] = tool_counts.get('Transect Walk', 0) + 1
@@ -260,7 +321,275 @@ def parse_workbook(excel_path):
             tool_counts['PAT Assessment'] = tool_counts.get('PAT Assessment', 0) + 1
             continue
 
-    return records, tool_counts
+        # --- 5. Tool 2: Rapid Audience Intercept Survey ---
+        if 'tool 2' in activity_type or 'rapid audience' in activity_type or 'intercept' in activity_type:
+            district = get_col(row, 'District') or 'Central'
+            parish = get_col(row, 'Parish')
+            setting = get_col(row, 'Setting type') or 'Community'
+            spec_setting = get_col(row, 'specify3')
+            site_name = f"{district} - {parish} ({setting})" if parish else f"{district} ({setting})"
+            if spec_setting:
+                site_name += f" - {spec_setting}"
+
+            # Q1: 7-day outbreak message exposure
+            q1_val = get_col(row, 'Q1 In the past 7 days, have you seen or heard any public health messages or activities in this area regarding disease outbreaks (Ebola, Mpox, Marburg)?')
+
+            # Q2: Key symptoms & protection measures recalled
+            q2_verbatim = get_col(row, 'Q2 Can you name two key signs/symptoms of Ebola or Mpox and one way you can protect yourself?')
+            q2_eval = get_col(row, 'Correctly named 2+ symptoms', 'Correctly named 2+ symptoms  ')
+            q2_val = q2_eval or q2_verbatim
+
+            # Q3: Post-declaration epidemic risk perception
+            q3_val = get_col(row, 'Qn3 Now that Uganda was declared Ebola-free in July 2026, do you feel there is still a risk of outbreaks in your community, or is the threat completely gone?')
+
+            # Q4: First Action / Health Seeking Protocol (Binary choices + Specify)
+            q4_hotline = parse_num(row.get('Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Call national/district toll-free hotline (0800-100-066 / 8500)', 0))
+            q4_vht = parse_num(row.get('Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Notify local VHT ', 0))
+            q4_lc1 = parse_num(row.get('Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/LC1 Chairperson immediately', 0))
+            q4_clinic = parse_num(row.get('Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Escort them quietly to a private clinic or pharmacy', 0))
+            q4_home_care = parse_num(row.get('Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Isolate them at home and treat with herbs/home care', 0))
+            q4_healer = parse_num(row.get('Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Seek prayers / traditional healer', 0))
+            q4_other = parse_num(row.get('Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?/Other', 0))
+            q4_specify = get_col(row, 'Specify4')
+
+            q4_primary = get_col(row, 'Q4 If someone in your home or workplace suddenly developed high fever, vomiting, and unexplained bleeding, what is the FIRST action you would take?')
+            q4_val = q4_specify if (q4_primary.lower() == 'other' and q4_specify) else q4_primary
+
+            # Q5: Most trusted truth broker
+            q5_val = get_col(row, 'Qn5 Who in this community do you trust the MOST to tell you the truth about a disease outbreak?')
+
+            # Risk level and qualitative intelligence
+            risk_level = get_col(row, 'Estimated spread or risk level')
+            rumor = get_col(row, 'Rumor, misinformation or question flagged')
+            barrier = get_col(row, 'Local barrier identified')
+            source = get_col(row, 'source of the rumor') or 'Community'
+            tactical_adaptation = get_col(row, 'Recommended tactical adaptation')
+
+            records.append({
+                'id': row_id,
+                'date': formatted_date,
+                'tool': 'Rapid Intercept',
+                'district': district,
+                'parish': parish,
+                'coordinator': coordinator,
+                'school': site_name,
+                'site': site_name,
+                'setting': setting,
+                'spec_setting': spec_setting,
+                'q1': q1_val,
+                'q1_exposure': q1_val,
+                'q2': q2_val,
+                'q2_verbatim': q2_verbatim,
+                'q2_eval': q2_eval,
+                'q3': q3_val,
+                'q3_risk': q3_val,
+                'q4': q4_val,
+                'q4_hotline': q4_hotline,
+                'q4_vht': q4_vht,
+                'q4_lc1': q4_lc1,
+                'q4_clinic': q4_clinic,
+                'q4_home_care': q4_home_care,
+                'q4_healer': q4_healer,
+                'q4_other': q4_other,
+                'q4_specify': q4_specify,
+                'q5': q5_val,
+                'q5_trusted': q5_val,
+                'risk_level': risk_level,
+                'rumor': rumor,
+                'barrier': barrier,
+                'source': source,
+                'tactical_adaptation': tactical_adaptation,
+                'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
+            })
+            tool_counts['Rapid Intercept'] = tool_counts.get('Rapid Intercept', 0) + 1
+            continue
+
+        # --- 6. Tool 3: 'Ask 5' Behavioral Verification Diagnostic ---
+        if 'tool 3' in activity_type or 'ask 5' in activity_type or 'diagnostic' in activity_type:
+            district = get_col(row, 'District') or 'Central'
+            parish = get_col(row, 'Parish')
+            target_group = get_col(row, 'Target group') or 'Community Member'
+            setting = get_col(row, 'Setting type') or 'School'
+            claim = get_col(row, 'Which of these five claims have you heard')
+
+            # Heard claims breakdown
+            h1 = parse_num(row.get('Which of these five claims have you heard/We always wash our hands with soap throughout the day.', 0))
+            h2 = parse_num(row.get('Which of these five claims have you heard/I can easily spot the signs of Ebola and Mpox', 0))
+            h3 = parse_num(row.get('Which of these five claims have you heard/If someone gets sick with outbreak signs, I will call the toll-free line or report immediately', 0))
+            h4 = parse_num(row.get('Which of these five claims have you heard/We do not discriminate against anyone who recovers from an infectious disease or their family', 0))
+            h5 = parse_num(row.get('Which of these five claims have you heard/I have shared the emergency preparedness messages with my household and colleagues', 0))
+
+            # Claim 1: Handwashing
+            c1_time = get_col(row, 'When was the exact last time you washed hands with soap today')
+            c1_soap = get_col(row, 'where is the nearest soap located right now?')
+            c1_station = get_col(row, 'Show me the station you used')
+            c1_status = get_col(row, 'data collector verification status')
+
+            # Claim 2: Symptom Differentiation & No-Contact
+            c2_diff = get_col(row, 'What is the critical difference between ordinary malaria/flu and early warning signs of Haemorrhagic Fevers or Mpox skin lesions?')
+            c2_assist = get_col(row, 'If a pupil, colleague, or customer has high fever and red eyes, how do you assist without physical contact?')
+            c2_status = get_col(row, 'Verification Status')
+
+            # Claim 3: Toll-free Hotline & Reporting
+            c3_hotline = get_col(row, 'Without checking your phone, what is the exact emergency toll-free number or school/parish focal person contact?')
+            c3_fear = get_col(row, 'What specific fear would make you hesitate to call ')
+            c3_status = get_col(row, 'Verification Status5')
+
+            # Claim 4: Anti-Stigma & Reintegration
+            c4_reintegrate = get_col(row, 'If a pupil or vendor returns after being discharged from an isolation unit, how will you and others interact with them?')
+            c4_allow_back = get_col(row, 'Would you allow them back in your study group, buy food from them, or sit next to them?')
+            c4_status = get_col(row, 'Verification Status6')
+
+            # Claim 5: Preparedness Multiplier
+            c5_agreement = get_col(row, 'What specific agreement did your family or health club members establish after you spoke with them?')
+            c5_tough_q = get_col(row, 'Who asked the most difficult question about disease outbreaks, and what was your exact answer?')
+            c5_status = get_col(row, 'Verification Status7')
+
+            # Primary status summary
+            primary_status = c1_status or c2_status or c3_status or c4_status or c5_status or 'Verified'
+
+            records.append({
+                'id': row_id,
+                'date': formatted_date,
+                'tool': 'Ask 5',
+                'district': district,
+                'parish': parish,
+                'coordinator': coordinator,
+                'school': f"{district} - {parish} ({target_group})" if parish else f"{district} ({target_group})",
+                'group': target_group,
+                'setting': setting,
+                'claim': claim,
+                'heard_c1': h1,
+                'heard_c2': h2,
+                'heard_c3': h3,
+                'heard_c4': h4,
+                'heard_c5': h5,
+                # Claim 1
+                'c1_time': c1_time,
+                'c1_soap': c1_soap,
+                'c1_station': c1_station,
+                'c1_status': c1_status,
+                # Claim 2
+                'c2_diff': c2_diff,
+                'c2_assist': c2_assist,
+                'c2_status': c2_status,
+                # Claim 3
+                'c3_hotline': c3_hotline,
+                'c3_fear': c3_fear,
+                'c3_status': c3_status,
+                # Claim 4
+                'c4_reintegrate': c4_reintegrate,
+                'c4_allow_back': c4_allow_back,
+                'c4_status': c4_status,
+                # Claim 5
+                'c5_agreement': c5_agreement,
+                'c5_tough_q': c5_tough_q,
+                'c5_status': c5_status,
+                # Backward-compatible fields
+                'prompt': c1_time or c2_diff or c3_hotline or c4_reintegrate or c5_agreement or 'Behavioral Diagnostic',
+                'findings': c1_station or c2_assist or c3_fear or c4_allow_back or c5_tough_q or 'Audited',
+                'status': primary_status,
+                # Misinformation
+                'rumor': get_col(row, 'Rumor, misinformation or question flagged'),
+                'barrier': get_col(row, 'Local barrier identified'),
+                'source': get_col(row, 'source of the rumor'),
+                'risk_level': get_col(row, 'Estimated spread or risk level'),
+                'tactical_adaptation': get_col(row, 'Recommended tactical adaptation'),
+                'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
+            })
+            tool_counts['Ask 5'] = tool_counts.get('Ask 5', 0) + 1
+            continue
+
+        # --- 7. Tool 4: Most Significant Change Story Form ---
+        if 'tool 4' in activity_type or 'significant change' in activity_type or 'msc' in activity_type:
+            district = get_col(row, 'District') or 'Central'
+            parish = get_col(row, 'Parish')
+            records.append({
+                'id': row_id,
+                'date': formatted_date,
+                'tool': 'MSC Story',
+                'district': district,
+                'parish': parish,
+                'coordinator': coordinator,
+                'school': f"{district} - {parish}",
+                'participant': get_col(row, 'Participant name', 'Participant & Setting') or 'Participant',
+                'baseline': get_col(row, 'Step 1: Baseline Situation') or 'Baseline',
+                'event': get_col(row, 'Step 2: Turning Point Event') or 'Turning Point',
+                'change': get_col(row, 'Step 3: Concrete Behavior Change') or 'Behavior Change',
+                'significance': get_col(row, 'Step 4: Why is this Change Significant?') or 'Significance',
+                'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
+            })
+            tool_counts['MSC Story'] = tool_counts.get('MSC Story', 0) + 1
+            continue
+
+        # --- 8. Tool 5: Social Network & Influencer Mapping ---
+        if 'tool 5' in activity_type or 'influencer' in activity_type or 'social network' in activity_type:
+            district = get_col(row, 'District') or 'Central'
+            parish = get_col(row, 'Parish')
+            records.append({
+                'id': row_id,
+                'date': formatted_date,
+                'tool': 'Influencer Mapping',
+                'district': district,
+                'parish': parish,
+                'coordinator': coordinator,
+                'school': f"{district} - {parish}",
+                'sector': get_col(row, 'Social sector', 'Sector') or 'Community Sector',
+                'influencer': get_col(row, 'Name of key influencer') or 'Influencer',
+                'reach': get_col(row, 'Estimated audience reach') or 'Community',
+                'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
+            })
+            tool_counts['Influencer Mapping'] = tool_counts.get('Influencer Mapping', 0) + 1
+            continue
+
+        # --- 9. Tool 6: Photovoice Participatory Documentation ---
+        if 'tool 6' in activity_type or 'photovoice' in activity_type or 'photo' in activity_type:
+            district = get_col(row, 'District') or 'Central'
+            parish = get_col(row, 'Parish')
+            records.append({
+                'id': row_id,
+                'date': formatted_date,
+                'tool': 'Photovoice',
+                'district': district,
+                'parish': parish,
+                'coordinator': coordinator,
+                'school': f"{district} - {parish}",
+                'theme': get_col(row, 'PHOTO Theme', 'Theme') or 'Hygiene Barrier',
+                'caption': get_col(row, 'H — Happening: What is the background story or context here?') or 'PHOTO Observation',
+                'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
+            })
+            tool_counts['Photovoice'] = tool_counts.get('Photovoice', 0) + 1
+            continue
+
+        # --- 10. Tool 10: School Simulation Drill ---
+        if 'tool 10' in activity_type or 'simulation' in activity_type or 'drill' in activity_type:
+            district = get_col(row, 'District') or 'Central'
+            parish = get_col(row, 'Parish')
+            s_name = get_col(row, 'Name of the school', 'School Name') or f"{district} - {parish}"
+            records.append({
+                'id': row_id,
+                'date': formatted_date,
+                'tool': 'Simulation Drill',
+                'district': district,
+                'parish': parish,
+                'coordinator': coordinator,
+                'school': s_name,
+                'detection': get_col(row, 'No-Contact Detection') or 'Verified',
+                'holding': get_col(row, 'Holding Area Setup') or 'Active',
+                'time': parse_num(get_col(row, 'Time to Call (Mins)')),
+                'handover': get_col(row, 'Handover & Debrief Status') or 'Completed',
+                'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
+            })
+            tool_counts['Simulation Drill'] = tool_counts.get('Simulation Drill', 0) + 1
+            continue
+
+    # Sanitize all record fields to remove any 'none', 'non', 'nil', etc.
+    sanitized_records = []
+    for r in records:
+        sanitized_r = {k: clean_val(v) for k, v in r.items()}
+        sanitized_records.append(sanitized_r)
+
+    return sanitized_records, tool_counts
 
 def main():
     cli_arg = sys.argv[1] if len(sys.argv) > 1 else None
@@ -330,3 +659,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
