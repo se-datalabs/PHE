@@ -144,6 +144,12 @@ def parse_workbook(excel_path):
     df = pd.read_excel(excel_path, sheet_name=target_sheet)
     print(f"📊 Total raw rows detected: {len(df)}")
     
+    # Check _index column in Excel
+    if '_index' in df.columns:
+        valid_indices = df['_index'].dropna()
+        if len(valid_indices) > 0:
+            print(f"📌 Found '_index' column in Excel: range {int(valid_indices.min())} to {int(valid_indices.max())} ({len(valid_indices)} populated rows)")
+
     records = []
     tool_counts = {}
 
@@ -151,7 +157,21 @@ def parse_workbook(excel_path):
         activity_type = str(row.get('Public Health Emergencies') or row.get('Public Health Emergencies ') or '').strip().lower()
         raw_date = row.get('Date')
         formatted_date = normalize_date(raw_date)
-        row_id = parse_num(row.get('_id')) or (idx + 1)
+        
+        # Primary index from Kobo / Excel
+        raw_idx = row.get('_index') if '_index' in row else None
+        p_idx = parse_num(raw_idx)
+        row_index = int(p_idx) if (p_idx and p_idx > 0) else (idx + 1)
+        row_id = parse_num(row.get('_id')) or row_index
+        row_uuid = str(row.get('_uuid') or '').strip()
+
+        def push_record(rec_dict):
+            rec_dict['_index'] = row_index
+            rec_dict['index'] = row_index
+            rec_dict['_id'] = row_id
+            if row_uuid:
+                rec_dict['_uuid'] = row_uuid
+            records.append(rec_dict)
         
         # Determine coordinator / lead
         coord_raw = str(row.get('Cordinator') or row.get('Coordinator') or '').strip()
@@ -190,7 +210,7 @@ def parse_workbook(excel_path):
                 wheel_correct = get_col(row, 'When spinning the wheel, did the pupil answer correctly?')
                 wheel_score = get_col(row, 'Wheel of Good Practices Score')
 
-                records.append({
+                push_record({
                     'id': row_id,
                     'date': formatted_date,
                     'tool': 'School Activity',
@@ -293,7 +313,7 @@ def parse_workbook(excel_path):
             risk_level = get_col(row, 'Estimated spread or risk level')
             tactical_adaptation = get_col(row, 'Recommended tactical adaptation')
 
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'Gatekeeper Session',
@@ -361,7 +381,7 @@ def parse_workbook(excel_path):
             source = get_col(row, 'source of the rumor', 'Origin of rumor') or 'Community'
             tactical_adaptation = get_col(row, 'Recommended tactical adaptation')
 
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'Transect Walk',
@@ -398,7 +418,7 @@ def parse_workbook(excel_path):
         # --- 4. Dedicated Weekly Community & School Listening and Rumour Log (Tool 8) ---
         if ('listening' in activity_type or 'rumour log' in activity_type or 'rumor log' in activity_type or 
             (('listening' in activity_type or 'rumor' in activity_type) and not any(k in activity_type for k in ['transect', 'gatekeeper', 'intercept', 'ask 5', 'preparedness']))):
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'Listening & Rumour Log',
@@ -424,7 +444,7 @@ def parse_workbook(excel_path):
             male_u = parse_num(get_col(row, 'Male U-reporters recruited'))
             female_u = parse_num(get_col(row, 'Female U-reporters recruited'))
             loc = get_col(row, 'Location') or 'Community Congregate Setting'
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'U-Report Recruitment',
@@ -453,7 +473,7 @@ def parse_workbook(excel_path):
             p_handwash = parse_num(get_col(row, 'Demonstrate how to wash your hands properly using running water and soap.', 'Demonstrate how to wash your hands properly using running water and soap.18'))
             lead_hotline = get_col(row, 'Can the school leadership state the official toll-free reporting lines (e.g., MoH/KCCA hotlines: 0800-100-066 / 8500) and the focal Division Health Officer/VHT contact without checking notes?')
 
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'PAT Assessment',
@@ -538,7 +558,7 @@ def parse_workbook(excel_path):
             source = get_col(row, 'source of the rumor') or 'Community'
             tactical_adaptation = get_col(row, 'Recommended tactical adaptation')
 
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'Rapid Intercept',
@@ -621,7 +641,7 @@ def parse_workbook(excel_path):
             # Primary status summary
             primary_status = c1_status or c2_status or c3_status or c4_status or c5_status or 'Verified'
 
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'Ask 5',
@@ -677,7 +697,7 @@ def parse_workbook(excel_path):
         if 'tool 4' in activity_type or 'significant change' in activity_type or 'msc' in activity_type:
             district = get_col(row, 'District') or 'Central'
             parish = get_col(row, 'Parish')
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'MSC Story',
@@ -699,7 +719,7 @@ def parse_workbook(excel_path):
         if 'tool 5' in activity_type or 'influencer' in activity_type or 'social network' in activity_type:
             district = get_col(row, 'District') or 'Central'
             parish = get_col(row, 'Parish')
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'Influencer Mapping',
@@ -719,7 +739,7 @@ def parse_workbook(excel_path):
         if 'tool 6' in activity_type or 'photovoice' in activity_type or 'photo' in activity_type:
             district = get_col(row, 'District') or 'Central'
             parish = get_col(row, 'Parish')
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'Photovoice',
@@ -739,7 +759,7 @@ def parse_workbook(excel_path):
             district = get_col(row, 'District') or 'Central'
             parish = get_col(row, 'Parish')
             s_name = get_col(row, 'Name of the school', 'School Name') or f"{district} - {parish}"
-            records.append({
+            push_record({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'Simulation Drill',
@@ -771,7 +791,7 @@ def parse_workbook(excel_path):
         c_fem = parse_num(get_col(row, 'Estimated female Passersby / Community Crowd Engaged', 'Estimated female Passersby'))
         c_tot = parse_num(get_col(row, 'Estimated Passersby / Community Crowd Engaged')) or (c_male + c_fem)
 
-        records.append({
+        push_record({
             'id': row_id,
             'date': formatted_date,
             'tool': 'Field Record',
@@ -800,9 +820,19 @@ def parse_workbook(excel_path):
 
     # Sanitize all record fields to remove any 'none', 'non', 'nil', etc.
     sanitized_records = []
-    for r in records:
+    for i, r in enumerate(records):
         sanitized_r = {k: clean_val(v) for k, v in r.items()}
+        # Ensure _index is an integer
+        idx_val = sanitized_r.get('_index') or (i + 1)
+        try:
+            sanitized_r['_index'] = int(idx_val)
+        except Exception:
+            sanitized_r['_index'] = i + 1
+        sanitized_r['index'] = sanitized_r['_index']
         sanitized_records.append(sanitized_r)
+
+    # Sort strictly by _index to guarantee 1:1 match with Excel row order
+    sanitized_records.sort(key=lambda r: r.get('_index', 0))
 
     return sanitized_records, tool_counts
 
@@ -814,12 +844,48 @@ def main():
         print("❌ Error: Could not locate Public_Health_Emergencies.xlsx.")
         print(f"Please specify the path, e.g.:\n  python3 update_dashboard.py '/path/to/Public_Health_Emergencies.xlsx'")
         sys.exit(1)
+
+    json_path_dash = os.path.join(LOCAL_DIR, "dashboard_data.json")
+    existing_indices = set()
+    if os.path.exists(json_path_dash):
+        try:
+            with open(json_path_dash, "r", encoding="utf-8") as f:
+                prev_data = json.load(f)
+                if isinstance(prev_data, list):
+                    existing_indices = {r.get('_index') for r in prev_data if r.get('_index') is not None}
+        except Exception:
+            pass
         
     records, tool_counts = parse_workbook(excel_path)
+
+    # Cross-reference and match new entries by _index
+    new_entries = [r for r in records if r.get('_index') not in existing_indices]
+    if existing_indices and new_entries:
+        new_indices = sorted([r['_index'] for r in new_entries])
+        print("\n" + "=" * 60)
+        print(f"✨ NEW ENTRIES DETECTED BY _index ({len(new_entries)} new row(s)):")
+        print(f"   • New _index Range: #{new_indices[0]} to #{new_indices[-1]}")
+        for ne in new_entries[:10]:
+            print(f"     → [_index #{ne.get('_index')}] Tool: {ne.get('tool')}, District: {ne.get('district')}, Date: {ne.get('date')}")
+        if len(new_entries) > 10:
+            print(f"     → ... and {len(new_entries) - 10} more new entries.")
+        print("=" * 60)
+    elif existing_indices:
+        print(f"\n✅ All {len(records)} entries matched existing records by _index.")
+    else:
+        print(f"\n✅ Baseline ingestion: {len(records)} records indexed by _index (1 to {len(records)}).")
+
+    # Verify continuity of _index across all records
+    all_indices = [r['_index'] for r in records]
+    if all_indices:
+        min_idx, max_idx = min(all_indices), max(all_indices)
+        missing_indices = set(range(min_idx, max_idx + 1)) - set(all_indices)
+        if missing_indices:
+            print(f"⚠️ Warning: Detected missing _index numbers in sequence: {sorted(list(missing_indices))[:10]}")
+        else:
+            print(f"📋 Verified _index continuity: 100% of rows from #{min_idx} to #{max_idx} are present without gaps.")
     
     # Save dashboard_data.json
-    json_path_dash = os.path.join(LOCAL_DIR, "dashboard_data.json")
-    
     with open(json_path_dash, "w", encoding="utf-8") as f:
         json.dump(records, f, indent=2, ensure_ascii=False)
         

@@ -38,7 +38,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 1,
+    "index": 1,
+    "_id": 840481278,
+    "_uuid": "1cf0dd6b-e4b2-445f-b0ba-1406e478631d"
   },
   {
     "id": 840957062,
@@ -79,7 +83,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "other",
     "barrier": "",
-    "source": "P6 pupil"
+    "source": "P6 pupil",
+    "_index": 2,
+    "index": 2,
+    "_id": 840957062,
+    "_uuid": "a47f515a-1cd3-4144-b59e-588f0d9c2056"
   },
   {
     "id": 840958973,
@@ -120,7 +128,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "",
-    "source": "Peers"
+    "source": "Peers",
+    "_index": 3,
+    "index": 3,
+    "_id": 840958973,
+    "_uuid": "541ced66-6cb0-4dcb-a467-a66dcaf9dbee"
   },
   {
     "id": 841043499,
@@ -161,7 +173,11 @@
     "soap": "No handwashing setup available on-site",
     "rumor": "",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 4,
+    "index": 4,
+    "_id": 841043499,
+    "_uuid": "fcbdfff8-bb14-409a-b38f-02f1f71af090"
   },
   {
     "id": 841044896,
@@ -202,7 +218,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 5,
+    "index": 5,
+    "_id": 841044896,
+    "_uuid": "af1e478c-ed57-47a4-a6f0-e0a7acd1807b"
   },
   {
     "id": 841097958,
@@ -243,7 +263,11 @@
     "soap": "No handwashing setup available on-site",
     "rumor": "other",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 6,
+    "index": 6,
+    "_id": 841097958,
+    "_uuid": "4a54c620-ad5e-40d7-8482-ca88fc087164"
   },
   {
     "id": 841101400,
@@ -284,7 +308,11 @@
     "soap": "No handwashing setup available on-site",
     "rumor": "",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 7,
+    "index": 7,
+    "_id": 841101400,
+    "_uuid": "b04bed3f-23d9-4054-b2c2-4840b4c47dc2"
   },
   {
     "id": 841103994,
@@ -325,7 +353,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "other",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 8,
+    "index": 8,
+    "_id": 841103994,
+    "_uuid": "6da4e2ff-c91d-4eb6-a985-de60b67ef65b"
   },
   {
     "id": 841107047,
@@ -366,7 +398,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "other",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 9,
+    "index": 9,
+    "_id": 841107047,
+    "_uuid": "c708f6dd-ef15-4215-9da1-9d3da015288f"
   },
   {
     "id": 841178334,
@@ -407,7 +443,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "",
-    "source": "Students"
+    "source": "Students",
+    "_index": 10,
+    "index": 10,
+    "_id": 841178334,
+    "_uuid": "3027d4b4-7e55-4122-9a30-37c7a385a7f1"
   },
   {
     "id": 841185658,
@@ -448,7 +488,11 @@
     "soap": "",
     "rumor": "other",
     "barrier": "The hand washing facility is present at the entrance but not functioning",
-    "source": "Students"
+    "source": "Students",
+    "_index": 11,
+    "index": 11,
+    "_id": 841185658,
+    "_uuid": "d7c4c2da-6b0d-4f62-8933-2c5f6cab3624"
   },
   {
     "id": 841192001,
@@ -489,7 +533,11 @@
     "soap": "No handwashing setup available on-site",
     "rumor": "",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 12,
+    "index": 12,
+    "_id": 841192001,
+    "_uuid": "b778086f-31a5-48de-8cc8-1cd184e366ce"
   },
   {
     "id": 841193512,
@@ -530,7 +578,11 @@
     "soap": "No handwashing setup available on-site",
     "rumor": "",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 13,
+    "index": 13,
+    "_id": 841193512,
+    "_uuid": "bff1ee33-2aab-45b6-b40f-05b81cebe1bc"
   },
   {
     "id": 841963864,
@@ -571,7 +623,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "",
-    "source": "From a peer"
+    "source": "From a peer",
+    "_index": 14,
+    "index": 14,
+    "_id": 841963864,
+    "_uuid": "00da9614-4500-43b6-8664-d30cc7b9583e"
   },
   {
     "id": 842557936,
@@ -612,7 +668,11 @@
     "soap": "No handwashing setup available on-site",
     "rumor": "The outbreak declaration means zero risk now PHEs are spiritual/cultural rather than infectious",
     "barrier": "Financial constraints not allowing them.to practice the.basic preventive measures",
-    "source": "Community conversations"
+    "source": "Community conversations",
+    "_index": 15,
+    "index": 15,
+    "_id": 842557936,
+    "_uuid": "277d3c93-30ff-4a12-89c0-9b010d3e3900"
   },
   {
     "id": 845062875,
@@ -653,7 +713,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "Lack of hand washing equipment in the community",
-    "source": "Community"
+    "source": "Community",
+    "_index": 16,
+    "index": 16,
+    "_id": 845062875,
+    "_uuid": "c71c38ee-be38-4d8a-abec-fd9a5be26234"
   },
   {
     "id": 845072847,
@@ -694,7 +758,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 17,
+    "index": 17,
+    "_id": 845072847,
+    "_uuid": "d9552987-a80c-4b50-9aa7-9efaac543ab7"
   },
   {
     "id": 845073467,
@@ -735,7 +803,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "They said that some public places in community don't have hand washing equipment",
-    "source": "The children"
+    "source": "The children",
+    "_index": 18,
+    "index": 18,
+    "_id": 845073467,
+    "_uuid": "da556cd1-94ee-475d-9866-843ada52772d"
   },
   {
     "id": 845075480,
@@ -776,7 +848,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 19,
+    "index": 19,
+    "_id": 845075480,
+    "_uuid": "19e49e4b-5ec8-4375-a75c-0c4f3f571852"
   },
   {
     "id": 845107768,
@@ -817,7 +893,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "other",
     "barrier": "There are no hand-washing facilities at the entrance, around classroom blocks and the play grounds. Water is only provided near the domitries which limits the chances of the learners to practice good actions like regular hand washing.",
-    "source": "The source of the rumor is from the learner that knew about Uganda being Ebola free and thought that we are no longer at a risk of contracting the disease again."
+    "source": "The source of the rumor is from the learner that knew about Uganda being Ebola free and thought that we are no longer at a risk of contracting the disease again.",
+    "_index": 20,
+    "index": 20,
+    "_id": 845107768,
+    "_uuid": "397a46f5-d54c-40a1-8c0d-3715e2fd682c"
   },
   {
     "id": 845132917,
@@ -858,7 +938,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "",
-    "source": "Some peers in the community"
+    "source": "Some peers in the community",
+    "_index": 21,
+    "index": 21,
+    "_id": 845132917,
+    "_uuid": "673bf8da-3f53-427f-bffe-b352e3fc2225"
   },
   {
     "id": 845153031,
@@ -898,7 +982,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 2,
-    "games": 0
+    "games": 0,
+    "_index": 22,
+    "index": 22,
+    "_id": 845153031,
+    "_uuid": "217e1ec5-885e-4aa6-9a55-507ca40bc074"
   },
   {
     "id": 845181281,
@@ -939,7 +1027,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "other",
     "barrier": "Need of more sensitization on Religious/Islamic radio stations. Need to reactivate the school health club so as to monitor functionality of hand washing facilities",
-    "source": "Students and Head teacher of the school/chairperson of the inter religious council of Kawempe ,this was sparked by the immunization routine schedule on the snakes and ladders game."
+    "source": "Students and Head teacher of the school/chairperson of the inter religious council of Kawempe ,this was sparked by the immunization routine schedule on the snakes and ladders game.",
+    "_index": 23,
+    "index": 23,
+    "_id": 845181281,
+    "_uuid": "c16dd155-ee10-4623-be85-32b33418293f"
   },
   {
     "id": 845185175,
@@ -980,7 +1072,11 @@
     "soap": "No handwashing setup available on-site",
     "rumor": "The outbreak declaration means zero risk now PHEs are spiritual/cultural rather than infectious",
     "barrier": "",
-    "source": "peers"
+    "source": "peers",
+    "_index": 24,
+    "index": 24,
+    "_id": 845185175,
+    "_uuid": "9fc8b125-3a30-4bdf-8ac8-7979ba1dd152"
   },
   {
     "id": 848299974,
@@ -1021,7 +1117,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "The school has very many refuuges(Eritreans/Somalis) there is the challenge of language",
-    "source": "Family"
+    "source": "Family",
+    "_index": 25,
+    "index": 25,
+    "_id": 848299974,
+    "_uuid": "c74bacc4-8b66-461f-986f-490891ac006b"
   },
   {
     "id": 848308991,
@@ -1062,7 +1162,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "The outbreak declaration means zero risk now",
     "barrier": "Financial constraints",
-    "source": "It is a general conception"
+    "source": "It is a general conception",
+    "_index": 26,
+    "index": 26,
+    "_id": 848308991,
+    "_uuid": "71fe8c76-13d5-4372-b8e6-24b89af923e2"
   },
   {
     "id": 874773023,
@@ -1097,7 +1201,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 27,
+    "index": 27,
+    "_id": 874773023,
+    "_uuid": "92ea8d0b-5587-4820-95c8-e0770693c59a"
   },
   {
     "id": 874783508,
@@ -1135,7 +1243,11 @@
     "p_handwash": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 28,
+    "index": 28,
+    "_id": 874783508,
+    "_uuid": "e2eecae6-9b3b-45bc-b5c7-f7151d903024"
   },
   {
     "id": 874876558,
@@ -1170,7 +1282,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 29,
+    "index": 29,
+    "_id": 874876558,
+    "_uuid": "826d80df-a574-497a-9506-6fca7a7bd4cd"
   },
   {
     "id": 874881356,
@@ -1205,7 +1321,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 30,
+    "index": 30,
+    "_id": 874881356,
+    "_uuid": "75168e40-bc48-48c7-a6f4-ce1f588a9cd3"
   },
   {
     "id": 874882622,
@@ -1243,7 +1363,11 @@
     "p_handwash": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 31,
+    "index": 31,
+    "_id": 874882622,
+    "_uuid": "fdae7c25-2cee-48df-a88a-5bc8e8960809"
   },
   {
     "id": 874913064,
@@ -1281,7 +1405,11 @@
     "p_handwash": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 32,
+    "index": 32,
+    "_id": 874913064,
+    "_uuid": "3b19aa7f-79e7-47ac-b2ee-3ca4b8affe0b"
   },
   {
     "id": 875764567,
@@ -1319,7 +1447,11 @@
     "p_handwash": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 33,
+    "index": 33,
+    "_id": 875764567,
+    "_uuid": "c3840ca4-b44d-4dd9-a30e-869b2d1ef605"
   },
   {
     "id": 875800825,
@@ -1354,7 +1486,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 34,
+    "index": 34,
+    "_id": 875800825,
+    "_uuid": "5f795e0d-c49c-40d9-8560-d3e69fb97d91"
   },
   {
     "id": 875806353,
@@ -1389,7 +1525,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 35,
+    "index": 35,
+    "_id": 875806353,
+    "_uuid": "848f3443-da75-4dd7-8def-46843601cd45"
   },
   {
     "id": 875843903,
@@ -1424,7 +1564,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 36,
+    "index": 36,
+    "_id": 875843903,
+    "_uuid": "9358e327-d2e6-40a5-9317-e56a119dd16b"
   },
   {
     "id": 875851207,
@@ -1462,7 +1606,11 @@
     "p_handwash": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 37,
+    "index": 37,
+    "_id": 875851207,
+    "_uuid": "abe9c490-b942-4d2c-9fb0-0d051d5eb1d9"
   },
   {
     "id": 875920927,
@@ -1500,7 +1648,11 @@
     "p_handwash": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 38,
+    "index": 38,
+    "_id": 875920927,
+    "_uuid": "64603e02-d519-4e89-a420-d80510703095"
   },
   {
     "id": 875947373,
@@ -1535,7 +1687,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 39,
+    "index": 39,
+    "_id": 875947373,
+    "_uuid": "d677eab5-9b75-40bb-a998-d23b16ababbd"
   },
   {
     "id": 876016637,
@@ -1573,7 +1729,11 @@
     "p_handwash": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 40,
+    "index": 40,
+    "_id": 876016637,
+    "_uuid": "afe75851-2a1c-483e-955f-e6f956baa385"
   },
   {
     "id": 876021852,
@@ -1611,7 +1771,11 @@
     "p_handwash": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 41,
+    "index": 41,
+    "_id": 876021852,
+    "_uuid": "eeac3dd7-2997-418b-9669-dee5a02e2bdd"
   },
   {
     "id": 876065360,
@@ -1646,7 +1810,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 42,
+    "index": 42,
+    "_id": 876065360,
+    "_uuid": "2f2c35e3-1955-4090-8b54-451b5e372627"
   },
   {
     "id": 876115559,
@@ -1681,7 +1849,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 43,
+    "index": 43,
+    "_id": 876115559,
+    "_uuid": "422c5906-bdbe-4bab-b4f2-701ecd9e3ad4"
   },
   {
     "id": 876155204,
@@ -1716,7 +1888,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 44,
+    "index": 44,
+    "_id": 876155204,
+    "_uuid": "9dddb399-d904-4757-92fc-da6ebfeee6ae"
   },
   {
     "id": 876164424,
@@ -1751,7 +1927,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 45,
+    "index": 45,
+    "_id": 876164424,
+    "_uuid": "c8abb0ae-c42a-449f-895b-06f9a0a11fad"
   },
   {
     "id": 876173566,
@@ -1786,7 +1966,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 46,
+    "index": 46,
+    "_id": 876173566,
+    "_uuid": "023fc287-a832-4bfd-9d25-8ed3c1a61dcb"
   },
   {
     "id": 876320796,
@@ -1821,7 +2005,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 47,
+    "index": 47,
+    "_id": 876320796,
+    "_uuid": "10993e8f-dae8-4027-a49c-30d94e17c7f9"
   },
   {
     "id": 876384311,
@@ -1859,7 +2047,11 @@
     "p_handwash": 4,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 48,
+    "index": 48,
+    "_id": 876384311,
+    "_uuid": "05e8ef6d-b560-444a-b8a5-4b8b1887ad70"
   },
   {
     "id": 876487394,
@@ -1894,7 +2086,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 49,
+    "index": 49,
+    "_id": 876487394,
+    "_uuid": "6ed86464-d261-4b70-bfab-588e73b77a56"
   },
   {
     "id": 876837008,
@@ -1929,7 +2125,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 50,
+    "index": 50,
+    "_id": 876837008,
+    "_uuid": "6eb3e409-2786-4f1f-88a4-eff6c0229ea2"
   },
   {
     "id": 876879285,
@@ -1967,7 +2167,11 @@
     "p_handwash": 2,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 51,
+    "index": 51,
+    "_id": 876879285,
+    "_uuid": "a615c020-b0ba-4ba4-8e61-b354c7f8e5f8"
   },
   {
     "id": 876912605,
@@ -2005,7 +2209,11 @@
     "p_handwash": 5,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 52,
+    "index": 52,
+    "_id": 876912605,
+    "_uuid": "98978ba2-e991-4a9b-8488-002fbae24cd2"
   },
   {
     "id": 876936113,
@@ -2040,7 +2248,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 53,
+    "index": 53,
+    "_id": 876936113,
+    "_uuid": "49e34400-2690-496d-9069-16da236ee21b"
   },
   {
     "id": 876987791,
@@ -2075,7 +2287,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 54,
+    "index": 54,
+    "_id": 876987791,
+    "_uuid": "8639debd-844a-4597-9cd1-28f22d1d7ffd"
   },
   {
     "id": 877018167,
@@ -2110,7 +2326,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 55,
+    "index": 55,
+    "_id": 877018167,
+    "_uuid": "9f5c5d6f-ee1f-44fb-9bff-1a02b47e6453"
   },
   {
     "id": 877070365,
@@ -2148,7 +2368,11 @@
     "p_handwash": 5,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 56,
+    "index": 56,
+    "_id": 877070365,
+    "_uuid": "74a52b6a-6d0c-410f-84d1-71bde2cfb40d"
   },
   {
     "id": 877072921,
@@ -2186,7 +2410,11 @@
     "p_handwash": 4,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 57,
+    "index": 57,
+    "_id": 877072921,
+    "_uuid": "2cebc3dc-da58-4399-9a5f-538a22caab6b"
   },
   {
     "id": 877086788,
@@ -2224,7 +2452,11 @@
     "p_handwash": 6,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 58,
+    "index": 58,
+    "_id": 877086788,
+    "_uuid": "3253357c-6c24-4fa2-bebe-6b41d55b6ac5"
   },
   {
     "id": 877118828,
@@ -2264,7 +2496,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 8,
-    "games": 0
+    "games": 0,
+    "_index": 59,
+    "index": 59,
+    "_id": 877118828,
+    "_uuid": "64fed6f5-00b0-480e-8787-7434fefd6aa9"
   },
   {
     "id": 877129684,
@@ -2305,7 +2541,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "Do all types of monkeys spread Ebola",
     "barrier": "Language barrier for the refugee pupils",
-    "source": "Neighborhood"
+    "source": "Neighborhood",
+    "_index": 60,
+    "index": 60,
+    "_id": 877129684,
+    "_uuid": "1c1c6aa3-b71d-46fe-92a4-024e7157aff3"
   },
   {
     "id": 877143513,
@@ -2340,7 +2580,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 61,
+    "index": 61,
+    "_id": 877143513,
+    "_uuid": "e6aeb143-53fb-44ce-b3d7-4d8d11f3f151"
   },
   {
     "id": 877247326,
@@ -2378,7 +2622,11 @@
     "p_handwash": 3,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 62,
+    "index": 62,
+    "_id": 877247326,
+    "_uuid": "da43de31-6068-4a76-b100-5d62acbf996d"
   },
   {
     "id": 877287282,
@@ -2413,7 +2661,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 63,
+    "index": 63,
+    "_id": 877287282,
+    "_uuid": "e2343d0c-21c5-4bce-9751-12b2c16bd5ce"
   },
   {
     "id": 877453238,
@@ -2453,7 +2705,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 80,
-    "games": 0
+    "games": 0,
+    "_index": 64,
+    "index": 64,
+    "_id": 877453238,
+    "_uuid": "fc7b9f7e-9326-407a-96e5-b62802608a8d"
   },
   {
     "id": 877472931,
@@ -2488,7 +2744,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 65,
+    "index": 65,
+    "_id": 877472931,
+    "_uuid": "3540f883-7695-4772-b2dc-b4251b8cd0c9"
   },
   {
     "id": 877480049,
@@ -2523,7 +2783,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 66,
+    "index": 66,
+    "_id": 877480049,
+    "_uuid": "a32c9c4a-0a87-45d0-9d9a-96493abf28c1"
   },
   {
     "id": 877498058,
@@ -2558,7 +2822,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 67,
+    "index": 67,
+    "_id": 877498058,
+    "_uuid": "b58f630a-392c-47fd-b5ac-866ca82233c3"
   },
   {
     "id": 877503259,
@@ -2593,7 +2861,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 68,
+    "index": 68,
+    "_id": 877503259,
+    "_uuid": "a4a08692-b211-430d-b1d7-740ed4f4f633"
   },
   {
     "id": 877529222,
@@ -2628,7 +2900,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 69,
+    "index": 69,
+    "_id": 877529222,
+    "_uuid": "a45f1dbb-7786-451f-8790-965319fc38da"
   },
   {
     "id": 877549427,
@@ -2666,7 +2942,11 @@
     "p_handwash": 3,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 70,
+    "index": 70,
+    "_id": 877549427,
+    "_uuid": "682b9103-25d6-4d7a-95b4-7fe4627fa8d3"
   },
   {
     "id": 877580946,
@@ -2701,7 +2981,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 71,
+    "index": 71,
+    "_id": 877580946,
+    "_uuid": "940f20a1-42f5-46d3-a6a0-956cea49cb5e"
   },
   {
     "id": 877981855,
@@ -2739,7 +3023,11 @@
     "p_handwash": 7,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 72,
+    "index": 72,
+    "_id": 877981855,
+    "_uuid": "2daabf8b-42b3-426c-894a-9e647486cef9"
   },
   {
     "id": 878077912,
@@ -2780,7 +3068,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "Misinformation - Some pupils were thinking that the normal diarrhea is also Ebola. Seeing someone frequenting the toilet would make them think that that person is an Ebola suspect. 2. They thought that mpox is chicken or small pox. Question. They wanted to know when we are going to go back because the information that we shared with them was very educative.",
     "barrier": "They have no IEC material and very few hand washing facilities.",
-    "source": "Immagination because most of them have not got the chance to have this sensitization programs"
+    "source": "Immagination because most of them have not got the chance to have this sensitization programs",
+    "_index": 73,
+    "index": 73,
+    "_id": 878077912,
+    "_uuid": "580fed86-d4b9-4010-8fc4-1435c7f55ea2"
   },
   {
     "id": 878093353,
@@ -2815,7 +3107,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 74,
+    "index": 74,
+    "_id": 878093353,
+    "_uuid": "a2dc90d5-3fb4-4545-ab28-224820f82bac"
   },
   {
     "id": 878131979,
@@ -2855,7 +3151,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 1,
-    "games": 0
+    "games": 0,
+    "_index": 75,
+    "index": 75,
+    "_id": 878131979,
+    "_uuid": "14bf9de0-4f89-4006-bd32-4540fe47774c"
   },
   {
     "id": 878181645,
@@ -2895,7 +3195,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 5,
-    "games": 0
+    "games": 0,
+    "_index": 76,
+    "index": 76,
+    "_id": 878181645,
+    "_uuid": "bdb8ffaf-dd23-4463-8375-16a15afeecf2"
   },
   {
     "id": 878199543,
@@ -2930,7 +3234,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 77,
+    "index": 77,
+    "_id": 878199543,
+    "_uuid": "12096547-0f8e-45ab-acdc-2e0c8bc56326"
   },
   {
     "id": 878207573,
@@ -2965,7 +3273,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 78,
+    "index": 78,
+    "_id": 878207573,
+    "_uuid": "c80d483c-3e1a-4286-bf39-31e921aa1d53"
   },
   {
     "id": 878210568,
@@ -3000,7 +3312,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 79,
+    "index": 79,
+    "_id": 878210568,
+    "_uuid": "54b52051-7e70-4b9a-86ae-a9f4b877a41e"
   },
   {
     "id": 878431516,
@@ -3041,7 +3357,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "That wearing a mask helps prevent  Ebola  ,",
     "barrier": "",
-    "source": "Have heard it everywhere"
+    "source": "Have heard it everywhere",
+    "_index": 80,
+    "index": 80,
+    "_id": 878431516,
+    "_uuid": "476bbf53-08d0-4701-9145-f412f901f45c"
   },
   {
     "id": 878447924,
@@ -3076,7 +3396,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 81,
+    "index": 81,
+    "_id": 878447924,
+    "_uuid": "5a2d80eb-14e9-43d1-9257-a08dc61f1c34"
   },
   {
     "id": 878461161,
@@ -3114,7 +3438,11 @@
     "p_handwash": 3,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 82,
+    "index": 82,
+    "_id": 878461161,
+    "_uuid": "3900ff0f-c118-47b3-9c59-4d778b2dcb68"
   },
   {
     "id": 878465700,
@@ -3152,7 +3480,11 @@
     "p_handwash": 4,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 83,
+    "index": 83,
+    "_id": 878465700,
+    "_uuid": "68604db0-f70b-420a-9287-6d7031e8d231"
   },
   {
     "id": 878480435,
@@ -3187,7 +3519,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 84,
+    "index": 84,
+    "_id": 878480435,
+    "_uuid": "609afc30-11cc-49b6-9417-b94dc8620ae8"
   },
   {
     "id": 878496209,
@@ -3228,7 +3564,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "",
     "barrier": "",
-    "source": "Community"
+    "source": "Community",
+    "_index": 85,
+    "index": 85,
+    "_id": 878496209,
+    "_uuid": "79575f33-0c52-4974-be0a-1fb9fd4eec54"
   },
   {
     "id": 878503679,
@@ -3263,7 +3603,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 86,
+    "index": 86,
+    "_id": 878503679,
+    "_uuid": "a53b26e6-426b-47d4-9a36-290c5ab1f649"
   },
   {
     "id": 878506554,
@@ -3301,7 +3645,11 @@
     "p_handwash": 3,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 87,
+    "index": 87,
+    "_id": 878506554,
+    "_uuid": "5014bcf7-1e4f-4ba7-b488-19f9cf008735"
   },
   {
     "id": 880072702,
@@ -3341,7 +3689,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 88,
+    "index": 88,
+    "_id": 880072702,
+    "_uuid": "f690c3de-6512-4dcb-9dc5-fc8da5d9c3fc"
   },
   {
     "id": 880085623,
@@ -3381,7 +3733,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 89,
+    "index": 89,
+    "_id": 880085623,
+    "_uuid": "a377fbe1-ffe4-4d2d-aa62-0534f33276d6"
   },
   {
     "id": 880099942,
@@ -3421,7 +3777,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 90,
+    "index": 90,
+    "_id": 880099942,
+    "_uuid": "d29299fc-2430-417e-a8c3-1b7adb77acc4"
   },
   {
     "id": 880113235,
@@ -3461,7 +3821,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 91,
+    "index": 91,
+    "_id": 880113235,
+    "_uuid": "050df79b-bb77-434f-bc92-ab97f06eb28b"
   },
   {
     "id": 880119047,
@@ -3501,7 +3865,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 92,
+    "index": 92,
+    "_id": 880119047,
+    "_uuid": "937c725b-3783-44d7-b4b3-4cfe907b46fd"
   },
   {
     "id": 880132044,
@@ -3541,7 +3909,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 93,
+    "index": 93,
+    "_id": 880132044,
+    "_uuid": "83b39208-12aa-46ec-88bf-4b56c9b186f1"
   },
   {
     "id": 880146776,
@@ -3581,7 +3953,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 94,
+    "index": 94,
+    "_id": 880146776,
+    "_uuid": "6799f5de-6d8a-499f-85f3-19ecae16c83c"
   },
   {
     "id": 880147393,
@@ -3621,7 +3997,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 95,
+    "index": 95,
+    "_id": 880147393,
+    "_uuid": "4a6289de-4b9a-47b1-89ab-088a613f7892"
   },
   {
     "id": 880151351,
@@ -3667,7 +4047,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 96,
+    "index": 96,
+    "_id": 880151351,
+    "_uuid": "9e8dd4f3-1da9-4507-aaf6-693fdf0f728b"
   },
   {
     "id": 880263337,
@@ -3713,7 +4097,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 97,
+    "index": 97,
+    "_id": 880263337,
+    "_uuid": "48876c80-8a43-47bb-9a99-ee4e23d4edeb"
   },
   {
     "id": 880408370,
@@ -3754,7 +4142,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "How different is marburg from ebola. Is it a must that one has to show all the signs and symptoms to be suspected with the virus? If someone is identified with ebola, do they close the whole school of they just isolate that one person.",
     "barrier": "Lack of soap at the points were hand washing is done",
-    "source": "Didn't mention any"
+    "source": "Didn't mention any",
+    "_index": 98,
+    "index": 98,
+    "_id": 880408370,
+    "_uuid": "e4712bca-8b7a-482a-a01f-fe536c07bb0e"
   },
   {
     "id": 880430380,
@@ -3792,7 +4184,11 @@
     "p_handwash": 6,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 99,
+    "index": 99,
+    "_id": 880430380,
+    "_uuid": "e0b11b67-92f5-4978-9def-bfed817351de"
   },
   {
     "id": 880431405,
@@ -3833,7 +4229,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "Why do we get these diseases",
     "barrier": "Over crowdness because of the high population",
-    "source": "Pupils"
+    "source": "Pupils",
+    "_index": 100,
+    "index": 100,
+    "_id": 880431405,
+    "_uuid": "0dac72b2-c1ee-431d-a9cc-a351e7554842"
   },
   {
     "id": 880436810,
@@ -3868,7 +4268,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 101,
+    "index": 101,
+    "_id": 880436810,
+    "_uuid": "c83d0f1d-491e-4a6e-a790-0d0be48ddfd9"
   },
   {
     "id": 880442475,
@@ -3903,7 +4307,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 102,
+    "index": 102,
+    "_id": 880442475,
+    "_uuid": "436bc500-f073-405a-bbf2-307b23b3c721"
   },
   {
     "id": 880538561,
@@ -3949,7 +4357,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 103,
+    "index": 103,
+    "_id": 880538561,
+    "_uuid": "8e8bbf56-c5e4-41a0-a601-183ba775afa8"
   },
   {
     "id": 880544752,
@@ -3984,7 +4396,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 104,
+    "index": 104,
+    "_id": 880544752,
+    "_uuid": "f016f84e-a0cc-4676-a3f5-ac3b86d980b9"
   },
   {
     "id": 880555781,
@@ -4019,7 +4435,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 105,
+    "index": 105,
+    "_id": 880555781,
+    "_uuid": "2cdf50b5-65e2-4ac0-b591-66796fbcf1f4"
   },
   {
     "id": 880607706,
@@ -4065,7 +4485,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 106,
+    "index": 106,
+    "_id": 880607706,
+    "_uuid": "ae3025b6-34a1-4590-855a-1dd294f7261f"
   },
   {
     "id": 880607824,
@@ -4111,7 +4535,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 107,
+    "index": 107,
+    "_id": 880607824,
+    "_uuid": "619411f1-9a67-43f0-b08d-aa00c8175661"
   },
   {
     "id": 880607945,
@@ -4157,7 +4585,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 108,
+    "index": 108,
+    "_id": 880607945,
+    "_uuid": "c301377f-5a84-44b6-9919-6b32bb057ea2"
   },
   {
     "id": 881103441,
@@ -4203,7 +4635,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 109,
+    "index": 109,
+    "_id": 881103441,
+    "_uuid": "ac8d5648-f563-4be3-94a2-c1b2d2e01043"
   },
   {
     "id": 881108214,
@@ -4249,7 +4685,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 110,
+    "index": 110,
+    "_id": 881108214,
+    "_uuid": "0b5437fa-a116-4a7a-84f3-fb13cbfb9e6d"
   },
   {
     "id": 881200379,
@@ -4284,7 +4724,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 111,
+    "index": 111,
+    "_id": 881200379,
+    "_uuid": "ed43b8ef-9989-4221-b720-cb59ca4eacbf"
   },
   {
     "id": 881205166,
@@ -4324,7 +4768,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 112,
+    "index": 112,
+    "_id": 881205166,
+    "_uuid": "f7d3181f-1852-4df0-8254-aea24ee89680"
   },
   {
     "id": 881281904,
@@ -4364,7 +4812,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 113,
+    "index": 113,
+    "_id": 881281904,
+    "_uuid": "52f854a2-325f-41d5-a057-18d7b742294e"
   },
   {
     "id": 881281915,
@@ -4404,7 +4856,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 114,
+    "index": 114,
+    "_id": 881281915,
+    "_uuid": "51e9ab03-ac1b-47aa-b94b-75740b9b728f"
   },
   {
     "id": 881281928,
@@ -4444,7 +4900,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 115,
+    "index": 115,
+    "_id": 881281928,
+    "_uuid": "c66296b7-1db5-4fb7-9795-1ca027daeb0d"
   },
   {
     "id": 881281944,
@@ -4484,7 +4944,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 116,
+    "index": 116,
+    "_id": 881281944,
+    "_uuid": "e5af40f5-a4ea-4d64-82fd-7d2dced283e5"
   },
   {
     "id": 881281959,
@@ -4530,7 +4994,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 117,
+    "index": 117,
+    "_id": 881281959,
+    "_uuid": "0b572e49-596b-4935-9296-b4a70cff61ad"
   },
   {
     "id": 881292547,
@@ -4571,7 +5039,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "Ebola is not real",
     "barrier": "Few washing equipment",
-    "source": "From the community"
+    "source": "From the community",
+    "_index": 118,
+    "index": 118,
+    "_id": 881292547,
+    "_uuid": "407732bf-eb5f-4af2-9953-fcc550e9c108"
   },
   {
     "id": 881293083,
@@ -4611,7 +5083,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 119,
+    "index": 119,
+    "_id": 881293083,
+    "_uuid": "2aa9d022-6e4e-4b0e-8f38-6c891222251e"
   },
   {
     "id": 881333329,
@@ -4651,7 +5127,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 120,
+    "index": 120,
+    "_id": 881333329,
+    "_uuid": "aa34b61f-bf1d-4677-b1fb-e66784ea72ca"
   },
   {
     "id": 881333348,
@@ -4691,7 +5171,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 121,
+    "index": 121,
+    "_id": 881333348,
+    "_uuid": "a64647b6-1399-4cf7-84ba-ad61a122bca3"
   },
   {
     "id": 881333579,
@@ -4731,7 +5215,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 122,
+    "index": 122,
+    "_id": 881333579,
+    "_uuid": "5a5aaedc-1c4c-4637-9ba2-d98917d94c62"
   },
   {
     "id": 881333850,
@@ -4771,7 +5259,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 123,
+    "index": 123,
+    "_id": 881333850,
+    "_uuid": "75af8f7c-1289-4024-aa30-50b547f15e63"
   },
   {
     "id": 881333858,
@@ -4811,7 +5303,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 124,
+    "index": 124,
+    "_id": 881333858,
+    "_uuid": "3199c69b-1654-4f02-8386-1015ce6966d9"
   },
   {
     "id": 881333868,
@@ -4851,7 +5347,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 125,
+    "index": 125,
+    "_id": 881333868,
+    "_uuid": "2ab55439-1702-46b6-822d-2b0fc5c0d6e2"
   },
   {
     "id": 881430170,
@@ -4891,7 +5391,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 126,
+    "index": 126,
+    "_id": 881430170,
+    "_uuid": "90be8397-4c4e-4de3-ba2f-252c7d8750c9"
   },
   {
     "id": 881464319,
@@ -4931,7 +5435,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 127,
+    "index": 127,
+    "_id": 881464319,
+    "_uuid": "41a9c435-51ce-4111-b76e-f6a391b4d78d"
   },
   {
     "id": 881490088,
@@ -4966,7 +5474,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 128,
+    "index": 128,
+    "_id": 881490088,
+    "_uuid": "56dba007-9c3c-4c8c-8300-afe0a5b20c26"
   },
   {
     "id": 881498141,
@@ -5006,7 +5518,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 129,
+    "index": 129,
+    "_id": 881498141,
+    "_uuid": "dda48fb7-2c6d-4f15-860c-1163dabbd31d"
   },
   {
     "id": 881500259,
@@ -5041,7 +5557,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 130,
+    "index": 130,
+    "_id": 881500259,
+    "_uuid": "7f52b757-6fd6-4218-9ea0-00085d7f8223"
   },
   {
     "id": 881502699,
@@ -5081,7 +5601,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 131,
+    "index": 131,
+    "_id": 881502699,
+    "_uuid": "ac82f71b-21c2-4db4-a820-81a4b6c64a8a"
   },
   {
     "id": 881506936,
@@ -5116,7 +5640,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 132,
+    "index": 132,
+    "_id": 881506936,
+    "_uuid": "98a104ea-c1fa-418b-884d-4784e8ecdbac"
   },
   {
     "id": 881507402,
@@ -5156,7 +5684,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 133,
+    "index": 133,
+    "_id": 881507402,
+    "_uuid": "3d4165ee-a506-40db-b7ea-63786a99a1fc"
   },
   {
     "id": 881512990,
@@ -5196,7 +5728,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 134,
+    "index": 134,
+    "_id": 881512990,
+    "_uuid": "7f7b42ae-bb75-42ca-806b-8053aa9d8008"
   },
   {
     "id": 881537457,
@@ -5236,7 +5772,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 135,
+    "index": 135,
+    "_id": 881537457,
+    "_uuid": "b79438eb-4c61-48d3-ad9a-8482da88c68d"
   },
   {
     "id": 881567912,
@@ -5276,7 +5816,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 136,
+    "index": 136,
+    "_id": 881567912,
+    "_uuid": "71b9ceb6-3a64-4fb9-a121-6800ba87267b"
   },
   {
     "id": 881573473,
@@ -5316,7 +5860,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 137,
+    "index": 137,
+    "_id": 881573473,
+    "_uuid": "adb84bfe-2efa-4c1e-811e-e4f66cd4ac06"
   },
   {
     "id": 881577726,
@@ -5356,7 +5904,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 138,
+    "index": 138,
+    "_id": 881577726,
+    "_uuid": "18960eae-3e84-40cc-bdd1-65f14b56e6b5"
   },
   {
     "id": 881580224,
@@ -5396,7 +5948,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 139,
+    "index": 139,
+    "_id": 881580224,
+    "_uuid": "084616f8-eec6-417e-bcde-6421566adcd3"
   },
   {
     "id": 881740632,
@@ -5442,7 +5998,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 140,
+    "index": 140,
+    "_id": 881740632,
+    "_uuid": "c87adfd3-d199-4be9-a3d4-b0a7e63d7ef3"
   },
   {
     "id": 881740830,
@@ -5488,7 +6048,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 141,
+    "index": 141,
+    "_id": 881740830,
+    "_uuid": "fc01eea5-db32-4029-9fac-905235f2cbca"
   },
   {
     "id": 881740935,
@@ -5534,7 +6098,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 142,
+    "index": 142,
+    "_id": 881740935,
+    "_uuid": "93b27be6-b943-4a87-8653-a96ddf0789e5"
   },
   {
     "id": 881741005,
@@ -5574,7 +6142,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 143,
+    "index": 143,
+    "_id": 881741005,
+    "_uuid": "c2a6484c-4f0b-430a-b54f-33ecfd7c6b03"
   },
   {
     "id": 881741087,
@@ -5614,7 +6186,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 144,
+    "index": 144,
+    "_id": 881741087,
+    "_uuid": "b4afe3cb-1dad-4ccb-b8bf-914a88532ebd"
   },
   {
     "id": 881741150,
@@ -5654,7 +6230,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 145,
+    "index": 145,
+    "_id": 881741150,
+    "_uuid": "3026b8f0-1a80-40a2-a0bf-14263edc1912"
   },
   {
     "id": 881741218,
@@ -5694,7 +6274,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 146,
+    "index": 146,
+    "_id": 881741218,
+    "_uuid": "98560e11-4490-47af-93e5-fb56b5cde654"
   },
   {
     "id": 882078081,
@@ -5734,7 +6318,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 147,
+    "index": 147,
+    "_id": 882078081,
+    "_uuid": "93f2876c-2b83-4e0b-bdc5-6947b6832b6e"
   },
   {
     "id": 882291517,
@@ -5774,7 +6362,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 148,
+    "index": 148,
+    "_id": 882291517,
+    "_uuid": "ab446cac-34fa-48a3-a873-94a99a9313b7"
   },
   {
     "id": 882291526,
@@ -5814,7 +6406,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 149,
+    "index": 149,
+    "_id": 882291526,
+    "_uuid": "dce6fd67-ff70-4961-bccd-a2665ba7e611"
   },
   {
     "id": 882291539,
@@ -5854,7 +6450,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 150,
+    "index": 150,
+    "_id": 882291539,
+    "_uuid": "52b37879-ad3d-4cf0-affb-060650a4a054"
   },
   {
     "id": 882291550,
@@ -5894,7 +6494,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 151,
+    "index": 151,
+    "_id": 882291550,
+    "_uuid": "e243577e-d301-4e23-93c1-7008dc94a5a6"
   },
   {
     "id": 882291559,
@@ -5934,7 +6538,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 152,
+    "index": 152,
+    "_id": 882291559,
+    "_uuid": "a7452c77-e8c5-4404-942d-d7e9c21bd901"
   },
   {
     "id": 882434680,
@@ -5975,7 +6583,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "The rumor that Ebola is not real",
     "barrier": "Lack of sensitization and adqate hand washinh wquipment",
-    "source": "From the community"
+    "source": "From the community",
+    "_index": 153,
+    "index": 153,
+    "_id": 882434680,
+    "_uuid": "72a364b8-4a85-4206-a0fd-aee19c050578"
   },
   {
     "id": 882444804,
@@ -6021,7 +6633,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 154,
+    "index": 154,
+    "_id": 882444804,
+    "_uuid": "b33e3c05-472d-4ac7-9df2-41ffb639c30a"
   },
   {
     "id": 882457796,
@@ -6061,7 +6677,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 4,
-    "games": 0
+    "games": 0,
+    "_index": 155,
+    "index": 155,
+    "_id": 882457796,
+    "_uuid": "aa8a714b-e7b8-484f-a7ed-ff10213d4774"
   },
   {
     "id": 882463311,
@@ -6101,7 +6721,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 20,
-    "games": 0
+    "games": 0,
+    "_index": 156,
+    "index": 156,
+    "_id": 882463311,
+    "_uuid": "90d05f76-faf2-4e37-b88d-3ebffeba3f57"
   },
   {
     "id": 882566347,
@@ -6147,7 +6771,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 157,
+    "index": 157,
+    "_id": 882566347,
+    "_uuid": "202b1258-a0a8-408e-bc8e-f52159896d2e"
   },
   {
     "id": 882566372,
@@ -6193,7 +6821,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 158,
+    "index": 158,
+    "_id": 882566372,
+    "_uuid": "2e9ac8bc-7091-415b-95d2-433c286bc797"
   },
   {
     "id": 882566385,
@@ -6239,7 +6871,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 159,
+    "index": 159,
+    "_id": 882566385,
+    "_uuid": "c633ee67-6c86-4fd8-9be8-dc986a161e7c"
   },
   {
     "id": 882566394,
@@ -6285,7 +6921,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 160,
+    "index": 160,
+    "_id": 882566394,
+    "_uuid": "1214d55f-8083-41a1-b988-ede1131a97ff"
   },
   {
     "id": 882566412,
@@ -6331,7 +6971,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 161,
+    "index": 161,
+    "_id": 882566412,
+    "_uuid": "7e961f99-4c83-42cb-93d6-cad85a9a26e6"
   },
   {
     "id": 882619721,
@@ -6372,7 +7016,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "Ebola is not real",
     "barrier": "Few hand washing equipment",
-    "source": "From the youth"
+    "source": "From the youth",
+    "_index": 162,
+    "index": 162,
+    "_id": 882619721,
+    "_uuid": "3cb1aa33-17b0-4894-a99f-e81d20fb6c82"
   },
   {
     "id": 882743667,
@@ -6412,7 +7060,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 163,
+    "index": 163,
+    "_id": 882743667,
+    "_uuid": "dd0eda09-9361-42ce-a3de-395bdb62c23f"
   },
   {
     "id": 882747952,
@@ -6452,7 +7104,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 164,
+    "index": 164,
+    "_id": 882747952,
+    "_uuid": "dfb668ff-0a7c-4b5e-a525-9aa80ee40948"
   },
   {
     "id": 882751298,
@@ -6492,7 +7148,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 165,
+    "index": 165,
+    "_id": 882751298,
+    "_uuid": "222fb6a8-7330-4beb-bf91-0e0e165e473c"
   },
   {
     "id": 882757433,
@@ -6532,7 +7192,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 166,
+    "index": 166,
+    "_id": 882757433,
+    "_uuid": "915a6cbc-a1fd-4d15-9179-c8746ba8f246"
   },
   {
     "id": 882763920,
@@ -6572,7 +7236,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 167,
+    "index": 167,
+    "_id": 882763920,
+    "_uuid": "9c85994e-abf9-43fb-b738-6e6022e2f907"
   },
   {
     "id": 882814464,
@@ -6612,7 +7280,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 168,
+    "index": 168,
+    "_id": 882814464,
+    "_uuid": "745e3a59-d50b-4ede-854a-bc51423c13f8"
   },
   {
     "id": 882814654,
@@ -6652,7 +7324,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 169,
+    "index": 169,
+    "_id": 882814654,
+    "_uuid": "fba39954-d623-49ca-a093-119d41acadd1"
   },
   {
     "id": 882814905,
@@ -6692,7 +7368,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 170,
+    "index": 170,
+    "_id": 882814905,
+    "_uuid": "c14e8b5c-9034-488a-bdad-714b7023fb81"
   },
   {
     "id": 882815050,
@@ -6732,7 +7412,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 171,
+    "index": 171,
+    "_id": 882815050,
+    "_uuid": "9bb087c8-85ff-43dd-a59f-e70da42385a5"
   },
   {
     "id": 882815275,
@@ -6772,7 +7456,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 172,
+    "index": 172,
+    "_id": 882815275,
+    "_uuid": "b443e0a6-497a-4930-8ef6-2991ec1e95af"
   },
   {
     "id": 882815411,
@@ -6812,7 +7500,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 173,
+    "index": 173,
+    "_id": 882815411,
+    "_uuid": "942546bb-f4b4-46cf-89e2-b5cef60db4de"
   },
   {
     "id": 882815573,
@@ -6852,7 +7544,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 174,
+    "index": 174,
+    "_id": 882815573,
+    "_uuid": "f9bb207a-f608-4915-b224-c841fa3b2d0c"
   },
   {
     "id": 882815697,
@@ -6892,7 +7588,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 175,
+    "index": 175,
+    "_id": 882815697,
+    "_uuid": "e556abb0-cbbb-4ba2-b1c7-b85e6d341400"
   },
   {
     "id": 882815835,
@@ -6932,7 +7632,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 176,
+    "index": 176,
+    "_id": 882815835,
+    "_uuid": "91202227-5345-45ca-bb37-48bdd7c01ea5"
   },
   {
     "id": 882818699,
@@ -6972,7 +7676,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 177,
+    "index": 177,
+    "_id": 882818699,
+    "_uuid": "3280f251-cb2a-411e-b55d-8fa32940c699"
   },
   {
     "id": 882832054,
@@ -7013,7 +7721,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "Isn't ebola caused  by  the baking, Does eating eat cause ebola, how long does it take for an ebola patient  to get well?,What if I tell my mother to  take me",
     "barrier": "No washing soap  at the washing facilities",
-    "source": "Learners"
+    "source": "Learners",
+    "_index": 178,
+    "index": 178,
+    "_id": 882832054,
+    "_uuid": "1cd7b298-760b-4d28-a4eb-ba0907669cd5"
   },
   {
     "id": 882837157,
@@ -7053,7 +7765,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 10,
-    "games": 0
+    "games": 0,
+    "_index": 179,
+    "index": 179,
+    "_id": 882837157,
+    "_uuid": "9e30efff-d3dd-4758-94c0-2ac36a322239"
   },
   {
     "id": 882859123,
@@ -7094,7 +7810,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "Has  ebola disease come back again, how do we protect  others from ebola, how does ebol",
     "barrier": "Misinformation  among  learners",
-    "source": "Learners"
+    "source": "Learners",
+    "_index": 180,
+    "index": 180,
+    "_id": 882859123,
+    "_uuid": "8a6151ba-de04-40ae-9290-741fba8b44a9"
   },
   {
     "id": 882875429,
@@ -7135,7 +7855,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "Is mpox still a threat",
     "barrier": "",
-    "source": "No"
+    "source": "No",
+    "_index": 181,
+    "index": 181,
+    "_id": 882875429,
+    "_uuid": "699528b2-4396-4e56-aed5-53640486c4c4"
   },
   {
     "id": 882907711,
@@ -7176,7 +7900,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "A health person can not get Ebola",
     "barrier": "",
-    "source": "Some P6 student"
+    "source": "Some P6 student",
+    "_index": 182,
+    "index": 182,
+    "_id": 882907711,
+    "_uuid": "636b33d1-6afb-46b6-95e8-77f0fd812ce4"
   },
   {
     "id": 883060623,
@@ -7216,7 +7944,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 183,
+    "index": 183,
+    "_id": 883060623,
+    "_uuid": "6e268bdb-346e-46db-a023-1ac3a015c8e8"
   },
   {
     "id": 883064229,
@@ -7254,7 +7986,11 @@
     "p_handwash": 3,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 184,
+    "index": 184,
+    "_id": 883064229,
+    "_uuid": "eadfc62c-2530-48b5-8f1f-1476555ab1fc"
   },
   {
     "id": 883067335,
@@ -7289,7 +8025,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 185,
+    "index": 185,
+    "_id": 883067335,
+    "_uuid": "c4506550-fbd5-4dd5-84ab-d68be2f2f8ac"
   },
   {
     "id": 883069666,
@@ -7335,7 +8075,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 186,
+    "index": 186,
+    "_id": 883069666,
+    "_uuid": "a883505b-47b5-4de3-b89d-3ce7d12058a5"
   },
   {
     "id": 883071425,
@@ -7375,7 +8119,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 20,
-    "games": 0
+    "games": 0,
+    "_index": 187,
+    "index": 187,
+    "_id": 883071425,
+    "_uuid": "6270e830-9208-43e2-ba90-b30604f3dd38"
   },
   {
     "id": 883208212,
@@ -7415,7 +8163,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 188,
+    "index": 188,
+    "_id": 883208212,
+    "_uuid": "1c89019b-0b43-4d4d-b3fd-a9289efb3eca"
   },
   {
     "id": 883213824,
@@ -7450,7 +8202,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 189,
+    "index": 189,
+    "_id": 883213824,
+    "_uuid": "b7c3c6d4-5982-4786-8921-273cfbb54c72"
   },
   {
     "id": 883215910,
@@ -7490,7 +8246,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 190,
+    "index": 190,
+    "_id": 883215910,
+    "_uuid": "c2cd7b60-c6a4-4cb8-8441-532a96247782"
   },
   {
     "id": 883219422,
@@ -7530,7 +8290,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 191,
+    "index": 191,
+    "_id": 883219422,
+    "_uuid": "71d98e90-3edf-4e8f-9680-b81fbc16d372"
   },
   {
     "id": 883228403,
@@ -7565,7 +8329,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 192,
+    "index": 192,
+    "_id": 883228403,
+    "_uuid": "edbf7278-5076-418c-a131-f7006c9b2d78"
   },
   {
     "id": 883280165,
@@ -7606,7 +8374,11 @@
     "soap": "Water present, but NO soap available",
     "rumor": "Ebola is caused by over eating birds like chicken",
     "barrier": "",
-    "source": "Classmates"
+    "source": "Classmates",
+    "_index": 193,
+    "index": 193,
+    "_id": 883280165,
+    "_uuid": "1e80cf26-59b2-470f-9117-19a90d7e5fcb"
   },
   {
     "id": 883322992,
@@ -7646,7 +8418,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 194,
+    "index": 194,
+    "_id": 883322992,
+    "_uuid": "f1ad501a-657c-4f6e-80cc-ade55a27d53e"
   },
   {
     "id": 883359609,
@@ -7686,7 +8462,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 195,
+    "index": 195,
+    "_id": 883359609,
+    "_uuid": "52875909-be13-4bfa-8a33-0451b83294d6"
   },
   {
     "id": 883481706,
@@ -7727,7 +8507,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "Ebola is only in Congo",
     "barrier": "Trusting social media",
-    "source": "Social Media"
+    "source": "Social Media",
+    "_index": 196,
+    "index": 196,
+    "_id": 883481706,
+    "_uuid": "64e63100-14b4-4afa-9e7f-f1077a9c9ccb"
   },
   {
     "id": 883543285,
@@ -7768,7 +8552,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "Is ebola curable,How do you know that someone has ebola, can someone get ebola from water",
     "barrier": "Misinformation",
-    "source": "Classmates"
+    "source": "Classmates",
+    "_index": 197,
+    "index": 197,
+    "_id": 883543285,
+    "_uuid": "d14a0611-24c3-410e-ac0a-e21192535e8e"
   },
   {
     "id": 883564414,
@@ -7808,7 +8596,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 1,
-    "games": 0
+    "games": 0,
+    "_index": 198,
+    "index": 198,
+    "_id": 883564414,
+    "_uuid": "49583f7d-f919-477b-969f-6fc45589c7b3"
   },
   {
     "id": 883586387,
@@ -7848,7 +8640,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 199,
+    "index": 199,
+    "_id": 883586387,
+    "_uuid": "b46edac7-e084-49a2-8302-935effc77452"
   },
   {
     "id": 883599734,
@@ -7888,7 +8684,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 200,
+    "index": 200,
+    "_id": 883599734,
+    "_uuid": "627ca2fc-fbaf-4bed-b43d-189ba0204ab7"
   },
   {
     "id": 883608374,
@@ -7928,7 +8728,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 201,
+    "index": 201,
+    "_id": 883608374,
+    "_uuid": "f55748c5-feba-46d9-8f43-33c1e180d4ce"
   },
   {
     "id": 883614347,
@@ -7968,7 +8772,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 202,
+    "index": 202,
+    "_id": 883614347,
+    "_uuid": "a92f5702-73e8-4728-a5fc-53a7b31bb63f"
   },
   {
     "id": 883620824,
@@ -8006,7 +8814,11 @@
     "p_handwash": 6,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 203,
+    "index": 203,
+    "_id": 883620824,
+    "_uuid": "cc57a0be-b7f8-4a6e-a149-be9bc7ca7372"
   },
   {
     "id": 883625438,
@@ -8046,7 +8858,11 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 204,
+    "index": 204,
+    "_id": 883625438,
+    "_uuid": "db76eedb-b64d-4098-a1e7-16bab67d4a55"
   },
   {
     "id": 883627406,
@@ -8087,7 +8903,11 @@
     "soap": "Functional running water AND soap present",
     "rumor": "Ebola is not real",
     "barrier": "People believe the rumor",
-    "source": "Parents/Home"
+    "source": "Parents/Home",
+    "_index": 205,
+    "index": 205,
+    "_id": 883627406,
+    "_uuid": "7d65d775-ed13-4bf2-89d3-1589fc78d64c"
   },
   {
     "id": 883631678,
@@ -8127,6 +8947,10 @@
     "girls": 0,
     "enrolment": 0,
     "teachers": 0,
-    "games": 0
+    "games": 0,
+    "_index": 206,
+    "index": 206,
+    "_id": 883631678,
+    "_uuid": "973b3551-0792-4962-b385-b69b413e891b"
   }
 ]

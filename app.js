@@ -127,8 +127,11 @@ function processRawWorkbookRows(rawRows) {
     const formattedDate = normalizeLocalDate(rawDateVal);
 
     if (row.tool) {
+      const parsedIdx = parseNum(row._index || row['index'] || row['_index']) || (idx + 1);
       rawMasterData.push(Object.assign({}, row, {
         id: row.id || (idx + 1),
+        _index: parsedIdx,
+        index: parsedIdx,
         date: formattedDate || row.date,
         tool: row.tool,
         district: row.district || 'Central',
@@ -391,16 +394,15 @@ function showTab(tabId) {
   const titles = {
     'overview': ['Summary of Reach & Engagement', 'Cross-instrument reach aggregation, district performance, and programmatic coverage per location'],
     'rumours': ['Weekly Community & School Listening and Rumour Log', 'Standardized weekly RCCE monitoring capturing community concerns, school rumours, misinformation, and recommended message adjustments for weekly RCCE synthesis'],
-    'tool_9': ['School 3-Visit Tracker', 'Detailed analysis of learner reach, visit number, health club, and wheel answers'],
-    'tool_7': ['Community Gatekeeper Engagements', 'Tracking orientation sessions conducted with local leaders and community stakeholders'],
     'tool_1': ['Transect Walk Environmental & Infrastructure Checklist', 'Environmental sanitation, setting type, functional stations, and stance ratios'],
     'tool_2': ['Rapid Audience Assessment Intercept Survey', 'Full questionnaire capture: 7-day recall, 2+ symptoms, risk perception, and notification intent'],
     'tool_3': ['"Ask 5" Behavioral Verification Diagnostic Tool', 'Full 5-claim diagnostic audit for gatekeepers, teachers, vendors, and transport operators'],
     'tool_4': ['Most Significant Change Story Collection Form', 'Systematic qualitative narrative tracking of the Most Significant Change'],
-    'tool_5': ['Social Network & Influencer Mapping Protocol', 'Identification of trusted community influencers across social sectors'],
     'tool_6': ['Photovoice Participatory Documentation Guide & Caption Form', 'PHOTO protocol analysis of youth-led hygiene challenges and community solutions'],
+    'tool_7': ['Community Gatekeeper Dialogue & Events', 'Tracking orientation sessions conducted with local leaders and community stakeholders'],
+    'tool_8': ['Preparedness Assessment', 'School Epidemic Preparedness Assessment examining institutional response plans and isolation wards'],
+    'tool_9': ['School 3-Visit Tracker & Knowledge Wheel', 'Detailed analysis of learner reach, visit number, health club, and wheel answers'],
     'tool_10': ['School Simulation Drill & Safeguarding Compliance Protocol', 'Mandatory pre-drill verification and performance rehearsal evaluation'],
-    'tool_8': ['Preparedness Assessment Tool', 'School Epidemic Preparedness Assessment Tool examining institutional response plans and isolation wards'],
     'tool_11': ['U-Report Recruitment Tracker', 'Tracking recruitment and mobilization of youth, learners, and community members as active U-Reporters']
   };
 
@@ -475,6 +477,9 @@ function applyFilters() {
     const matchesDistrict = (selectedDistrict === 'ALL' || d.district === selectedDistrict);
     
     const matchesSearch = !searchText || (
+      (d._index && String(d._index) === searchText) ||
+      (d._index && String(d._index).includes(searchText)) ||
+      (d.id && String(d.id).includes(searchText)) ||
       (d.school && d.school.toLowerCase().includes(searchText)) ||
       (d.district && d.district.toLowerCase().includes(searchText)) ||
       (d.parish && d.parish.toLowerCase().includes(searchText)) ||
@@ -674,21 +679,20 @@ function recomputeAndRender() {
   safeSetText('kpiTakeHomeCards', totalCards.toLocaleString());
   safeSetText('kpiDistricts', distList.length);
 
-  safeSetText('badgeTotalReach', grandTotalReach > 1000 ? `${(grandTotalReach/1000).toFixed(1)}K` : grandTotalReach);
-  safeSetText('badgeTool1', appData.filter(d => d.tool === 'School Activity').length);
-  safeSetText('badgeTool2', gatekeeperRowsFiltered.length);
-  safeSetText('badgeTool3', appData.filter(d => d.tool === 'Transect Walk').length);
-  safeSetText('badgeTool4', appData.filter(d => d.tool === 'Rapid Intercept').length);
-  safeSetText('badgeTool5', appData.filter(d => d.tool === 'Ask 5').length);
-  safeSetText('badgeTool6', appData.filter(d => d.tool === 'MSC Story').length);
-  safeSetText('badgeTool7', appData.filter(d => d.tool === 'Influencer Mapping').length);
-  safeSetText('badgeTool8', appData.filter(d => d.tool === 'Photovoice').length);
-  safeSetText('badgeTool9', appData.filter(d => d.tool === 'Simulation Drill').length);
-  safeSetText('badgeTool10', appData.filter(d => d.tool === 'PAT Assessment').length);
+  safeSetText('badgeTotalReach', appData.length);
+  safeSetText('badgeTool1', appData.filter(d => d.tool === 'Transect Walk').length);
+  safeSetText('badgeTool2', appData.filter(d => d.tool === 'Rapid Intercept').length);
+  safeSetText('badgeTool3', appData.filter(d => d.tool === 'Ask 5').length);
+  safeSetText('badgeTool4', appData.filter(d => d.tool === 'MSC Story').length);
+  safeSetText('badgeTool6', appData.filter(d => d.tool === 'Photovoice').length);
+  safeSetText('badgeTool7', gatekeeperRowsFiltered.length);
+  safeSetText('badgeTool8', appData.filter(d => d.tool === 'PAT Assessment').length);
+  safeSetText('badgeTool9', appData.filter(d => d.tool === 'School Activity').length);
+  safeSetText('badgeTool10', appData.filter(d => d.tool === 'Simulation Drill').length);
+  safeSetText('badgeTool11', appData.filter(d => d.tool === 'U-Report Recruitment').length);
   
   const allRumourRecords = getAllRumourRecords();
   safeSetText('badgeRumours', allRumourRecords.length);
-  safeSetText('badgeTool11', appData.filter(d => d.tool === 'U-Report Recruitment').length);
 
 
   const keyChipsHtml = distList.length === 0
@@ -705,27 +709,29 @@ function recomputeAndRender() {
       }).join('');
   safeSetHtml('districtTotalsKey', keyChipsHtml);
 
-  const schoolActsCount = appData.filter(d => d.tool === 'School Activity').length;
+  const t1Count = appData.filter(d => d.tool === 'Transect Walk').length;
   const t2Count = appData.filter(d => d.tool === 'Rapid Intercept').length;
   const t3Count = appData.filter(d => d.tool === 'Ask 5').length;
   const t4Count = appData.filter(d => d.tool === 'MSC Story').length;
   const t5Count = appData.filter(d => d.tool === 'Influencer Mapping').length;
   const t6Count = appData.filter(d => d.tool === 'Photovoice').length;
-  const t9Count = appData.filter(d => d.tool === 'Simulation Drill').length;
+  const t7Count = gatekeeperRowsFiltered.length;
   const patCount = appData.filter(d => d.tool === 'PAT Assessment').length;
+  const schoolActsCount = appData.filter(d => d.tool === 'School Activity').length;
+  const t10Count = appData.filter(d => d.tool === 'Simulation Drill').length;
+  const t11Count = appData.filter(d => d.tool === 'U-Report Recruitment').length;
 
   const toolDefs = [
-    { num: 1, name: "School 3-Visit Tracker", q: 26, reach: `${appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.boys||0) + (r.girls||0), 0).toLocaleString()} Learners (${schoolActsCount} Schools)`, active: schoolActsCount > 0, tab: "tool_9" },
-    { num: 2, name: "Community Gatekeeper Engagements", q: 13, reach: `${gatekeeperRowsFiltered.length} Sessions Oriented`, active: gatekeeperRowsFiltered.length > 0, tab: "tool_7" },
-    { num: 3, name: "Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: `${appData.filter(d => d.tool === 'Transect Walk').length} Facility Audits`, active: appData.filter(d => d.tool === 'Transect Walk').length > 0, tab: "tool_1" },
-    { num: 4, name: "Rapid Audience Assessment Intercept Survey", q: 15, reach: t2Count > 0 ? `${t2Count} Intercepts Audited` : "0 Submissions (Pending)", active: t2Count > 0, tab: "tool_2" },
-    { num: 5, name: "'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: t3Count > 0 ? `${t3Count} Claims Verified` : "0 Submissions (Pending)", active: t3Count > 0, tab: "tool_3" },
-    { num: 6, name: "Most Significant Change Story Collection Form", q: 5, reach: t4Count > 0 ? `${t4Count} Impact Narratives` : "0 Submissions (Pending)", active: t4Count > 0, tab: "tool_4" },
-    { num: 7, name: "Social Network & Influencer Mapping Protocol", q: 19, reach: t5Count > 0 ? `${t5Count} Key Influencers Mapped` : "0 Submissions (Pending)", active: t5Count > 0, tab: "tool_5" },
-    { num: 8, name: "Photovoice Participatory Documentation Guide & Caption Form", q: 9, reach: t6Count > 0 ? `${t6Count} PHOTO Panels` : "0 Submissions (Pending)", active: t6Count > 0, tab: "tool_6" },
-    { num: 9, name: "School Simulation Drill & Safeguarding Compliance Protocol", q: 19, reach: t9Count > 0 ? `${t9Count} Drills Evaluated` : "0 Submissions (Pending)", active: t9Count > 0, tab: "tool_10" },
-    { num: 10, name: "Preparedness Assessment Tool", q: 53, reach: `${patCount} Institutional Audits Complete`, active: patCount > 0, tab: "tool_8" },
-    { num: 11, name: "U-Report Recruitment Tracker", q: 12, reach: (appData.filter(d => d.tool === 'U-Report Recruitment').length > 0 ? `${appData.filter(d => d.tool === 'U-Report Recruitment').length} Drives Logged` : "0 Submissions (Pending)"), active: appData.filter(d => d.tool === 'U-Report Recruitment').length > 0, tab: "tool_11" }
+    { num: 1, name: "Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: t1Count > 0 ? `${t1Count} Facility Audits Logged` : "0 Submissions (Pending)", active: t1Count > 0, tab: "tool_1" },
+    { num: 2, name: "Rapid Audience Assessment Intercept Survey", q: 15, reach: t2Count > 0 ? `${t2Count} Intercepts Audited` : "0 Submissions (Pending)", active: t2Count > 0, tab: "tool_2" },
+    { num: 3, name: "'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: t3Count > 0 ? `${t3Count} Claims Verified` : "0 Submissions (Pending)", active: t3Count > 0, tab: "tool_3" },
+    { num: 4, name: "Most Significant Change Story Collection Form", q: 5, reach: t4Count > 0 ? `${t4Count} Impact Narratives` : "0 Submissions (Pending)", active: t4Count > 0, tab: "tool_4" },
+    { num: 5, name: "Photovoice Participatory Documentation Guide & Caption Form", q: 9, reach: t6Count > 0 ? `${t6Count} PHOTO Panels` : "0 Submissions (Pending)", active: t6Count > 0, tab: "tool_6" },
+    { num: 6, name: "Community Gatekeeper Dialogue & Events", q: 13, reach: t7Count > 0 ? `${t7Count} Sessions Oriented` : "0 Submissions (Pending)", active: t7Count > 0, tab: "tool_7" },
+    { num: 7, name: "Preparedness Assessment", q: 53, reach: patCount > 0 ? `${patCount} Institutional Audits Complete` : "0 Submissions (Pending)", active: patCount > 0, tab: "tool_8" },
+    { num: 8, name: "School 3-Visit Model & Knowledge Wheel Tracker", q: 26, reach: `${appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.boys||0) + (r.girls||0), 0).toLocaleString()} Learners (${schoolActsCount} Schools)`, active: schoolActsCount > 0, tab: "tool_9" },
+    { num: 9, name: "School Simulation Drill & Safeguarding Compliance Protocol", q: 19, reach: t10Count > 0 ? `${t10Count} Drills Evaluated` : "0 Submissions (Pending)", active: t10Count > 0, tab: "tool_10" },
+    { num: 10, name: "U-Report Recruitment Tracker", q: 12, reach: t11Count > 0 ? `${t11Count} Drives Logged` : "0 Submissions (Pending)", active: t11Count > 0, tab: "tool_11" }
   ];
 
   safeSetHtml('toolsManifestBody', toolDefs.map(t => `
@@ -1030,7 +1036,8 @@ function recomputeAndRender() {
     return `
       <tr>
         <td>
-          <strong>${cleanText(g.date) || '—'}</strong><br>
+          <span style="font-weight:700; color:var(--primary); font-size:0.75rem;">#${g._index || g.id}</span>
+          <strong style="margin-left:4px;">${cleanText(g.date) || '—'}</strong><br>
           <span style="font-size:0.75rem; color:var(--text-muted);">${cleanText(g.district) || 'Central'} / ${cleanText(g.parish) || '—'}</span>
         </td>
         <td>
@@ -1194,8 +1201,9 @@ function recomputeAndRender() {
     return `
       <tr>
         <td>
-          <strong>${t.id}</strong><br>
+          <strong>#${t._index || t.id}</strong><br>
           <span style="font-size:0.7rem; color:var(--text-muted);">${t.date || ''}</span>
+          ${t.id && t._index && t.id != t._index ? `<div style="font-size:0.65rem; color:#94a3b8;">ID: ${t.id}</div>` : ''}
           ${t.auditor ? `<div style="font-size:0.69rem; color:#64748b;">Auditor: ${cleanText(t.auditor)}</div>` : ''}
         </td>
         <td>
@@ -1240,7 +1248,7 @@ function recomputeAndRender() {
   const filteredPat = appData.filter(d => d.tool === 'PAT Assessment');
   safeSetHtml('tool10TableBody', filteredPat.length === 0 ? `<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding:20px;">No PAT institutional audits found in active filter.</td></tr>` : filteredPat.map(p => `
     <tr>
-      <td><strong>${cleanText(p.name)}</strong></td>
+      <td><span style="font-weight:700; color:var(--primary); font-size:0.75rem;">#${p._index || p.id}</span> <strong>${cleanText(p.name)}</strong></td>
       <td>${cleanText(p.level)}</td>
       <td>${p.boys} / ${p.girls}</td>
       <td>${p.maleStaff} / ${p.femaleStaff}</td>
@@ -1502,8 +1510,9 @@ function populateQualitativeTools() {
         return `
           <tr>
             <td>
-              <strong>${i.id}</strong><br>
+              <strong>#${i._index || i.id}</strong><br>
               <span style="font-size:0.7rem; color:var(--text-muted);">${i.date || ''}</span>
+              ${i.id && i._index && i.id != i._index ? `<div style="font-size:0.65rem; color:#94a3b8;">ID: ${i.id}</div>` : ''}
               ${i.coordinator ? `<div style="font-size:0.69rem; color:#64748b;">Auditor: ${cleanText(i.coordinator)}</div>` : ''}
             </td>
             <td>
@@ -1652,7 +1661,11 @@ function populateQualitativeTools() {
 
         return `
           <tr>
-            <td><strong>${c.id}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">${c.date || ''}</span></td>
+            <td>
+              <strong>#${c._index || c.id}</strong><br>
+              <span style="font-size:0.7rem; color:var(--text-muted);">${c.date || ''}</span>
+              ${c.id && c._index && c.id != c._index ? `<div style="font-size:0.65rem; color:#94a3b8;">ID: ${c.id}</div>` : ''}
+            </td>
             <td>
               <span class="badge-pill badge-primary">${cleanText(c.group) || 'Target Group'}</span>
               <div style="font-size:0.72rem; color:#475569; font-weight:600; margin-top:2px;">📍 ${cleanText(c.setting) || 'Site'}</div>
@@ -1680,7 +1693,7 @@ function populateQualitativeTools() {
     } else {
       tool4Body.innerHTML = t4Rows.map(s => `
         <tr>
-          <td><strong>${s.id}</strong></td>
+          <td><strong>#${s._index || s.id}</strong></td>
           <td><strong>${s.participant || s.part || '—'}</strong></td>
           <td style="font-size:0.75rem;">${s.baseline || '—'}</td>
           <td style="font-size:0.75rem; color:var(--primary); font-weight:600;">${s.event || '—'}</td>
@@ -1691,23 +1704,6 @@ function populateQualitativeTools() {
     }
   }
 
-  // Tool 5: Social Influencer Mapping
-  const tool5Body = document.getElementById('tool7TableBody');
-  const t5Rows = appData.filter(d => d.tool === 'Influencer Mapping');
-  if (tool5Body) {
-    if (t5Rows.length === 0) {
-      tool5Body.innerHTML = renderEmptyState(4, 'influencer or social network mappings');
-    } else {
-      tool5Body.innerHTML = t5Rows.map(inf => `
-        <tr>
-          <td><span class="badge-pill badge-primary">${inf.sector || '—'}</span></td>
-          <td><strong>${inf.leaders || inf.name || '—'}</strong></td>
-          <td>${inf.contact || '—'}</td>
-          <td style="font-size:0.76rem;">${inf.strategy || '—'}</td>
-        </tr>
-      `).join('');
-    }
-  }
 
   // Tool 6: Photovoice
   const tool6Body = document.getElementById('tool8TableBody');
@@ -1718,7 +1714,7 @@ function populateQualitativeTools() {
     } else {
       tool6Body.innerHTML = t6Rows.map(ph => `
         <tr>
-          <td><strong>${ph.id}</strong></td>
+          <td><strong>#${ph._index || ph.id}</strong></td>
           <td><strong>${ph.author || '—'}</strong></td>
           <td style="font-size:0.75rem;">${ph.p || '—'}</td>
           <td style="font-size:0.75rem;">${ph.h || '—'}</td>
@@ -1739,7 +1735,7 @@ function populateQualitativeTools() {
     } else {
       tool10Body.innerHTML = t10Rows.map(dr => `
         <tr>
-          <td><strong>${dr.id}</strong></td>
+          <td><strong>#${dr._index || dr.id}</strong></td>
           <td><strong>${dr.facility || dr.school || '—'}</strong></td>
           <td><span class="badge-pill badge-success">${dr.identification || 'Compliant'}</span></td>
           <td>${dr.holdingArea || '—'}</td>
@@ -3227,7 +3223,11 @@ function renderRumourLogFiltered() {
 
     return `
       <tr>
-        <td><strong>#${r.id}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">${r.date || ''}</span></td>
+        <td>
+          <strong>#${r._index || r.id}</strong><br>
+          <span style="font-size:0.7rem; color:var(--text-muted);">${r.date || ''}</span>
+          ${r.id && r._index && r.id != r._index ? `<div style="font-size:0.65rem; color:#94a3b8;">ID: ${r.id}</div>` : ''}
+        </td>
         <td><strong>${cleanText(r.district)}</strong><br><span style="font-size:0.71rem; color:var(--text-muted);">${cleanText(r.parish)}</span></td>
         <td><span class="badge-pill badge-primary">${cleanText(r.setting) || 'School'}</span></td>
         <td><span class="badge-pill" style="background:#f1f5f9; color:#475569;">${cleanText(r.origin || r.source) || 'Community'}</span></td>
@@ -3271,7 +3271,11 @@ function renderURecruitSection() {
     } else {
       tbody.innerHTML = uRows.map(r => `
         <tr>
-          <td><strong>#${r.id}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">${r.date || ''}</span></td>
+          <td>
+            <strong>#${r._index || r.id}</strong><br>
+            <span style="font-size:0.7rem; color:var(--text-muted);">${r.date || ''}</span>
+            ${r.id && r._index && r.id != r._index ? `<div style="font-size:0.65rem; color:#94a3b8;">ID: ${r.id}</div>` : ''}
+          </td>
           <td>${cleanText(r.district)}</td>
           <td>${cleanText(r.parish)}</td>
           <td><span class="badge-pill badge-primary">${cleanText(r.location) || 'Community'}</span></td>

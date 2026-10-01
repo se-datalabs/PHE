@@ -26,7 +26,6 @@
     <div class="brand">
       <div class="brand-text">
         <h2>PHE RCCE Tracker</h2>
-        <p>11 Integrated Instruments Dashboard</p>
       </div>
       <button class="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="Close navigation menu">✕</button>
     </div>
@@ -42,59 +41,53 @@
         <span class="tab-badge badge-alert" id="badgeRumours">0</span>
       </button>
 
-      <div class="nav-section-title">Programmatic Tools (11 Instruments)</div>
-      <button class="tab-btn" onclick="showTab('tool_9')">
-        <span>1. School 3-Visit Tracker</span>
+      <button class="tab-btn" onclick="showTab('tool_1')">
+        <span>Transect Walk &amp; Audit</span>
         <span class="tab-badge" id="badgeTool1">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_7')">
-        <span>2. Community Gatekeeper Engagements</span>
+      <button class="tab-btn" onclick="showTab('tool_2')">
+        <span>Rapid Audience Intercept</span>
         <span class="tab-badge" id="badgeTool2">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_1')">
-        <span>3. Transect Walk &amp; Audit</span>
+      <button class="tab-btn" onclick="showTab('tool_3')">
+        <span>'Ask 5' Behavioral Diagnostic</span>
         <span class="tab-badge" id="badgeTool3">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_2')">
-        <span>4. Rapid Audience Intercept</span>
+      <button class="tab-btn" onclick="showTab('tool_4')">
+        <span>Most Significant Change (MSC)</span>
         <span class="tab-badge" id="badgeTool4">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_3')">
-        <span>5. 'Ask 5' Behavioral Diagnostic</span>
-        <span class="tab-badge" id="badgeTool5">0</span>
-      </button>
-
-      <button class="tab-btn" onclick="showTab('tool_4')">
-        <span>6. Most Significant Change Form</span>
+      <button class="tab-btn" onclick="showTab('tool_6')">
+        <span>Photovoice Documentation</span>
         <span class="tab-badge" id="badgeTool6">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_5')">
-        <span>7. Influencer Mapping Protocol</span>
+      <button class="tab-btn" onclick="showTab('tool_7')">
+        <span>Community Gatekeeper Dialogue</span>
         <span class="tab-badge" id="badgeTool7">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_6')">
-        <span>8. Photovoice Documentation</span>
+      <button class="tab-btn" onclick="showTab('tool_8')">
+        <span>Preparedness Assessment</span>
         <span class="tab-badge" id="badgeTool8">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_10')">
-        <span>9. Simulation Drill Protocol</span>
+      <button class="tab-btn" onclick="showTab('tool_9')">
+        <span>School 3-Visit Tracker</span>
         <span class="tab-badge" id="badgeTool9">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_8')">
-        <span>10. Preparedness Assessment</span>
+      <button class="tab-btn" onclick="showTab('tool_10')">
+        <span>Simulation Drill Protocol</span>
         <span class="tab-badge" id="badgeTool10">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_11')">
-        <span>11. U-Report Recruitment</span>
+        <span>U-Report Recruitment Tracker</span>
         <span class="tab-badge" id="badgeTool11">0</span>
       </button>
     </div>
@@ -107,7 +100,7 @@
       <div class="header-top-bar">
         <button id="menuToggleBtn" class="menu-toggle-btn" onclick="toggleSidebar(true)" aria-label="Open navigation menu">
           <span class="menu-icon">☰</span>
-          <span class="menu-text">Tools Menu</span>
+          <span class="menu-text">Menu</span>
         </button>
 
         <div class="header-title">
@@ -301,9 +294,9 @@
           </div>
         </div>
 
-        <!-- Master Manifest of 11 Instruments -->
+        <!-- Master Manifest of Instruments -->
         <div class="card">
-          <div class="card-title">Programmatic Instruments &amp; Reach Overview (11 Operational Instruments)</div>
+          <div class="card-title">Instruments &amp; Reach Overview</div>
           <div class="table-responsive">
             <table>
               <thead>
@@ -970,28 +963,6 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 5: SOCIAL NETWORK & INFLUENCER MAPPING ================= -->
-      <section id="tab-tool_5" class="tab-pane">
-        <div class="scope-callout">
-          <strong>Scope — Social Network &amp; Influencer Mapping Protocol:</strong> Participatory mapping guide used during parish entry, gatekeeper orientations, and school stakeholder mappings to identify trusted leaders and communication channels.
-        </div>
-        <div class="card">
-          <div class="card-title">Informal Trust Broker Mapping by Sector</div>
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Sector</th>
-                  <th>Who is Actually Listened To (Informal Trust Brokers)</th>
-                  <th>Direct Contact / Stage Node</th>
-                  <th>Best Community Engagement Strategy</th>
-                </tr>
-              </thead>
-              <tbody id="tool7TableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
       <!-- ================= TOOL 6: PHOTOVOICE PARTICIPATORY DOCUMENTATION ================= -->
       <section id="tab-tool_6" class="tab-pane">
