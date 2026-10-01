@@ -517,6 +517,7 @@ function recomputeAndRender() {
 
   const distMap = {};
   let totalBoys = 0, totalGirls = 0, totalTeachers = 0, totalGames = 0;
+  let totalCrowd = 0, totalCrowdMale = 0, totalCrowdFemale = 0;
 
   const schoolUniqueEnrolment = {};
   appData.forEach(r => {
@@ -524,6 +525,13 @@ function recomputeAndRender() {
     totalGirls += (r.girls || 0);
     totalTeachers += (r.teachers || 0);
     totalGames += (r.games || 0);
+
+    const cm = (r.male_crowd || r.crowd_male || 0);
+    const cf = (r.female_crowd || r.crowd_female || 0);
+    const cTot = (r.crowd_engaged || (cm + cf) || 0);
+    totalCrowd += cTot;
+    totalCrowdMale += cm;
+    totalCrowdFemale += cf;
 
     const sName = (r.school || r.name || '').trim().toLowerCase();
     const enr = r.enrolment || 0;
@@ -536,7 +544,7 @@ function recomputeAndRender() {
     }
 
     if (!distMap[dName]) {
-      distMap[dName] = { count: 0, enrolment: 0, boys: 0, girls: 0, teachers: 0, totalLearners: 0, totalReach: 0, games: 0, v1Reach: 0, v2Reach: 0, v3Reach: 0, schoolsSet: new Set() };
+      distMap[dName] = { count: 0, enrolment: 0, boys: 0, girls: 0, teachers: 0, totalLearners: 0, totalReach: 0, games: 0, v1Reach: 0, v2Reach: 0, v3Reach: 0, crowd: 0, crowdMale: 0, crowdFemale: 0, schoolsSet: new Set() };
     }
     
     if (sName && sName !== 'site' && !sName.startsWith('gatekeeper') && r.tool === 'School Activity') {
@@ -546,8 +554,11 @@ function recomputeAndRender() {
     distMap[dName].boys += (r.boys || 0);
     distMap[dName].girls += (r.girls || 0);
     distMap[dName].teachers += (r.teachers || 0);
+    distMap[dName].crowd += cTot;
+    distMap[dName].crowdMale += cm;
+    distMap[dName].crowdFemale += cf;
     distMap[dName].totalLearners += ((r.boys || 0) + (r.girls || 0));
-    distMap[dName].totalReach += ((r.boys || 0) + (r.girls || 0) + (r.teachers || 0));
+    distMap[dName].totalReach += ((r.boys || 0) + (r.girls || 0) + (r.teachers || 0) + cTot);
     distMap[dName].games += (r.games || 0);
 
     if (r.tool === 'School Activity') {
@@ -577,7 +588,7 @@ function recomputeAndRender() {
   const totalLearners = totalSensitised;
   const gatekeeperRowsFiltered = appData.filter(d => d.tool === 'Gatekeeper Session');
   const grandTotalGatekeepers = totalTeachers;
-  const grandTotalReach = totalLearners + grandTotalGatekeepers;
+  const grandTotalReach = totalLearners + grandTotalGatekeepers + totalCrowd;
 
   // 1. Schools Engaged
   const schoolsEngagedSet = new Set();
@@ -649,7 +660,14 @@ function recomputeAndRender() {
   safeSetText('kpiTallySheets', tallySheetsCount.toLocaleString());
   safeSetText('kpiTallySheetsSub', tallySheetsCount > 0 ? `Tally verification sheets logged` : `Sheets collected upon mobilization`);
 
-  // Secondary Delivery Metrics
+  // Secondary Delivery Metrics & Community Reach
+  safeSetText('kpiCommunityCrowd', totalCrowd.toLocaleString());
+  const commFemPct = totalCrowd > 0 ? ((totalCrowdFemale / totalCrowd) * 100).toFixed(1) : 0;
+  const commSubText = (totalCrowdMale > 0 || totalCrowdFemale > 0)
+    ? `${totalCrowdMale.toLocaleString()} Male | ${totalCrowdFemale.toLocaleString()} Female (${commFemPct}% F)`
+    : `${totalCrowd.toLocaleString()} Passersby / Community crowd`;
+  safeSetText('kpiCommunityCrowdSub', commSubText);
+
   safeSetText('kpiEnrolment', totalEnrolment.toLocaleString());
   safeSetText('kpiEnrolmentSub', `Unique school population base (validated)`);
   safeSetText('kpiGames', totalGames.toLocaleString());
@@ -675,13 +693,16 @@ function recomputeAndRender() {
 
   const keyChipsHtml = distList.length === 0
     ? `<span style="color:#64748b; font-size:0.8rem;">No district data for active filter.</span>`
-    : distList.map(d => `
+    : distList.map(d => {
+        const commTxt = (d.crowd || 0) > 0 ? ` / ${(d.crowd || 0).toLocaleString()} Comm` : '';
+        return `
         <div class="district-key-chip">
           <strong>${d.name}:</strong> 
           <span class="chip-total">Total: ${d.totalReach.toLocaleString()}</span>
-          <span style="color:#64748b; font-size:0.72rem;">(${d.boys.toLocaleString()} B / ${d.girls.toLocaleString()} G / ${d.teachers} Gatekeepers)</span>
+          <span style="color:#64748b; font-size:0.72rem;">(${d.boys.toLocaleString()} B / ${d.girls.toLocaleString()} G / ${d.teachers} Gatekeepers${commTxt})</span>
         </div>
-      `).join('');
+      `;
+      }).join('');
   safeSetHtml('districtTotalsKey', keyChipsHtml);
 
   const schoolActsCount = appData.filter(d => d.tool === 'School Activity').length;
@@ -844,6 +865,8 @@ function recomputeAndRender() {
   let gkProtocolCount = 0;
   let gkPlanCount = 0;
   let gkCrowdTotal = 0;
+  let gkCrowdMale = 0;
+  let gkCrowdFemale = 0;
   let gkDestigmaCount = 0;
 
   gatekeeperRowsFiltered.forEach(g => {
@@ -876,7 +899,12 @@ function recomputeAndRender() {
     const plan = String(g.action_plan_started || '').toLowerCase();
     if (plan.includes('yes') || plan.includes('progress')) gkPlanCount++;
 
-    gkCrowdTotal += (g.crowd_engaged || 0);
+    const cm = (g.male_crowd || g.crowd_male || 0);
+    const cf = (g.female_crowd || g.crowd_female || 0);
+    const cTot = (g.crowd_engaged || (cm + cf) || 0);
+    gkCrowdMale += cm;
+    gkCrowdFemale += cf;
+    gkCrowdTotal += cTot;
 
     const destig = String(g.destigmatization || '').toLowerCase();
     if (destig.includes('high') || destig.includes('receptive')) gkDestigmaCount++;
@@ -901,10 +929,15 @@ function recomputeAndRender() {
   safeSetText('gk_kpi_protocol', gkTotalSessions > 0 ? `${((gkProtocolCount / gkTotalSessions) * 100).toFixed(1)}%` : '0%');
   safeSetText('gk_kpi_plan', gkTotalSessions > 0 ? `${((gkPlanCount / gkTotalSessions) * 100).toFixed(1)}%` : '0%');
   safeSetText('gk_kpi_crowd', gkCrowdTotal.toLocaleString());
+  const gkCrowdFemPct = gkCrowdTotal > 0 ? ((gkCrowdFemale / gkCrowdTotal) * 100).toFixed(1) : 0;
+  const gkCrowdSubText = (gkCrowdMale > 0 || gkCrowdFemale > 0)
+    ? `${gkCrowdMale.toLocaleString()} Male | ${gkCrowdFemale.toLocaleString()} Female (${gkCrowdFemPct}% F)`
+    : `${gkCrowdTotal.toLocaleString()} Passersby / Community crowd engaged`;
+  safeSetText('gk_kpi_crowd_sub', gkCrowdSubText);
   safeSetText('gk_kpi_destigma', gkTotalSessions > 0 ? `${((gkDestigmaCount / gkTotalSessions) * 100).toFixed(1)}%` : '0%');
 
 
-  safeSetHtml('tool7GatekeeperTableBody', gatekeeperRowsFiltered.length === 0 ? `<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:20px;">No gatekeeper dialogue records found in active filter.</td></tr>` : gatekeeperRowsFiltered.map(g => {
+  safeSetHtml('tool7GatekeeperTableBody', gatekeeperRowsFiltered.length === 0 ? `<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No gatekeeper dialogue records found in active filter.</td></tr>` : gatekeeperRowsFiltered.map(g => {
     const totOriented = (g.male || 0) + (g.female || 0);
     const roleText = cleanText(g.role) || 'Gatekeeper';
     const specifyText = cleanText(g.role_specify);
@@ -916,6 +949,20 @@ function recomputeAndRender() {
     else if (roleLower.includes('teacher')) roleBadgeClass = 'badge-info';
     else if (roleLower.includes('vht')) roleBadgeClass = 'badge-success';
     else roleBadgeClass = 'badge-warning';
+
+    // Crowd reach
+    const cMale = (g.male_crowd || g.crowd_male || 0);
+    const cFemale = (g.female_crowd || g.crowd_female || 0);
+    const cTot = (g.crowd_engaged || (cMale + cFemale) || 0);
+    let crowdSub = '';
+    if (cMale > 0 || cFemale > 0) {
+      crowdSub = `${cMale.toLocaleString()} M &bull; ${cFemale.toLocaleString()} F`;
+    } else if (cTot > 0) {
+      crowdSub = `Passersby / Crowd`;
+    }
+    const crowdCellHtml = (cTot > 0 || cMale > 0 || cFemale > 0)
+      ? `<strong style="color:#d97706;">${cTot.toLocaleString()} Reached</strong><br><span style="font-size:0.72rem; color:var(--text-muted);">${crowdSub}</span>`
+      : `<span style="color:#94a3b8; font-size:0.75rem; font-style:italic;">None recorded</span>`;
 
     // Fidelity
     const manualUsed = String(g.manual_used || '').toLowerCase().includes('yes');
@@ -991,8 +1038,11 @@ function recomputeAndRender() {
           ${specifyText && specifyText.toLowerCase() !== roleText.toLowerCase() ? `<br><span style="font-size:0.70rem; color:var(--text-muted); font-style:italic;">${specifyText}</span>` : ''}
         </td>
         <td>
-          <strong style="color:var(--primary);">${totOriented.toLocaleString()} Total</strong><br>
+          <strong style="color:var(--primary);">${totOriented.toLocaleString()} Gatekeeper${totOriented === 1 ? '' : 's'}</strong><br>
           <span style="font-size:0.72rem; color:var(--text-muted);">${g.male || 0} Male &bull; ${g.female || 0} Female</span>
+        </td>
+        <td>
+          ${crowdCellHtml}
         </td>
         <td>
           ${fidelityBadge}<br>
@@ -1830,6 +1880,22 @@ function renderBarCharts(distList) {
             backgroundColor: '#10b981',
             borderRadius: 4,
             stack: 'districtStack',
+            datalabels: { display: false }
+          },
+          {
+            label: 'Community Men Reached',
+            data: distList.map(d => d.crowdMale || 0),
+            backgroundColor: '#0284c7',
+            borderRadius: 4,
+            stack: 'districtStack',
+            datalabels: { display: false }
+          },
+          {
+            label: 'Community Women Reached',
+            data: distList.map(d => d.crowdFemale || 0),
+            backgroundColor: '#ec4899',
+            borderRadius: 4,
+            stack: 'districtStack',
             datalabels: {
               anchor: 'end',
               align: 'right',
@@ -1851,7 +1917,12 @@ function renderBarCharts(distList) {
               afterBody: (items) => {
                 const idx = items[0].dataIndex;
                 const d = distList[idx];
-                return `Total Reach: ${d.totalReach.toLocaleString()} (Learners: ${d.totalLearners.toLocaleString()} + Gatekeepers: ${d.teachers})`;
+                let detail = `Total Reach: ${d.totalReach.toLocaleString()} (Learners: ${d.totalLearners.toLocaleString()} + Gatekeepers: ${d.teachers}`;
+                if ((d.crowd || 0) > 0 || (d.crowdMale || 0) > 0 || (d.crowdFemale || 0) > 0) {
+                  detail += ` + Community: ${(d.crowd || 0).toLocaleString()} [${(d.crowdMale || 0).toLocaleString()} Men, ${(d.crowdFemale || 0).toLocaleString()} Women]`;
+                }
+                detail += ')';
+                return detail;
               }
             }
           }
@@ -2709,6 +2780,148 @@ function renderBarCharts(distList) {
       }
     });
   }
+
+  // Community Events Crowd Reach by Gender (Male vs. Female)
+  const elGkCrowdGender = document.getElementById('chartGkCrowdGenderT7');
+  if (elGkCrowdGender) {
+    let totMaleCrowd = 0;
+    let totFemaleCrowd = 0;
+    gkData.forEach(d => {
+      totMaleCrowd += (d.male_crowd || d.crowd_male || 0);
+      totFemaleCrowd += (d.female_crowd || d.crowd_female || 0);
+    });
+    const crowdSum = totMaleCrowd + totFemaleCrowd;
+    const genderLabels = ['Male Community Members', 'Female Community Members'];
+    const genderData = [totMaleCrowd, totFemaleCrowd];
+    const genderColors = ['#0284c7', '#ec4899'];
+
+    chartInstances.gkCrowdGenderT7 = new Chart(elGkCrowdGender.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: genderLabels,
+        datasets: [{
+          label: 'People Reached',
+          data: genderData,
+          backgroundColor: genderColors,
+          borderRadius: 4,
+          datalabels: {
+            anchor: 'end',
+            align: 'right',
+            formatter: (val) => {
+              if (crowdSum === 0) return '0 (0%)';
+              const pct = ((val / crowdSum) * 100).toFixed(1);
+              return `${val.toLocaleString()} (${pct}%)`;
+            },
+            color: '#1e293b',
+            font: { weight: 'bold', size: 11 }
+          }
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (item) => {
+                const val = genderData[item.dataIndex];
+                const pct = crowdSum > 0 ? ((val / crowdSum) * 100).toFixed(1) : 0;
+                return `${item.label}: ${val.toLocaleString()} (${pct}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            grace: '25%'
+          }
+        }
+      }
+    });
+  }
+
+  // Community Crowd Engaged by Hotspot Setting (Male vs. Female)
+  const elGkCrowdSetting = document.getElementById('chartGkCrowdSettingT7');
+  if (elGkCrowdSetting) {
+    const settingMap = {};
+    gkData.forEach(d => {
+      let s = cleanText(d.hotspot_setting) || 'Other / Informal';
+      if (!settingMap[s]) {
+        settingMap[s] = { male: 0, female: 0, total: 0 };
+      }
+      const m = (d.male_crowd || d.crowd_male || 0);
+      const f = (d.female_crowd || d.crowd_female || 0);
+      const tot = (d.crowd_engaged || (m + f) || 0);
+      settingMap[s].male += m;
+      settingMap[s].female += f;
+      settingMap[s].total += tot;
+    });
+
+    const sortedSettings = Object.entries(settingMap).sort((a, b) => b[1].total - a[1].total);
+    const setLabels = sortedSettings.length > 0 ? sortedSettings.map(x => x[0]) : ['No Settings Logged'];
+    const maleSetData = sortedSettings.length > 0 ? sortedSettings.map(x => x[1].male) : [0];
+    const femaleSetData = sortedSettings.length > 0 ? sortedSettings.map(x => x[1].female) : [0];
+
+    chartInstances.gkCrowdSettingT7 = new Chart(elGkCrowdSetting.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: setLabels,
+        datasets: [
+          {
+            label: 'Male Reached',
+            data: maleSetData,
+            backgroundColor: '#0284c7',
+            borderRadius: 4,
+            stack: 'crowdStack',
+            datalabels: { display: false }
+          },
+          {
+            label: 'Female Reached',
+            data: femaleSetData,
+            backgroundColor: '#ec4899',
+            borderRadius: 4,
+            stack: 'crowdStack',
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              formatter: (val, ctx) => {
+                if (!sortedSettings[ctx.dataIndex]) return '0';
+                const item = sortedSettings[ctx.dataIndex][1];
+                return item.total.toLocaleString();
+              },
+              color: '#282c68',
+              font: { weight: 'bold', size: 10 }
+            }
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: {
+            callbacks: {
+              afterBody: (items) => {
+                const idx = items[0].dataIndex;
+                if (!sortedSettings[idx]) return '';
+                const item = sortedSettings[idx][1];
+                return `Total Reached: ${item.total.toLocaleString()} (${item.male.toLocaleString()} Men, ${item.female.toLocaleString()} Women)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { stacked: true, beginAtZero: true, grace: '20%' },
+          y: { stacked: true }
+        }
+      }
+    });
+  }
 }
 
 
@@ -2822,24 +3035,50 @@ function renderRumourCharts(highCount, modCount, lowCount, originMap, settingMap
   const elRisk = document.getElementById('chartRumourRisk');
   if (elRisk) {
     if (chartInstances.rumourRisk) chartInstances.rumourRisk.destroy();
+    const riskTotal = highCount + modCount + lowCount;
     chartInstances.rumourRisk = new Chart(elRisk.getContext('2d'), {
-      type: 'doughnut',
+      type: 'bar',
       data: {
         labels: ['High Risk', 'Moderate Risk', 'Low Risk'],
         datasets: [{
+          label: 'Rumours Logged',
           data: [highCount, modCount, lowCount],
           backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
-          borderWidth: 2,
-          borderColor: '#ffffff'
+          borderRadius: 4,
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            formatter: (val) => {
+              if (riskTotal === 0) return '0';
+              const pct = ((val / riskTotal) * 100).toFixed(1);
+              return `${val} (${pct}%)`;
+            },
+            color: '#1e293b',
+            font: { weight: 'bold', size: 11 }
+          }
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom' }
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (item) => {
+                const val = item.raw;
+                const pct = riskTotal > 0 ? ((val / riskTotal) * 100).toFixed(1) : 0;
+                return `${item.label}: ${val} (${pct}%)`;
+              }
+            }
+          }
         },
-        cutout: '62%'
+        scales: {
+          y: {
+            beginAtZero: true,
+            grace: '20%'
+          }
+        }
       }
     });
   }
@@ -3133,6 +3372,12 @@ function renderLocationSummaryTable() {
       loc.ureporters += (r.active_ureporters || 0);
     } else if (tool === 'Gatekeeper Session') {
       loc.gatekeepers += (r.teachers || (r.male || 0) + (r.female || 0));
+      const cm = (r.male_crowd || r.crowd_male || 0);
+      const cf = (r.female_crowd || r.crowd_female || 0);
+      const cTot = (r.crowd_engaged || (cm + cf) || 0);
+      loc.crowd = (loc.crowd || 0) + cTot;
+      loc.crowdMale = (loc.crowdMale || 0) + cm;
+      loc.crowdFemale = (loc.crowdFemale || 0) + cf;
     } else if (tool === 'U-Report Recruitment') {
       loc.ureporters += ((r.male || 0) + (r.female || 0) + (r.total || 0));
       loc.tallySheets += 1;

@@ -198,7 +198,12 @@
         </div>
 
         <!-- TIER 2: POPULATION BASE & DELIVERY MATERIALS -->
-        <div class="four-col-grid" style="margin-bottom: 22px;">
+        <div class="five-col-grid" style="margin-bottom: 22px;">
+          <div class="kpi-card accent">
+            <div class="kpi-title">Community Events Reach</div>
+            <div class="kpi-value" id="kpiCommunityCrowd">0</div>
+            <div class="kpi-subtitle" id="kpiCommunityCrowdSub">0 Male | 0 Female</div>
+          </div>
           <div class="kpi-card">
             <div class="kpi-title">Total Enrolment Monitored</div>
             <div class="kpi-value" id="kpiEnrolment">0</div>
@@ -597,12 +602,12 @@
             <div class="kpi-value" id="gk_kpi_plan">0%</div>
             <div class="kpi-subtitle">Agreed on or started institutional plan</div>
           </div>
-          <div class="kpi-card">
-            <div class="kpi-title">Crowd Engaged on-site</div>
-            <div class="kpi-value" id="gk_kpi_crowd">0</div>
-            <div class="kpi-subtitle">Passersby / Community crowd engaged</div>
-          </div>
           <div class="kpi-card accent">
+            <div class="kpi-title">Community Crowd Engaged</div>
+            <div class="kpi-value" id="gk_kpi_crowd">0</div>
+            <div class="kpi-subtitle" id="gk_kpi_crowd_sub">0 Male | 0 Female</div>
+          </div>
+          <div class="kpi-card">
             <div class="kpi-title">Destigmatization Attitude</div>
             <div class="kpi-value" id="gk_kpi_destigma">0%</div>
             <div class="kpi-subtitle">High receptivity to support suspect cases</div>
@@ -622,6 +627,18 @@
           </div>
         </div>
 
+        <!-- DEDICATED COMMUNITY CROWD REACH (MALE VS FEMALE) CHARTS -->
+        <div class="dashboard-grid" style="margin-top:16px;">
+          <div class="card">
+            <div class="card-title">Community Events Crowd Reach by Gender (Male vs. Female)</div>
+            <div class="chart-box"><canvas id="chartGkCrowdGenderT7"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Community Crowd Engaged by Hotspot Setting</div>
+            <div class="chart-box"><canvas id="chartGkCrowdSettingT7"></canvas></div>
+          </div>
+        </div>
+
         <!-- COMPREHENSIVE MASTER GATEKEEPER DIALOGUE REGISTRY TABLE -->
         <div class="card" style="margin-top:16px;">
           <div class="card-title">
@@ -634,7 +651,8 @@
                 <tr>
                   <th>Date &amp; Location</th>
                   <th>Cadre &amp; Target Group</th>
-                  <th>Attendance (M / F)</th>
+                  <th>Gatekeepers (M / F)</th>
+                  <th>Community Reached (M / F)</th>
                   <th>Fidelity &amp; Venue WASH</th>
                   <th>PHE Warning Signs Mastery</th>
                   <th>Hotline &amp; Reporting Steps</th>

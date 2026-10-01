@@ -252,7 +252,41 @@ def parse_workbook(excel_path):
             venue_wash = get_col(row, 'Is functional handwashing present at this venue?')
             wheel_sessions_gk = parse_num(get_col(row, 'Number of Community in Knowledge Wheel Sessions Held'))
             wheel_score_gk = get_col(row, 'Wheel of good practice score')
-            crowd_engaged = parse_num(get_col(row, 'Estimated Passersby / Community Crowd Engaged'))
+            
+            # Male & Female Community Crowd Reached
+            male_crowd = parse_num(get_col(row,
+                'Estimated male Passersby / Community Crowd Engaged',
+                'Estimated male Passersby / Community Crowd Engaged ',
+                'Estimated male Passersby',
+                'Estimated male Crowd Engaged',
+                'Male Passersby / Community Crowd Engaged',
+                'Estimated male Passersby / Community Crowd',
+                'Number of people reached in community events male',
+                'Estimated male community crowd engaged',
+                'male_crowd',
+                'crowd_male'
+            ))
+            female_crowd = parse_num(get_col(row,
+                'Estimated female Passersby / Community Crowd Engaged',
+                'Estimated female Passersby / Community Crowd Engaged ',
+                'Estimated female Passersby',
+                'Estimated female Crowd Engaged',
+                'Female Passersby / Community Crowd Engaged',
+                'Estimated female Passersby / Community Crowd',
+                'Number of people reached in community events female',
+                'Estimated female community crowd engaged',
+                'female_crowd',
+                'crowd_female'
+            ))
+            legacy_crowd = parse_num(get_col(row,
+                'Estimated Passersby / Community Crowd Engaged',
+                'Estimated Passersby / Community Crowd Engaged ',
+                'Estimated Passersby',
+                'Estimated Crowd Engaged',
+                'crowd_engaged'
+            ))
+            crowd_engaged = (male_crowd + female_crowd) if (male_crowd > 0 or female_crowd > 0) else legacy_crowd
+
             rumor = get_col(row, 'Rumor, misinformation or question flagged')
             barrier = get_col(row, 'Local barrier identified')
             source = get_col(row, 'source of the rumor', 'Origin of rumor') or 'Community'
@@ -282,6 +316,10 @@ def parse_workbook(excel_path):
                 'wheel_sessions': wheel_sessions_gk,
                 'wheel_score': wheel_score_gk,
                 'crowd_engaged': crowd_engaged,
+                'male_crowd': male_crowd,
+                'female_crowd': female_crowd,
+                'crowd_male': male_crowd,
+                'crowd_female': female_crowd,
                 'rumor': rumor,
                 'barrier': barrier,
                 'source': source,
@@ -718,6 +756,48 @@ def parse_workbook(excel_path):
             tool_counts['Simulation Drill'] = tool_counts.get('Simulation Drill', 0) + 1
             continue
 
+        # --- 11. Generic / Unclassified Field Activity Fallback ---
+        # Guarantees that 100% of row entries in the Excel file are captured and never skipped
+        district = get_col(row, 'District') or 'Central'
+        parish = get_col(row, 'Parish')
+        s_name = get_col(row, 'School Name', 'Name of the school') or f"{district} - {parish or 'Community'}"
+        b = parse_num(get_col(row, 'Number of boys sensitised', 'total enrolment for boys'))
+        g = parse_num(get_col(row, 'Number of girls sensitised', 'Totla enrolement for girls', 'Total enrolment for girls'))
+        enr = parse_num(get_col(row, 'Total School enrolment Population'))
+        t_male = parse_num(get_col(row, 'Male Gatekeepers Oriented', 'Total male teaching staff'))
+        t_fem = parse_num(get_col(row, 'Female Gatekeepers Oriented', 'Total female teaching staff'))
+        t_tot = parse_num(get_col(row, 'Number of Teachers/Patrons Present')) or (t_male + t_fem)
+        c_male = parse_num(get_col(row, 'Estimated male Passersby / Community Crowd Engaged', 'Estimated male Passersby'))
+        c_fem = parse_num(get_col(row, 'Estimated female Passersby / Community Crowd Engaged', 'Estimated female Passersby'))
+        c_tot = parse_num(get_col(row, 'Estimated Passersby / Community Crowd Engaged')) or (c_male + c_fem)
+
+        records.append({
+            'id': row_id,
+            'date': formatted_date,
+            'tool': 'Field Record',
+            'activity_type': activity_type or 'Field Activity',
+            'district': district,
+            'parish': parish,
+            'coordinator': coordinator,
+            'school': s_name,
+            'boys': b,
+            'girls': g,
+            'enrolment': enr or (b + g),
+            'teachers': t_tot,
+            'male': t_male,
+            'female': t_fem,
+            'games': parse_num(get_col(row, 'Snakes & Ladders Board Games distributed')),
+            'crowd_engaged': c_tot,
+            'male_crowd': c_male,
+            'female_crowd': c_fem,
+            'crowd_male': c_male,
+            'crowd_female': c_fem,
+            'rumor': get_col(row, 'Rumor, misinformation or question flagged', 'Top misconception heard today'),
+            'barrier': get_col(row, 'Local barrier identified'),
+            'source': get_col(row, 'source of the rumor', 'Origin of rumor') or 'Community'
+        })
+        tool_counts['Field Record'] = tool_counts.get('Field Record', 0) + 1
+
     # Sanitize all record fields to remove any 'none', 'non', 'nil', etc.
     sanitized_records = []
     for r in records:
@@ -767,6 +847,11 @@ def main():
     total_learners = total_boys + total_girls
     total_teachers = sum(r.get('teachers', 0) for r in records)
     total_games = sum(r.get('games', 0) for r in records)
+    total_crowd_male = sum(r.get('male_crowd', 0) for r in records)
+    total_crowd_female = sum(r.get('female_crowd', 0) for r in records)
+    total_crowd = sum(r.get('crowd_engaged', 0) for r in records)
+    if total_crowd == 0 and (total_crowd_male + total_crowd_female > 0):
+        total_crowd = total_crowd_male + total_crowd_female
     districts = set(r.get('district') for r in records if r.get('district'))
     
     print("\n" + "=" * 60)
@@ -778,6 +863,7 @@ def main():
     print("-" * 60)
     print(f"👥 Total Learners Sensitised: {total_learners:,} ({total_boys:,} Boys | {total_girls:,} Girls)")
     print(f"🎓 Gatekeepers & Teachers Oriented: {total_teachers:,}")
+    print(f"📣 Community Events Crowd Reached: {total_crowd:,} ({total_crowd_male:,} Male | {total_crowd_female:,} Female)")
     print(f"🎲 Board Games Distributed: {total_games:,}")
     print(f"📍 Districts Covered: {len(districts)} ({', '.join(sorted(districts))})")
     print("-" * 60)
