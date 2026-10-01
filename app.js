@@ -512,6 +512,45 @@ function resetFilters() {
   applyFilters();
 }
 
+const CANONICAL_SCHOOLS = {
+  'bwaise parents primary school': 'Bwaise Parents Primary School',
+  'buganda rd primary': 'Buganda Road Primary School',
+  'buganda road primary': 'Buganda Road Primary School',
+  'gayaza road high school': 'Gayaza Road High School',
+  'gayaza road secondary school': 'Gayaza Road High School',
+  'greenland islamic secondary school': 'Greenlight Islamic Secondary School',
+  'greenlight islamic secondary school': 'Greenlight Islamic Secondary School',
+  'katwe church  of uganda primary  school': 'Katwe Church of Uganda Primary School',
+  'katwe church of uganda primary school': 'Katwe Church of Uganda Primary School',
+  'katwe martyrs  cou primary  school': 'Katwe Martyrs COU Primary School',
+  'katwe martyrs cou primary school': 'Katwe Martyrs COU Primary School',
+  'luzira secondary school': 'Luzira Secondary School',
+  'luzira ss': 'Luzira Secondary School',
+  'mbuya c/u primary': 'Mbuya C/U Primary School',
+  'mbuya c/u primary school': 'Mbuya C/U Primary School',
+  'nansana catholic primary school': 'St Joseph\'s Nansana Catholic Primary School',
+  'st joseph\'s nansana catholic primary school': 'St Joseph\'s Nansana Catholic Primary School',
+  'st josephs nansana catholic primary school': 'St Joseph\'s Nansana Catholic Primary School',
+  'nansana sda primary school': 'Nansana SDA Primary School',
+  'progressive ss kitintale': 'Progressive SS Kitintale',
+  'st paul  primary school  nsambya': 'St Paul Primary School Nsambya',
+  'st paul primary school nsambya': 'St Paul Primary School Nsambya',
+  'st ponsiano primary  school': 'St Ponsiano Primary School',
+  'st ponsiano primary school': 'St Ponsiano Primary School',
+  'talents college secondary school': 'Talents College Secondary School',
+  'talents college ss': 'Talents College Secondary School',
+  'uganda youth aid primary school': 'Uganda Youth Aid Primary School',
+  'uganda youth aid school': 'Uganda Youth Aid Primary School',
+  'uganda youth primary school': 'Uganda Youth Aid Primary School'
+};
+
+function cleanSchoolName(raw) {
+  if (!raw) return '';
+  const s = String(raw).replace(/\s+/g, ' ').trim();
+  const sLow = s.toLowerCase();
+  return CANONICAL_SCHOOLS[sLow] || s;
+}
+
 function recomputeAndRender() {
   Object.keys(chartInstances).forEach(k => {
     if (chartInstances[k]) {
@@ -538,7 +577,7 @@ function recomputeAndRender() {
     totalCrowdMale += cm;
     totalCrowdFemale += cf;
 
-    const sName = (r.school || r.name || '').trim().toLowerCase();
+    const sName = cleanSchoolName(r.school || r.name || '');
     const enr = r.enrolment || 0;
     const dName = r.district || 'Unassigned';
 
@@ -579,7 +618,7 @@ function recomputeAndRender() {
       totalLearnerContacts += tot;
       distMap[dName].learnerContacts += tot;
 
-      if (sName && sName !== 'site' && !sName.startsWith('gatekeeper') && !CLEAN_EMPTY_WORDS.has(sName)) {
+      if (sName && !sName.toLowerCase().startsWith('site') && !sName.toLowerCase().startsWith('gatekeeper') && !CLEAN_EMPTY_WORDS.has(sName.toLowerCase())) {
         distMap[dName].schoolsSet.add(sName);
         if (!schoolUniqueReach[sName] || tot > schoolUniqueReach[sName].total) {
           schoolUniqueReach[sName] = { 
@@ -602,17 +641,53 @@ function recomputeAndRender() {
     }
   });
 
+  // Reconcile with PAT for full program target schools
+  const patUnique = {};
+  appData.forEach(r => {
+    if (r.tool === 'PAT Assessment') {
+      const sName = cleanSchoolName(r.school || r.name || '');
+      const enr = r.enrolment || 0;
+      const dName = r.district || 'Unassigned';
+      if (sName && !sName.toLowerCase().startsWith('site') && !CLEAN_EMPTY_WORDS.has(sName.toLowerCase())) {
+        if (!patUnique[sName] || enr > patUnique[sName].enrolment) {
+          patUnique[sName] = { name: sName, enrolment: enr, district: dName };
+        }
+      }
+    }
+  });
+
+  const allTargetSchools = {};
+  Object.keys(schoolUniqueReach).forEach(s => {
+    allTargetSchools[s] = { ...schoolUniqueReach[s] };
+  });
+  Object.keys(patUnique).forEach(s => {
+    if (!allTargetSchools[s]) {
+      allTargetSchools[s] = { name: s, district: patUnique[s].district, boys: 0, girls: 0, total: 0, enrolment: patUnique[s].enrolment };
+      if (distMap[patUnique[s].district]) {
+        distMap[patUnique[s].district].schoolsSet.add(s);
+      }
+    } else if (patUnique[s].enrolment > allTargetSchools[s].enrolment) {
+      allTargetSchools[s].enrolment = patUnique[s].enrolment;
+    }
+  });
+
   let uniqueBoys = 0, uniqueGirls = 0, uniqueLearners = 0, totalEnrolment = 0;
   Object.values(schoolUniqueReach).forEach(item => {
     uniqueBoys += item.boys;
     uniqueGirls += item.girls;
     uniqueLearners += item.total;
-    totalEnrolment += item.enrolment;
     if (distMap[item.district]) {
       distMap[item.district].uniqueBoys += item.boys;
       distMap[item.district].uniqueGirls += item.girls;
       distMap[item.district].uniqueLearners += item.total;
-      distMap[item.district].enrolment += item.enrolment;
+    }
+  });
+
+  // Calculate total enrolment across all monitored target schools
+  Object.values(allTargetSchools).forEach(item => {
+    totalEnrolment += item.enrolment;
+    if (distMap[item.district]) {
+      distMap[item.district].enrolment = (distMap[item.district].enrolment || 0) + item.enrolment;
     }
   });
 
@@ -636,17 +711,8 @@ function recomputeAndRender() {
   const grandTotalGatekeepers = totalTeachers;
   const grandTotalReach = totalLearners + grandTotalGatekeepers + totalCrowd;
 
-  // 1. Schools Engaged
-  const schoolsEngagedSet = new Set();
-  appData.forEach(d => {
-    if (d.tool === 'School Activity' || d.tool === 'PAT Assessment') {
-      const s = (d.school || d.name || '').trim();
-      if (s && !s.toLowerCase().includes('site') && !CLEAN_EMPTY_WORDS.has(s.toLowerCase())) {
-        schoolsEngagedSet.add(s);
-      }
-    }
-  });
-  const schoolsEngagedCount = schoolsEngagedSet.size;
+  // 1. Schools Engaged (Deduplicated unique target schools)
+  const schoolsEngagedCount = Object.keys(allTargetSchools).length;
 
   // 2. Knowledge Wheel Sessions in schools
   const wheelSessionsCount = appData.filter(d => d.tool === 'School Activity').length;
@@ -808,7 +874,7 @@ function recomputeAndRender() {
   // Tool 9: School Multi-Visit Table
   const schoolVisitMap = {};
   appData.filter(s => s.tool === 'School Activity').forEach(s => {
-    const sKey = (s.school || 'Unknown School').trim();
+    const sKey = cleanSchoolName(s.school || 'Unknown School');
     if (!schoolVisitMap[sKey]) {
       schoolVisitMap[sKey] = {
         name: sKey,
@@ -3402,7 +3468,7 @@ function renderLocationSummaryTable() {
     const tool = r.tool;
 
     if (tool === 'School Activity') {
-      const s = (r.school || '').trim();
+      const s = cleanSchoolName(r.school || '');
       const sKey = s.toLowerCase();
       if (s && !sKey.startsWith('site') && !sKey.startsWith('gatekeeper') && !CLEAN_EMPTY_WORDS.has(sKey)) {
         loc.schoolsSet.add(s);
@@ -3433,7 +3499,7 @@ function renderLocationSummaryTable() {
       loc.ureporters += ((r.male || 0) + (r.female || 0) + (r.total || 0));
       loc.tallySheets += 1;
     } else if (tool === 'PAT Assessment') {
-      const s = (r.school || '').trim();
+      const s = cleanSchoolName(r.school || r.name || '');
       if (s && !s.toLowerCase().startsWith('site') && !CLEAN_EMPTY_WORDS.has(s.toLowerCase())) loc.schoolsSet.add(s);
     }
   });

@@ -12,6 +12,7 @@ import sys
 import json
 import shutil
 import pandas as pd
+import re
 from datetime import datetime
 
 # Default paths to search for the raw Excel workbook
@@ -88,6 +89,45 @@ def parse_num(val):
         return 0
 
 CLEAN_EMPTY_WORDS = {'nan', 'none', 'non', 'nil', 'n/a', 'na', 'none.', 'non.', 'null'}
+
+CANONICAL_SCHOOLS = {
+    'bwaise parents primary school': 'Bwaise Parents Primary School',
+    'buganda rd primary': 'Buganda Road Primary School',
+    'buganda road primary': 'Buganda Road Primary School',
+    'gayaza road high school': 'Gayaza Road High School',
+    'gayaza road secondary school': 'Gayaza Road High School',
+    'greenland islamic secondary school': 'Greenlight Islamic Secondary School',
+    'greenlight islamic secondary school': 'Greenlight Islamic Secondary School',
+    'katwe church  of uganda primary  school': 'Katwe Church of Uganda Primary School',
+    'katwe church of uganda primary school': 'Katwe Church of Uganda Primary School',
+    'katwe martyrs  cou primary  school': 'Katwe Martyrs COU Primary School',
+    'katwe martyrs cou primary school': 'Katwe Martyrs COU Primary School',
+    'luzira secondary school': 'Luzira Secondary School',
+    'luzira ss': 'Luzira Secondary School',
+    'mbuya c/u primary': 'Mbuya C/U Primary School',
+    'mbuya c/u primary school': 'Mbuya C/U Primary School',
+    'nansana catholic primary school': 'St Joseph\'s Nansana Catholic Primary School',
+    'st joseph\'s nansana catholic primary school': 'St Joseph\'s Nansana Catholic Primary School',
+    'st josephs nansana catholic primary school': 'St Joseph\'s Nansana Catholic Primary School',
+    'nansana sda primary school': 'Nansana SDA Primary School',
+    'progressive ss kitintale': 'Progressive SS Kitintale',
+    'st paul  primary school  nsambya': 'St Paul Primary School Nsambya',
+    'st paul primary school nsambya': 'St Paul Primary School Nsambya',
+    'st ponsiano primary  school': 'St Ponsiano Primary School',
+    'st ponsiano primary school': 'St Ponsiano Primary School',
+    'talents college secondary school': 'Talents College Secondary School',
+    'talents college ss': 'Talents College Secondary School',
+    'uganda youth aid primary school': 'Uganda Youth Aid Primary School',
+    'uganda youth aid school': 'Uganda Youth Aid Primary School',
+    'uganda youth primary school': 'Uganda Youth Aid Primary School',
+}
+
+def clean_school_name(raw):
+    if not raw:
+        return ''
+    s = re.sub(r'\s+', ' ', str(raw)).strip()
+    s_low = s.lower()
+    return CANONICAL_SCHOOLS.get(s_low, s)
 
 def clean_val(v):
     if isinstance(v, str):
@@ -184,7 +224,7 @@ def parse_workbook(excel_path):
         # --- 1. School Activity (Tool 9) ---
         if ('3-visit' in activity_type or 'wheel session' in activity_type or 'school activity' in activity_type or 'tool 9' in activity_type or 
             (not any(k in activity_type for k in ['transect', 'gatekeeper', 'preparedness', 'intercept', 'ask 5', 'photovoice', 'influencer', 'simulation', 'u-report', 'recruitment', 'listening', 'rumor', 'rumour']) and get_col(row, 'School Name'))):
-            s_name = get_col(row, 'School Name', 'Name of the school')
+            s_name = clean_school_name(get_col(row, 'School Name', 'Name of the school'))
             if s_name:
                 boys = parse_num(get_col(row, 'Number of boys sensitised'))
                 girls = parse_num(get_col(row, 'Number of girls sensitised'))
@@ -464,7 +504,7 @@ def parse_workbook(excel_path):
 
         # --- 6. PAT Assessment (Preparedness Assessment Tool) ---
         if 'preparedness' in activity_type or 'pat' in activity_type or get_col(row, 'Does the school have a Epidemic Preparedness Plan'):
-            s_name = get_col(row, 'Name of the school', 'School Name') or 'Assessed Facility'
+            s_name = clean_school_name(get_col(row, 'Name of the school', 'School Name') or 'Assessed Facility')
             p_signs = parse_num(get_col(row, 'How many can you name three major signs or warning symptoms of a public health emergency like Ebola or Mpox?', 'How many can you name three major signs or warning symptoms of a public health emergency like Ebola or Mpox?13'))
             p_spread = parse_num(get_col(row, 'How many Can you tell me how disease outbreaks spread from one person to another?', 'How many Can you tell me how disease outbreaks spread from one person to another?14'))
             p_risk = parse_num(get_col(row, 'Since Uganda was declared free from the last outbreak, is the risk completely gone?', 'Since Uganda was declared free from the last outbreak, is the risk completely gone?15'))
@@ -915,8 +955,8 @@ def main():
     school_unique_reach = {}
     for r in records:
         if r.get('tool') == 'School Activity':
-            s_name = (r.get('school') or '').strip().lower()
-            if s_name and s_name != 'site':
+            s_name = clean_school_name(r.get('school') or '')
+            if s_name and not s_name.lower().startswith('site') and not s_name.lower().startswith('gatekeeper'):
                 b = r.get('boys', 0)
                 g = r.get('girls', 0)
                 tot = b + g
@@ -926,11 +966,29 @@ def main():
                 elif enr > school_unique_reach[s_name]['enrolment']:
                     school_unique_reach[s_name]['enrolment'] = enr
 
+    # Reconcile with PAT for full program target schools
+    pat_unique = {}
+    for r in records:
+        if r.get('tool') == 'PAT Assessment':
+            s_name = clean_school_name(r.get('school') or r.get('name') or '')
+            enr = r.get('enrolment', 0)
+            if s_name:
+                if s_name not in pat_unique or enr > pat_unique[s_name]['enrolment']:
+                    pat_unique[s_name] = {'enrolment': enr}
+
+    all_target_schools = dict(school_unique_reach)
+    for s_name, p_info in pat_unique.items():
+        if s_name not in all_target_schools:
+            all_target_schools[s_name] = {'boys': 0, 'girls': 0, 'total': 0, 'enrolment': p_info['enrolment']}
+        elif p_info['enrolment'] > all_target_schools[s_name]['enrolment']:
+            all_target_schools[s_name]['enrolment'] = p_info['enrolment']
+
     unique_boys = sum(v['boys'] for v in school_unique_reach.values())
     unique_girls = sum(v['girls'] for v in school_unique_reach.values())
     unique_learners = unique_boys + unique_girls
     total_contacts = sum(r.get('boys', 0) + r.get('girls', 0) for r in records if r.get('tool') == 'School Activity')
-    total_enrolment = sum(v['enrolment'] for v in school_unique_reach.values())
+    total_target_schools_count = len(all_target_schools)
+    total_enrolment = sum(v['enrolment'] for v in all_target_schools.values())
 
     total_teachers = sum(r.get('teachers', 0) for r in records)
     total_games = sum(r.get('games', 0) for r in records)
@@ -949,7 +1007,7 @@ def main():
         print(f"   • {t_name}: {count} records")
     print("-" * 60)
     print(f"👥 Unique Learners Reached: {unique_learners:,} ({unique_boys:,} Boys | {unique_girls:,} Girls)")
-    print(f"   • Total Enrolment Monitored: {total_enrolment:,} (Coverage: {((unique_learners/total_enrolment)*100):.1f}%)")
+    print(f"   • Total Enrolment Monitored: {total_enrolment:,} across {total_target_schools_count} unique schools (Coverage: {((unique_learners/total_enrolment)*100):.1f}%)")
     print(f"   • Cumulative Session Contacts Delivered: {total_contacts:,}")
     print(f"🎓 Gatekeepers & Teachers Oriented: {total_teachers:,}")
     print(f"📣 Community Events Crowd Reached: {total_crowd:,} ({total_crowd_male:,} Male | {total_crowd_female:,} Female)")
