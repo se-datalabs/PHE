@@ -97,11 +97,29 @@ def clean_val(v):
         return s
     return v
 
+def normalize_col_name(s):
+    if not s:
+        return ''
+    return ''.join(c for c in str(s).lower() if c.isalnum())
+
 def get_col(row, *aliases):
+    # 1. Exact lowercase match
     for alias in aliases:
         clean_alias = alias.strip().lower()
         for k in row.index:
             if str(k).strip().lower() == clean_alias:
+                v = row[k]
+                if pd.notna(v):
+                    s = str(v).strip()
+                    if s.lower() not in CLEAN_EMPTY_WORDS:
+                        return s
+    # 2. Normalized alphanumeric match
+    for alias in aliases:
+        norm_alias = normalize_col_name(alias)
+        if not norm_alias:
+            continue
+        for k in row.index:
+            if normalize_col_name(k) == norm_alias:
                 v = row[k]
                 if pd.notna(v):
                     s = str(v).strip()
@@ -144,8 +162,8 @@ def parse_workbook(excel_path):
             coordinator = coord_raw if coord_raw.lower() != 'nan' else specify_raw
 
         # --- 1. School Activity (Tool 9) ---
-        if ('3-visit' in activity_type or 'wheel session' in activity_type or 'school activity' in activity_type or 
-            (not any(k in activity_type for k in ['transect', 'gatekeeper', 'preparedness']) and get_col(row, 'School Name'))):
+        if ('3-visit' in activity_type or 'wheel session' in activity_type or 'school activity' in activity_type or 'tool 9' in activity_type or 
+            (not any(k in activity_type for k in ['transect', 'gatekeeper', 'preparedness', 'intercept', 'ask 5', 'photovoice', 'influencer', 'simulation', 'u-report', 'recruitment', 'listening', 'rumor', 'rumour']) and get_col(row, 'School Name'))):
             s_name = get_col(row, 'School Name', 'Name of the school')
             if s_name:
                 boys = parse_num(get_col(row, 'Number of boys sensitised'))
@@ -154,6 +172,24 @@ def parse_workbook(excel_path):
                 if boys + girls > enrolment:
                     enrolment = boys + girls
                 
+                # New questions from PDF
+                protocol_shared = get_col(row, 'Written 1-page PHE Protocol shared and displayed with Headteacher?', 'Written 1-page PHE Protocol shared and displayed with Headteacher', 'protocol_shared')
+                isolation_space = get_col(row, 'Designated temporary isolation space / sick bay identified?', 'Designated temporary isolation space / sick bay identified', 'isolation_space')
+                hotline_known = get_col(row, 'Headteacher / Focal Teacher knows official reporting hotline (0800-100-066 / 8500)', 'Headteacher knows official reporting hotline', 'hotline_known')
+                health_club_est = get_col(row, 'Is a U-Report Health Club Established?', 'Is a U-Report Health Club Established', 'health_club_established', 'Presence of school health club', 'Presence of health club', 'School Health Club Status') or 'Active'
+                patron = get_col(row, 'Patron')
+                patron_spec = get_col(row, 'Specify', 'specify')
+                female_club = parse_num(get_col(row, 'Females members of club', 'Female members of club'))
+                male_club = parse_num(get_col(row, 'Male members of club'))
+                handwash_demo_club = get_col(row, 'Handwashing demonstration led by club members?', 'Handwashing demonstration led by club members')
+                meeting_days = get_col(row, 'Meeting days of the club')
+                verified_activities = get_col(row, 'Verified club activities this week')
+                take_home_cards = parse_num(get_col(row, 'PHE Take-home cards distributed'))
+                wash_points_soap = get_col(row, 'Handwashing points functional with running water AND soap today')
+                wheel_sessions = parse_num(get_col(row, 'Number of knowledge wheel sessions held today'))
+                wheel_correct = get_col(row, 'When spinning the wheel, did the pupil answer correctly?')
+                wheel_score = get_col(row, 'Wheel of Good Practices Score')
+
                 records.append({
                     'id': row_id,
                     'date': formatted_date,
@@ -163,11 +199,28 @@ def parse_workbook(excel_path):
                     'coordinator': coordinator,
                     'school': s_name,
                     'visit_num': get_col(row, 'Visit Number') or 'Visit 1',
-                    'health_club': get_col(row, 'Presence of school health club', 'Presence of health club', 'School Health Club Status') or 'Active',
+                    'health_club': health_club_est,
+                    'protocol_shared': protocol_shared,
+                    'isolation_space': isolation_space,
+                    'hotline_known': hotline_known,
+                    'health_club_established': health_club_est,
+                    'patron': patron,
+                    'patron_specify': patron_spec,
+                    'female_club_members': female_club,
+                    'male_club_members': male_club,
+                    'handwash_demo_club': handwash_demo_club,
+                    'meeting_days': meeting_days,
+                    'verified_club_activities': verified_activities,
+                    'take_home_cards': take_home_cards,
+                    'wash_points_soap': wash_points_soap,
+                    'wheel_sessions': wheel_sessions,
+                    'wheel_correct': wheel_correct,
+                    'wheel_score': wheel_score,
                     'boys': boys,
                     'girls': girls,
                     'enrolment': enrolment,
                     'teachers': parse_num(get_col(row, 'Number of Teachers/Patrons Present')),
+                    'active_ureporters': parse_num(get_col(row, 'Number of U-Reporters Active On-Site Today')),
                     'games': parse_num(get_col(row, 'Snakes & Ladders Board Games distributed')),
                     'signs': get_col(row, 'Raise your hand if you can name 3 warning signs of PHE'),
                     'hotline': get_col(row, 'Raise your hand if you know the toll-free hotline or where to report'),
@@ -176,25 +229,33 @@ def parse_workbook(excel_path):
                     'soap': get_col(row, 'Soap and running water available at venue today'),
                     'rumor': get_col(row, 'Rumor, misinformation or question flagged', 'Top misconception heard today', 'specify3', 'Local barrier identified'),
                     'barrier': get_col(row, 'Local barrier identified'),
-                    'source': get_col(row, 'source of the rumor') or 'Community'
+                    'source': get_col(row, 'source of the rumor', 'Origin of rumor') or 'Community'
                 })
                 tool_counts['School Activity'] = tool_counts.get('School Activity', 0) + 1
                 continue
 
         # --- 2. Gatekeeper Session (Tool 7) ---
-        if 'gatekeeper' in activity_type or 'community gate' in activity_type or get_col(row, 'what commitments did the gatekeeper make'):
+        if 'gatekeeper' in activity_type or 'community gate' in activity_type or 'tool 7' in activity_type or get_col(row, 'what commitments did the gatekeeper make'):
             male_gk = parse_num(get_col(row, 'Male Gatekeepers Oriented'))
             female_gk = parse_num(get_col(row, 'Female Gatekeepers Oriented'))
             role = get_col(row, 'Type of gatekeeper') or 'Teacher / Patron'
-            role_specify = get_col(row, 'specify2')
+            role_specify = get_col(row, 'specify2', 'specify')
+            gk_cat = get_col(row, 'Gatekeeper primary category') or role
+            hotspot_setting = get_col(row, 'Hotspot seting', 'Hotspot setting', 'Setting type')
             manual_used = get_col(row, 'Did the gatekeeper lead the session using the Standard Manual/Script')
+            protocol_handed = get_col(row, 'Was the official 1-page PHE Protocol handed over to the venue/institution lead?')
+            action_plan = get_col(row, 'Has the institution started / agreed on its own 1-page emergency action plan?')
             commitments = get_col(row, 'what commitments did the gatekeeper make')
-            signs_ability = get_col(row, 'Are the gatekepers able to identify the three PHE warning signs')
-            hotline_ability = get_col(row, 'Do the gatekeeprs know the exact hotline and reporting steps')
+            signs_ability = get_col(row, 'Are the gatekepers able to identify the three PHE warning signs', 'Warning Signs: Proportion in audience able to identify 3 PHE signs without prompting')
+            hotline_ability = get_col(row, 'Do the gatekeeprs know the exact hotline and reporting steps', 'Notification Route: Proportion knowing the 0800-100-066 line or immediate VHT link')
+            destigmatization = get_col(row, 'Destigmatization: Willingness to support rather than chase/isolate suspect cases')
             venue_wash = get_col(row, 'Is functional handwashing present at this venue?')
+            wheel_sessions_gk = parse_num(get_col(row, 'Number of Community in Knowledge Wheel Sessions Held'))
+            wheel_score_gk = get_col(row, 'Wheel of good practice score')
+            crowd_engaged = parse_num(get_col(row, 'Estimated Passersby / Community Crowd Engaged'))
             rumor = get_col(row, 'Rumor, misinformation or question flagged')
             barrier = get_col(row, 'Local barrier identified')
-            source = get_col(row, 'source of the rumor') or 'Community'
+            source = get_col(row, 'source of the rumor', 'Origin of rumor') or 'Community'
             risk_level = get_col(row, 'Estimated spread or risk level')
             tactical_adaptation = get_col(row, 'Recommended tactical adaptation')
 
@@ -208,11 +269,19 @@ def parse_workbook(excel_path):
                 'school': f'Gatekeeper Session ({role})',
                 'role': role,
                 'role_specify': role_specify,
+                'gk_category': gk_cat,
+                'hotspot_setting': hotspot_setting,
+                'protocol_handed_over': protocol_handed,
+                'action_plan_started': action_plan,
                 'commitments': commitments,
                 'manual_used': manual_used,
                 'signs_ability': signs_ability,
                 'hotline_ability': hotline_ability,
+                'destigmatization': destigmatization,
                 'venue_wash': venue_wash,
+                'wheel_sessions': wheel_sessions_gk,
+                'wheel_score': wheel_score_gk,
+                'crowd_engaged': crowd_engaged,
                 'rumor': rumor,
                 'barrier': barrier,
                 'source': source,
@@ -251,7 +320,7 @@ def parse_workbook(excel_path):
             risk_level = get_col(row, 'Estimated spread or risk level')
             rumor = get_col(row, 'Rumor, misinformation or question flagged')
             barrier = get_col(row, 'Local barrier identified')
-            source = get_col(row, 'source of the rumor') or 'Community'
+            source = get_col(row, 'source of the rumor', 'Origin of rumor') or 'Community'
             tactical_adaptation = get_col(row, 'Recommended tactical adaptation')
 
             records.append({
@@ -288,15 +357,71 @@ def parse_workbook(excel_path):
             tool_counts['Transect Walk'] = tool_counts.get('Transect Walk', 0) + 1
             continue
 
-        # --- 4. PAT Assessment (Tool 8 / 11) ---
-        if 'preparedness' in activity_type or 'tool 11' in activity_type or 'pat' in activity_type or get_col(row, 'Does the school have a Epidemic Preparedness Plan'):
+        # --- 4. Dedicated Weekly Community & School Listening and Rumour Log (Tool 8) ---
+        if ('listening' in activity_type or 'rumour log' in activity_type or 'rumor log' in activity_type or 
+            (('listening' in activity_type or 'rumor' in activity_type) and not any(k in activity_type for k in ['transect', 'gatekeeper', 'intercept', 'ask 5', 'preparedness']))):
+            records.append({
+                'id': row_id,
+                'date': formatted_date,
+                'tool': 'Listening & Rumour Log',
+                'district': get_col(row, 'District') or 'Central',
+                'parish': get_col(row, 'Parish'),
+                'coordinator': coordinator,
+                'school': f"{get_col(row, 'District') or 'Central'} - {get_col(row, 'Parish') or 'Community'}",
+                'rumor': get_col(row, 'Rumor, misinformation or question flagged', 'Top misconception heard today'),
+                'barrier': get_col(row, 'Local barrier identified'),
+                'origin': get_col(row, 'Origin of rumor', 'source of the rumor', 'source') or 'Community',
+                'origin_specify': get_col(row, 'Specify', 'specify'),
+                'risk_level': get_col(row, 'Estimated spread or risk level') or 'Moderate',
+                'tactical_adaptation': get_col(row, 'Recommended tactical adaptation'),
+                'setting': get_col(row, 'Setting type') or 'School',
+                'setting_specify': get_col(row, 'specify', 'specify3'),
+                'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
+            })
+            tool_counts['Listening & Rumour Log'] = tool_counts.get('Listening & Rumour Log', 0) + 1
+            continue
+
+        # --- 5. Dedicated U-Report Recruitment (Tool 11) ---
+        if ('u-report' in activity_type or 'recruitment' in activity_type or ('tool 11' in activity_type and not 'preparedness' in activity_type)):
+            male_u = parse_num(get_col(row, 'Male U-reporters recruited'))
+            female_u = parse_num(get_col(row, 'Female U-reporters recruited'))
+            loc = get_col(row, 'Location') or 'Community Congregate Setting'
+            records.append({
+                'id': row_id,
+                'date': formatted_date,
+                'tool': 'U-Report Recruitment',
+                'district': get_col(row, 'District') or 'Central',
+                'parish': get_col(row, 'Parish'),
+                'coordinator': coordinator,
+                'school': f"{get_col(row, 'District') or 'Central'} - {loc}",
+                'location': loc,
+                'male': male_u,
+                'female': female_u,
+                'total': male_u + female_u,
+                'teachers': male_u + female_u,
+                'boys': 0, 'girls': 0, 'enrolment': 0, 'games': 0
+            })
+            tool_counts['U-Report Recruitment'] = tool_counts.get('U-Report Recruitment', 0) + 1
+            continue
+
+        # --- 6. PAT Assessment (Preparedness Assessment Tool) ---
+        if 'preparedness' in activity_type or 'pat' in activity_type or get_col(row, 'Does the school have a Epidemic Preparedness Plan'):
             s_name = get_col(row, 'Name of the school', 'School Name') or 'Assessed Facility'
+            p_signs = parse_num(get_col(row, 'How many can you name three major signs or warning symptoms of a public health emergency like Ebola or Mpox?', 'How many can you name three major signs or warning symptoms of a public health emergency like Ebola or Mpox?13'))
+            p_spread = parse_num(get_col(row, 'How many Can you tell me how disease outbreaks spread from one person to another?', 'How many Can you tell me how disease outbreaks spread from one person to another?14'))
+            p_risk = parse_num(get_col(row, 'Since Uganda was declared free from the last outbreak, is the risk completely gone?', 'Since Uganda was declared free from the last outbreak, is the risk completely gone?15'))
+            p_notify = parse_num(get_col(row, 'If a classmate or family member collapses or has high fever and bleeding, who should be notified first?', 'If a classmate or family member collapses or has high fever and bleeding, who should be notified first?16'))
+            p_stigma = parse_num(get_col(row, 'If a pupil returns to school after being discharged from an isolation treatment unit, how should they be treated?', 'If a pupil returns to school after being discharged from an isolation treatment unit, how should they be treated?17'))
+            p_handwash = parse_num(get_col(row, 'Demonstrate how to wash your hands properly using running water and soap.', 'Demonstrate how to wash your hands properly using running water and soap.18'))
+            lead_hotline = get_col(row, 'Can the school leadership state the official toll-free reporting lines (e.g., MoH/KCCA hotlines: 0800-100-066 / 8500) and the focal Division Health Officer/VHT contact without checking notes?')
+
             records.append({
                 'id': row_id,
                 'date': formatted_date,
                 'tool': 'PAT Assessment',
                 'district': get_col(row, 'District') or 'Central',
                 'parish': get_col(row, 'Parish'),
+                'coordinator': coordinator,
                 'school': s_name,
                 'name': s_name,
                 'level': get_col(row, 'School level') or 'Primary',
@@ -306,20 +431,30 @@ def parse_workbook(excel_path):
                 'femaleStaff': parse_num(get_col(row, 'Total female teaching staff')),
                 'club': get_col(row, 'Presence of health club', 'School Health Club Status') or 'Active',
                 'plan': get_col(row, 'Does the school have a Epidemic Preparedness Plan') or 'Informal Only',
+                'leadership_hotline': lead_hotline,
                 'space': get_col(row, 'Does the school have a Designated Isolation place incase of an epidemic') or 'Makeshift corner',
                 'stations': parse_num(get_col(row, 'Record number of working water stations', 'Record number of working water stations ')),
                 'bStances': parse_num(get_col(row, 'Record number of stances for boys', 'Record number of stances for boys ')),
                 'gStances': parse_num(get_col(row, 'record number of stances for girls', 'record number of stances for girls')),
                 'poster': get_col(row, 'Record presence of Posters or guidelines on Ebola, Mpox, or Cholera displayed in prominent pupil areas.') or 'IEC Present',
                 'washAudit': get_col(row, 'Q1 Stations present at gates, outside latrines, and near dining/canteen areas with both clean running water AND soap.') or 'Water + Soap Present',
+                'soapAudit': get_col(row, 'Q2 Soap is consistently replenished for pupil use, not kept locked away for staff only.'),
                 'stanceAudit': get_col(row, 'Record toilet stances separated by gender, functional locks, clean floors, and handwash stations within 5 meters of exits.') or 'Adequate',
                 'wasteAudit': get_col(row, 'Enclosed bins, absence of overflowing compost/litter pits or open medical/menstrual waste.') or 'Maintained',
                 'drainageAudit': get_col(row, 'Record drainage conditions around the waste collection area') or 'Flowing',
                 'hotlineLegible': get_col(row, 'Is the toll-free hotline legible on the posters') or 'Yes',
+                # 10-Pupil Rapid Intercept
+                'p_signs': p_signs,
+                'p_spread': p_spread,
+                'p_risk': p_risk,
+                'p_notify': p_notify,
+                'p_stigma': p_stigma,
+                'p_handwash': p_handwash,
                 'enrolment': 0, 'teachers': 0, 'games': 0
             })
             tool_counts['PAT Assessment'] = tool_counts.get('PAT Assessment', 0) + 1
             continue
+
 
         # --- 5. Tool 2: Rapid Audience Intercept Survey ---
         if 'tool 2' in activity_type or 'rapid audience' in activity_type or 'intercept' in activity_type:

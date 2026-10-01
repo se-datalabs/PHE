@@ -187,6 +187,120 @@ body {
   color: #ffffff;
 }
 
+.tab-btn.highlight-tab {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px dashed rgba(239, 68, 68, 0.45);
+  color: #fecaca;
+  font-weight: 600;
+  margin: 6px 0 12px 0;
+}
+
+.tab-btn.highlight-tab:hover {
+  background: rgba(239, 68, 68, 0.22);
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.tab-btn.highlight-tab.active {
+  background: #ef4444;
+  color: #ffffff;
+  border-style: solid;
+  border-color: #dc2626;
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
+}
+
+.tab-btn.highlight-tab.active .tab-badge {
+  background: #ffffff;
+  color: #991b1b;
+}
+
+.badge-alert {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+/* Dedicated Rumour Section Custom Toolbars & Cards */
+.rumour-filter-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.rumour-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 180px;
+}
+
+.rumour-filter-group label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.rumour-filter-group select,
+.rumour-filter-group input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.rumour-filter-group select:focus,
+.rumour-filter-group input:focus {
+  border-color: var(--primary);
+}
+
+.alert-spotlight {
+  background: #fff5f5;
+  border-left: 4px solid #ef4444;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.alert-spotlight-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #991b1b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.alert-spotlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.alert-spotlight-card {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+
 /* Main Content Wrapper */
 .main-wrapper {
   margin-left: var(--sidebar-width);
@@ -381,6 +495,27 @@ header {
   margin-bottom: 22px;
 }
 
+/* 4-Column Grid Layout */
+.four-col-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 1024px) {
+  .four-col-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .four-col-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
 /* 5-Column Grid Layout for 5 Claims */
 .five-col-grid {
   display: grid;
@@ -404,6 +539,33 @@ header {
 
 @media (max-width: 500px) {
   .five-col-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 6-Column Grid Layout */
+.six-col-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 1300px) {
+  .six-col-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .six-col-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .six-col-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -608,6 +770,17 @@ tr:nth-child(even) {
 
 tr:hover {
   background: #f1f5f9;
+}
+
+tfoot td {
+  background: #f1f5f9;
+  font-weight: 700;
+  border-top: 2px solid var(--border);
+  color: var(--primary);
+  padding: 10px 12px;
+  position: sticky;
+  bottom: 0;
+  z-index: 9;
 }
 
 .badge-pill {

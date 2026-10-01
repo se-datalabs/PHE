@@ -389,17 +389,19 @@ function showTab(tabId) {
   if (activePane) activePane.classList.add('active');
 
   const titles = {
-    'overview': ['Main Summary of Reach', 'Cross-tool reach aggregation, district performance, and programmatic coverage'],
-    'tool_9': ['Tool 9: School 3-Visit Model & Knowledge Wheel Session Tracker', 'Detailed analysis of learner reach, visit number, health club, and wheel answers'],
-    'tool_7': ['Tool 7: Community Gatekeeper Dialogue & Commitment Log', 'Tracking orientation sessions conducted with local leaders and community stakeholders'],
-    'tool_1': ['Tool 1: Transect Walk Environmental & Infrastructure Checklist', 'Environmental sanitation, setting type, functional stations, and stance ratios'],
-    'tool_2': ['Tool 2: Rapid Audience Assessment Intercept Survey', 'Full questionnaire capture: 7-day recall, 2+ symptoms, risk perception, and notification intent'],
-    'tool_3': ['Tool 3: "Ask 5" Behavioral Verification Diagnostic Tool', 'Full 5-claim diagnostic audit for gatekeepers, teachers, vendors, and transport operators'],
-    'tool_4': ['Tool 4: Most Significant Change Story Collection Form', 'Systematic qualitative narrative tracking of the Most Significant Change'],
-    'tool_5': ['Tool 5: Social Network & Influencer Mapping Protocol', 'Identification of trusted community influencers across social sectors'],
-    'tool_6': ['Tool 6: Photovoice Participatory Documentation Guide & Caption Form', 'PHOTO protocol analysis of youth-led hygiene challenges and community solutions'],
-    'tool_10': ['Tool 10: School Simulation Drill & Safeguarding Compliance Protocol', 'Mandatory pre-drill verification and performance rehearsal evaluation'],
-    'tool_8': ['Tool 8: Preparedness Assessment Tool (PAT)', 'School Epidemic Preparedness Assessment Tool examining institutional response plans and isolation wards']
+    'overview': ['Main Summary of Reach', 'Cross-instrument reach aggregation, district performance, and programmatic coverage'],
+    'rumours': ['Weekly Community & School Listening and Rumour Log', 'Standardized weekly RCCE monitoring capturing community concerns, school rumours, misinformation, and recommended message adjustments for weekly RCCE synthesis'],
+    'tool_9': ['School 3-Visit Tracker', 'Detailed analysis of learner reach, visit number, health club, and wheel answers'],
+    'tool_7': ['Community Gatekeeper Engagements', 'Tracking orientation sessions conducted with local leaders and community stakeholders'],
+    'tool_1': ['Transect Walk Environmental & Infrastructure Checklist', 'Environmental sanitation, setting type, functional stations, and stance ratios'],
+    'tool_2': ['Rapid Audience Assessment Intercept Survey', 'Full questionnaire capture: 7-day recall, 2+ symptoms, risk perception, and notification intent'],
+    'tool_3': ['"Ask 5" Behavioral Verification Diagnostic Tool', 'Full 5-claim diagnostic audit for gatekeepers, teachers, vendors, and transport operators'],
+    'tool_4': ['Most Significant Change Story Collection Form', 'Systematic qualitative narrative tracking of the Most Significant Change'],
+    'tool_5': ['Social Network & Influencer Mapping Protocol', 'Identification of trusted community influencers across social sectors'],
+    'tool_6': ['Photovoice Participatory Documentation Guide & Caption Form', 'PHOTO protocol analysis of youth-led hygiene challenges and community solutions'],
+    'tool_10': ['School Simulation Drill & Safeguarding Compliance Protocol', 'Mandatory pre-drill verification and performance rehearsal evaluation'],
+    'tool_8': ['Preparedness Assessment Tool', 'School Epidemic Preparedness Assessment Tool examining institutional response plans and isolation wards'],
+    'tool_11': ['U-Report Recruitment Tracker', 'Tracking recruitment and mobilization of youth, learners, and community members as active U-Reporters']
   };
 
   if (titles[tabId]) {
@@ -412,6 +414,11 @@ function showTab(tabId) {
       if (leafletMap) leafletMap.invalidateSize();
       if (chartInstances.districtReach) chartInstances.districtReach.resize();
       if (chartInstances.districtShare) chartInstances.districtShare.resize();
+    } else if (tabId === 'rumours') {
+      if (chartInstances.rumourRisk) chartInstances.rumourRisk.resize();
+      if (chartInstances.rumourOrigin) chartInstances.rumourOrigin.resize();
+      if (chartInstances.rumourSetting) chartInstances.rumourSetting.resize();
+      if (chartInstances.rumourDistrict) chartInstances.rumourDistrict.resize();
     } else if (tabId === 'tool_9') {
       if (chartInstances.signsT1) chartInstances.signsT1.resize();
       if (chartInstances.hotlineT1) chartInstances.hotlineT1.resize();
@@ -434,6 +441,8 @@ function showTab(tabId) {
     } else if (tabId === 'tool_7') {
       if (chartInstances.gkRolesT7) chartInstances.gkRolesT7.resize();
       if (chartInstances.gkCapacityT7) chartInstances.gkCapacityT7.resize();
+    } else if (tabId === 'tool_11') {
+      if (chartInstances.uRecruitSetting) chartInstances.uRecruitSetting.resize();
     }
   }, 60);
 }
@@ -570,13 +579,83 @@ function recomputeAndRender() {
   const grandTotalGatekeepers = totalTeachers;
   const grandTotalReach = totalLearners + grandTotalGatekeepers;
 
+  // 1. Schools Engaged
+  const schoolsEngagedSet = new Set();
+  appData.forEach(d => {
+    if (d.tool === 'School Activity' || d.tool === 'PAT Assessment') {
+      const s = (d.school || d.name || '').trim();
+      if (s && !s.toLowerCase().includes('site') && !CLEAN_EMPTY_WORDS.has(s.toLowerCase())) {
+        schoolsEngagedSet.add(s);
+      }
+    }
+  });
+  const schoolsEngagedCount = schoolsEngagedSet.size;
+
+  // 2. Knowledge Wheel Sessions in schools
+  const wheelSessionsCount = appData.filter(d => d.tool === 'School Activity').length;
+
+  // 3. U-Report Health Clubs Formed
+  const clubsFormedCount = appData.filter(d => {
+    if (d.tool !== 'School Activity') return false;
+    const st = String(d.health_club || d.health_club_established || '').toLowerCase();
+    return st.includes('active') || st.includes('yes') || st.includes('form');
+  }).length;
+
+  // 4. High-risk parishes entered (new)
+  const parishesEnteredSet = new Set();
+  appData.forEach(d => {
+    const p = (d.parish || '').trim();
+    if (p && !CLEAN_EMPTY_WORDS.has(p.toLowerCase())) {
+      parishesEnteredSet.add(p);
+    }
+  });
+  const parishesEnteredCount = parishesEnteredSet.size;
+
+  // 5. New U-Reporters Recruited
+  const uRecruitRows = appData.filter(d => d.tool === 'U-Report Recruitment');
+  const uRecruitMale = uRecruitRows.reduce((acc, r) => acc + (r.male || 0), 0);
+  const uRecruitFemale = uRecruitRows.reduce((acc, r) => acc + (r.female || 0), 0);
+  const uRecruitTotal = uRecruitRows.reduce((acc, r) => acc + (r.total || (r.male||0) + (r.female||0)), 0);
+  const uActiveInSchools = appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.active_ureporters || 0), 0);
+  const totalUReporters = uRecruitTotal > 0 ? uRecruitTotal : uActiveInSchools;
+
+  // 6. U-Reporter Tally Sheets Collected
+  const tallySheetsCount = uRecruitRows.length;
+
+  // 7. PHE Take-Home Cards Distributed
+  const totalCards = appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.take_home_cards || 0), 0);
+
+  // Set Core KPI Scorecards
+  safeSetText('kpiSchoolsEngaged', schoolsEngagedCount.toLocaleString());
+  safeSetText('kpiSchoolsEngagedSub', `Unique target schools (${distList.length} districts)`);
+
   safeSetText('kpiLearners', totalLearners.toLocaleString());
   safeSetText('kpiLearnersSub', `${totalBoys.toLocaleString()} Boys | ${totalGirls.toLocaleString()} Girls (${totalLearners > 0 ? ((totalGirls / totalLearners) * 100).toFixed(1) : 0}% F)`);
+
+  safeSetText('kpiWheelSessions', wheelSessionsCount.toLocaleString());
+  safeSetText('kpiWheelSessionsSub', `Across visits 1, 2 & 3 delivery`);
+
+  safeSetText('kpiHealthClubs', clubsFormedCount.toLocaleString());
+  safeSetText('kpiHealthClubsSub', `Active clubs with patrons`);
+
+  safeSetText('kpiParishesEntered', parishesEnteredCount.toLocaleString());
+  safeSetText('kpiParishesEnteredSub', `High-risk epidemic hotspots`);
+
+  safeSetText('kpiGatekeepers', grandTotalGatekeepers.toLocaleString());
+
+  safeSetText('kpiUReporters', totalUReporters.toLocaleString());
+  safeSetText('kpiUReportersSub', uRecruitTotal > 0 ? `${uRecruitMale} M | ${uRecruitFemale} F recruits` : `Active youth & learner network`);
+
+  safeSetText('kpiTallySheets', tallySheetsCount.toLocaleString());
+  safeSetText('kpiTallySheetsSub', tallySheetsCount > 0 ? `Tally verification sheets logged` : `Sheets collected upon mobilization`);
+
+  // Secondary Delivery Metrics
   safeSetText('kpiEnrolment', totalEnrolment.toLocaleString());
   safeSetText('kpiEnrolmentSub', `Unique school population base (validated)`);
-  safeSetText('kpiGatekeepers', grandTotalGatekeepers.toLocaleString());
   safeSetText('kpiGames', totalGames.toLocaleString());
+  safeSetText('kpiTakeHomeCards', totalCards.toLocaleString());
   safeSetText('kpiDistricts', distList.length);
+
   safeSetText('badgeTotalReach', grandTotalReach > 1000 ? `${(grandTotalReach/1000).toFixed(1)}K` : grandTotalReach);
   safeSetText('badgeTool1', appData.filter(d => d.tool === 'School Activity').length);
   safeSetText('badgeTool2', gatekeeperRowsFiltered.length);
@@ -588,6 +667,11 @@ function recomputeAndRender() {
   safeSetText('badgeTool8', appData.filter(d => d.tool === 'Photovoice').length);
   safeSetText('badgeTool9', appData.filter(d => d.tool === 'Simulation Drill').length);
   safeSetText('badgeTool10', appData.filter(d => d.tool === 'PAT Assessment').length);
+  
+  const allRumourRecords = getAllRumourRecords();
+  safeSetText('badgeRumours', allRumourRecords.length);
+  safeSetText('badgeTool11', appData.filter(d => d.tool === 'U-Report Recruitment').length);
+
 
   const keyChipsHtml = distList.length === 0
     ? `<span style="color:#64748b; font-size:0.8rem;">No district data for active filter.</span>`
@@ -610,26 +694,27 @@ function recomputeAndRender() {
   const patCount = appData.filter(d => d.tool === 'PAT Assessment').length;
 
   const toolDefs = [
-    { num: 1, name: "Tool 9: School 3-Visit Model & Knowledge Wheel Session Tracker", q: 26, reach: `${appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.boys||0) + (r.girls||0), 0).toLocaleString()} Learners (${schoolActsCount} Schools)`, active: schoolActsCount > 0, tab: "tool_9" },
-    { num: 2, name: "Tool 7: Community Gatekeeper Dialogue & Commitment Log", q: 13, reach: `${gatekeeperRowsFiltered.length} Sessions Oriented`, active: gatekeeperRowsFiltered.length > 0, tab: "tool_7" },
-    { num: 3, name: "Tool 1: Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: `${appData.filter(d => d.tool === 'Transect Walk').length} Facility Audits`, active: appData.filter(d => d.tool === 'Transect Walk').length > 0, tab: "tool_1" },
-    { num: 4, name: "Tool 2: Rapid Audience Assessment Intercept Survey", q: 15, reach: t2Count > 0 ? `${t2Count} Intercepts Audited` : "0 Submissions (Pending)", active: t2Count > 0, tab: "tool_2" },
-    { num: 5, name: "Tool 3: 'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: t3Count > 0 ? `${t3Count} Claims Verified` : "0 Submissions (Pending)", active: t3Count > 0, tab: "tool_3" },
-    { num: 6, name: "Tool 4: Most Significant Change Story Collection Form", q: 5, reach: t4Count > 0 ? `${t4Count} Impact Narratives` : "0 Submissions (Pending)", active: t4Count > 0, tab: "tool_4" },
-    { num: 7, name: "Tool 5: Social Network & Influencer Mapping Protocol", q: 19, reach: t5Count > 0 ? `${t5Count} Key Influencers Mapped` : "0 Submissions (Pending)", active: t5Count > 0, tab: "tool_5" },
-    { num: 8, name: "Tool 6: Photovoice Participatory Documentation Guide & Caption Form", q: 9, reach: t6Count > 0 ? `${t6Count} PHOTO Panels` : "0 Submissions (Pending)", active: t6Count > 0, tab: "tool_6" },
-    { num: 9, name: "Tool 10: School Simulation Drill & Safeguarding Compliance Protocol", q: 19, reach: t9Count > 0 ? `${t9Count} Drills Evaluated` : "0 Submissions (Pending)", active: t9Count > 0, tab: "tool_10" },
-    { num: 10, name: "Tool 8: Preparedness Assessment Tool (PAT)", q: 53, reach: `${patCount} Institutional Audits Complete`, active: patCount > 0, tab: "tool_8" }
+    { num: 1, name: "School 3-Visit Tracker", q: 26, reach: `${appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.boys||0) + (r.girls||0), 0).toLocaleString()} Learners (${schoolActsCount} Schools)`, active: schoolActsCount > 0, tab: "tool_9" },
+    { num: 2, name: "Community Gatekeeper Engagements", q: 13, reach: `${gatekeeperRowsFiltered.length} Sessions Oriented`, active: gatekeeperRowsFiltered.length > 0, tab: "tool_7" },
+    { num: 3, name: "Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: `${appData.filter(d => d.tool === 'Transect Walk').length} Facility Audits`, active: appData.filter(d => d.tool === 'Transect Walk').length > 0, tab: "tool_1" },
+    { num: 4, name: "Rapid Audience Assessment Intercept Survey", q: 15, reach: t2Count > 0 ? `${t2Count} Intercepts Audited` : "0 Submissions (Pending)", active: t2Count > 0, tab: "tool_2" },
+    { num: 5, name: "'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: t3Count > 0 ? `${t3Count} Claims Verified` : "0 Submissions (Pending)", active: t3Count > 0, tab: "tool_3" },
+    { num: 6, name: "Most Significant Change Story Collection Form", q: 5, reach: t4Count > 0 ? `${t4Count} Impact Narratives` : "0 Submissions (Pending)", active: t4Count > 0, tab: "tool_4" },
+    { num: 7, name: "Social Network & Influencer Mapping Protocol", q: 19, reach: t5Count > 0 ? `${t5Count} Key Influencers Mapped` : "0 Submissions (Pending)", active: t5Count > 0, tab: "tool_5" },
+    { num: 8, name: "Photovoice Participatory Documentation Guide & Caption Form", q: 9, reach: t6Count > 0 ? `${t6Count} PHOTO Panels` : "0 Submissions (Pending)", active: t6Count > 0, tab: "tool_6" },
+    { num: 9, name: "School Simulation Drill & Safeguarding Compliance Protocol", q: 19, reach: t9Count > 0 ? `${t9Count} Drills Evaluated` : "0 Submissions (Pending)", active: t9Count > 0, tab: "tool_10" },
+    { num: 10, name: "Preparedness Assessment Tool", q: 53, reach: `${patCount} Institutional Audits Complete`, active: patCount > 0, tab: "tool_8" },
+    { num: 11, name: "U-Report Recruitment Tracker", q: 12, reach: (appData.filter(d => d.tool === 'U-Report Recruitment').length > 0 ? `${appData.filter(d => d.tool === 'U-Report Recruitment').length} Drives Logged` : "0 Submissions (Pending)"), active: appData.filter(d => d.tool === 'U-Report Recruitment').length > 0, tab: "tool_11" }
   ];
 
   safeSetHtml('toolsManifestBody', toolDefs.map(t => `
     <tr>
-      <td><span class="badge-pill badge-primary">Tool ${t.num}</span></td>
+      <td><span class="badge-pill badge-primary">#${t.num}</span></td>
       <td><strong>${t.name}</strong></td>
       <td>${t.q} Questions</td>
       <td><strong style="color:${t.active ? 'var(--primary)' : 'var(--text-muted)'};">${t.reach}</strong></td>
-      <td><span class="badge-pill ${t.active ? 'badge-success' : 'badge-warning'}">${t.active ? 'Active Tool' : 'Pending Field Data'}</span></td>
-      <td><button class="btn-action ${t.active ? '' : 'btn-outline'}" style="padding:4px 10px; font-size:0.72rem;" onclick="showTab('${t.tab}')">Open Tool Analytics →</button></td>
+      <td><span class="badge-pill ${t.active ? 'badge-success' : 'badge-warning'}">${t.active ? 'Active' : 'Pending Field Data'}</span></td>
+      <td><button class="btn-action ${t.active ? '' : 'btn-outline'}" style="padding:4px 10px; font-size:0.72rem;" onclick="showTab('${t.tab}')">Open Analytics →</button></td>
     </tr>
   `).join(''));
 
@@ -647,6 +732,9 @@ function recomputeAndRender() {
       <td>${d.games.toLocaleString()}</td>
     </tr>
   `).join(''));
+
+  // Render Master Location Reach & Engagement Matrix Table
+  renderLocationSummaryTable();
 
   // Tool 9: School Multi-Visit Table
   const schoolVisitMap = {};
@@ -676,6 +764,41 @@ function recomputeAndRender() {
   });
 
   const schoolMultiVisitRows = Object.values(schoolVisitMap);
+
+  // Tool 9: 6-Pillar Audit & Preparedness Metrics
+  const schoolRows = appData.filter(d => d.tool === 'School Activity');
+  const t9Total = schoolRows.length;
+  if (t9Total > 0) {
+    const protocolShared = schoolRows.filter(s => {
+      const p = String(s.protocol_shared || '').toLowerCase();
+      return p.includes('yes') || p.includes('already');
+    }).length;
+    const isoSpace = schoolRows.filter(s => {
+      const iso = String(s.isolation_space || '').toLowerCase();
+      return iso.includes('dedicated') || iso.includes('makeshift') || iso.includes('classroom');
+    }).length;
+    const hotlineRecall = schoolRows.filter(s => {
+      const h = String(s.hotline_known || '').toLowerCase();
+      return h.includes('verified');
+    }).length;
+    const clubActive = schoolRows.filter(s => {
+      const c = String(s.health_club_established || s.health_club || '').toLowerCase();
+      return c.includes('yes') || c.includes('active') || c.includes('co-opted');
+    }).length;
+    const totalCards = schoolRows.reduce((acc, s) => acc + (s.take_home_cards || 0), 0);
+    const washSoap = schoolRows.filter(s => {
+      const w = String(s.wash_points_soap || s.soap || '').toLowerCase();
+      return w.includes('both') || (w.includes('water') && w.includes('soap'));
+    }).length;
+
+    safeSetText('t9_kpi_protocol', `${((protocolShared / t9Total) * 100).toFixed(1)}%`);
+    safeSetText('t9_kpi_isolation', `${((isoSpace / t9Total) * 100).toFixed(1)}%`);
+    safeSetText('t9_kpi_hotline', `${((hotlineRecall / t9Total) * 100).toFixed(1)}%`);
+    safeSetText('t9_kpi_club', `${((clubActive / t9Total) * 100).toFixed(1)}%`);
+    safeSetText('t9_kpi_cards', totalCards.toLocaleString());
+    safeSetText('t9_kpi_wash', `${((washSoap / t9Total) * 100).toFixed(1)}%`);
+  }
+
   safeSetHtml('tool1TableBody', schoolMultiVisitRows.length === 0 ? `<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No school session records found in active filter.</td></tr>` : schoolMultiVisitRows.map(s => {
     const v1 = s.visits['Visit 1'] || s.visits['1'] || { total: '—', club: '—' };
     const v2 = s.visits['Visit 2'] || s.visits['2'] || { total: 'Pending', club: '—' };
@@ -718,6 +841,10 @@ function recomputeAndRender() {
   let gkSignsCount = 0;
   let gkHotlineCount = 0;
   let gkCommitCount = 0;
+  let gkProtocolCount = 0;
+  let gkPlanCount = 0;
+  let gkCrowdTotal = 0;
+  let gkDestigmaCount = 0;
 
   gatekeeperRowsFiltered.forEach(g => {
     const m = (g.male || 0);
@@ -742,6 +869,17 @@ function recomputeAndRender() {
     if (cleanText(g.commitments)) {
       gkCommitCount++;
     }
+
+    const proto = String(g.protocol_handed_over || '').toLowerCase();
+    if (proto.includes('yes') || proto.includes('already')) gkProtocolCount++;
+
+    const plan = String(g.action_plan_started || '').toLowerCase();
+    if (plan.includes('yes') || plan.includes('progress')) gkPlanCount++;
+
+    gkCrowdTotal += (g.crowd_engaged || 0);
+
+    const destig = String(g.destigmatization || '').toLowerCase();
+    if (destig.includes('high') || destig.includes('receptive')) gkDestigmaCount++;
   });
 
   const gkManualPct = gkTotalSessions > 0 ? ((gkManualCount / gkTotalSessions) * 100).toFixed(1) : 0;
@@ -759,6 +897,12 @@ function recomputeAndRender() {
   safeSetText('gk_kpi_hotline_sub', `${gkHotlineCount} of ${gkTotalSessions} sessions demonstrated ≥50% hotline mastery`);
   safeSetText('gk_kpi_commit', `${gkCommitPct}%`);
   safeSetText('gk_kpi_commit_sub', `${gkCommitCount} of ${gkTotalSessions} sessions logged binding action promises`);
+
+  safeSetText('gk_kpi_protocol', gkTotalSessions > 0 ? `${((gkProtocolCount / gkTotalSessions) * 100).toFixed(1)}%` : '0%');
+  safeSetText('gk_kpi_plan', gkTotalSessions > 0 ? `${((gkPlanCount / gkTotalSessions) * 100).toFixed(1)}%` : '0%');
+  safeSetText('gk_kpi_crowd', gkCrowdTotal.toLocaleString());
+  safeSetText('gk_kpi_destigma', gkTotalSessions > 0 ? `${((gkDestigmaCount / gkTotalSessions) * 100).toFixed(1)}%` : '0%');
+
 
   safeSetHtml('tool7GatekeeperTableBody', gatekeeperRowsFiltered.length === 0 ? `<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:20px;">No gatekeeper dialogue records found in active filter.</td></tr>` : gatekeeperRowsFiltered.map(g => {
     const totOriented = (g.male || 0) + (g.female || 0);
@@ -1073,10 +1217,50 @@ function recomputeAndRender() {
     safeSetText('patIsoRate', `${isoRate}%`);
     safeSetText('patPosterRate', `${posterRate}%`);
     safeSetText('patHotlineRate', `${hotlineRate}%`);
+
+    // Compute 6-pillar 10-pupil averages from real dataset
+    const patPupils = filteredPat.filter(p => (p.p_signs !== undefined || p.p_spread !== undefined));
+    if (patPupils.length > 0) {
+      const avgSigns = (patPupils.reduce((acc, p) => acc + (p.p_signs || 0), 0) / patPupils.length);
+      const avgSpread = (patPupils.reduce((acc, p) => acc + (p.p_spread || 0), 0) / patPupils.length);
+      const avgRisk = (patPupils.reduce((acc, p) => acc + (p.p_risk || 0), 0) / patPupils.length);
+      const avgNotify = (patPupils.reduce((acc, p) => acc + (p.p_notify || 0), 0) / patPupils.length);
+      const avgStigma = (patPupils.reduce((acc, p) => acc + (p.p_stigma || 0), 0) / patPupils.length);
+      const avgHandwash = (patPupils.reduce((acc, p) => acc + (p.p_handwash || 0), 0) / patPupils.length);
+
+      safeSetText('patPupilSigns', `${((avgSigns / 10) * 100).toFixed(0)}%`);
+      safeSetText('patPupilSignsSub', `Avg ${avgSigns.toFixed(1)}/10 pupils across ${patPupils.length} schools`);
+
+      safeSetText('patPupilSpread', `${((avgSpread / 10) * 100).toFixed(0)}%`);
+      safeSetText('patPupilSpreadSub', `Avg ${avgSpread.toFixed(1)}/10 pupils across ${patPupils.length} schools`);
+
+      safeSetText('patPupilRisk', `${((avgRisk / 10) * 100).toFixed(0)}%`);
+      safeSetText('patPupilRiskSub', `Avg ${avgRisk.toFixed(1)}/10 pupils across ${patPupils.length} schools`);
+
+      safeSetText('patPupilNotify', `${((avgNotify / 10) * 100).toFixed(0)}%`);
+      safeSetText('patPupilNotifySub', `Avg ${avgNotify.toFixed(1)}/10 pupils across ${patPupils.length} schools`);
+
+      safeSetText('patPupilStigma', `${((avgStigma / 10) * 100).toFixed(0)}%`);
+      safeSetText('patPupilStigmaSub', `Avg ${avgStigma.toFixed(1)}/10 pupils across ${patPupils.length} schools`);
+
+      safeSetText('patPupilHandwash', `${((avgHandwash / 10) * 100).toFixed(0)}%`);
+      safeSetText('patPupilHandwashSub', `Avg ${avgHandwash.toFixed(1)}/10 pupils across ${patPupils.length} schools`);
+    }
+
+    const leadHotlineCount = filteredPat.filter(p => {
+      const l = String(p.leadership_hotline || '').toLowerCase();
+      return l.includes('verified') || l.includes('fully');
+    }).length;
+    safeSetText('patLeaderHotline', `${((leadHotlineCount / patLen) * 100).toFixed(1)}%`);
+    safeSetText('patLeaderHotlineSub', `${leadHotlineCount} of ${patLen} school heads fully verified`);
   }
 
   // Populate qualitative tools data (Tools 2, 3, 4, 5, 6, 10)
   populateQualitativeTools();
+
+  // Render Dedicated Sections
+  renderRumourLogSection();
+  renderURecruitSection();
 
   renderBarCharts(distList);
   renderInteractiveMap();
@@ -2528,6 +2712,369 @@ function renderBarCharts(distList) {
 }
 
 
+/**
+ * ==============================================================================
+ * WEEKLY COMMUNITY & SCHOOL LISTENING AND RUMOUR LOG (TOOL 8) & U-REPORT RECRUITMENT (TOOL 11)
+ * ==============================================================================
+ */
+
+function getAllRumourRecords() {
+  return appData.filter(d => {
+    if (d.tool === 'Listening & Rumour Log') return true;
+    return !!(cleanText(d.rumor) || cleanText(d.barrier) || cleanText(d.tactical_adaptation));
+  });
+}
+
+function renderRumourLogSection() {
+  const rumourRecords = getAllRumourRecords();
+  const totalRumours = rumourRecords.length;
+
+  safeSetText('rumourKpiTotal', totalRumours.toLocaleString());
+  safeSetText('rumourKpiTotalSub', `${totalRumours} field concerns & rumors logged`);
+
+  let highCount = 0, modCount = 0, lowCount = 0;
+  const originMap = {};
+  const settingMap = {};
+  const districtMap = {};
+  let tacticalCount = 0;
+  const highRiskCards = [];
+
+  rumourRecords.forEach(r => {
+    const risk = String(r.risk_level || '').trim().toLowerCase();
+    if (risk.includes('high')) {
+      highCount++;
+      if (cleanText(r.rumor) && highRiskCards.length < 6) {
+        highRiskCards.push(r);
+      }
+    } else if (risk.includes('low')) {
+      lowCount++;
+    } else {
+      modCount++;
+    }
+
+    const origin = cleanText(r.origin || r.source) || 'Community';
+    originMap[origin] = (originMap[origin] || 0) + 1;
+
+    const setting = cleanText(r.setting) || 'School';
+    settingMap[setting] = (settingMap[setting] || 0) + 1;
+
+    const dist = cleanText(r.district) || 'Central';
+    districtMap[dist] = (districtMap[dist] || 0) + 1;
+
+    if (cleanText(r.tactical_adaptation)) {
+      tacticalCount++;
+    }
+  });
+
+  const highPct = totalRumours > 0 ? ((highCount / totalRumours) * 100).toFixed(1) : 0;
+  safeSetText('rumourKpiHigh', highCount.toLocaleString());
+  safeSetText('rumourKpiHighSub', `${highPct}% of total reported rumours`);
+
+  const topOriginEntry = Object.entries(originMap).sort((a, b) => b[1] - a[1])[0];
+  if (topOriginEntry) {
+    safeSetText('rumourKpiOrigin', topOriginEntry[0]);
+    safeSetText('rumourKpiOriginSub', `${topOriginEntry[1]} reports (${((topOriginEntry[1]/totalRumours)*100).toFixed(0)}%)`);
+  } else {
+    safeSetText('rumourKpiOrigin', '—');
+    safeSetText('rumourKpiOriginSub', 'No reports');
+  }
+
+  const topSettingEntry = Object.entries(settingMap).sort((a, b) => b[1] - a[1])[0];
+  if (topSettingEntry) {
+    safeSetText('rumourKpiSetting', topSettingEntry[0]);
+    safeSetText('rumourKpiSettingSub', `${topSettingEntry[1]} reports (${((topSettingEntry[1]/totalRumours)*100).toFixed(0)}%)`);
+  } else {
+    safeSetText('rumourKpiSetting', '—');
+    safeSetText('rumourKpiOriginSub', 'No reports');
+  }
+
+  const tacticalPct = totalRumours > 0 ? ((tacticalCount / totalRumours) * 100).toFixed(1) : 0;
+  safeSetText('rumourKpiTactical', tacticalCount.toLocaleString());
+  safeSetText('rumourKpiTacticalSub', `${tacticalPct}% counter-action rate`);
+
+  // High risk cards spotlight
+  const spotlightGrid = document.getElementById('rumourHighRiskCards');
+  if (spotlightGrid) {
+    if (highRiskCards.length === 0) {
+      spotlightGrid.innerHTML = `<div style="color:#64748b; font-size:0.8rem; font-style:italic; padding:8px 0;">No high-risk rumors flagged in active filter selection.</div>`;
+    } else {
+      spotlightGrid.innerHTML = highRiskCards.map(c => `
+        <div class="alert-spotlight-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+            <span class="badge-pill badge-danger" style="font-weight:700;">HIGH RISK</span>
+            <span style="font-size:0.69rem; color:#64748b;">${c.date || ''} • ${cleanText(c.district)}</span>
+          </div>
+          <div style="font-size:0.83rem; font-weight:700; color:#991b1b; margin-bottom:4px;">"${cleanText(c.rumor)}"</div>
+          ${cleanText(c.barrier) ? `<div style="font-size:0.72rem; color:#475569; margin-bottom:3px;"><strong>Barrier:</strong> ${cleanText(c.barrier)}</div>` : ''}
+          ${cleanText(c.tactical_adaptation) ? `<div style="font-size:0.72rem; color:var(--primary); font-weight:600;"><strong>Counter Action:</strong> ${cleanText(c.tactical_adaptation)}</div>` : ''}
+        </div>
+      `).join('');
+    }
+  }
+
+  renderRumourCharts(highCount, modCount, lowCount, originMap, settingMap, districtMap);
+  populateRumourDropdowns(originMap, settingMap);
+  renderRumourLogFiltered();
+}
+
+function renderRumourCharts(highCount, modCount, lowCount, originMap, settingMap, districtMap) {
+  // Chart 1: Risk Level
+  const elRisk = document.getElementById('chartRumourRisk');
+  if (elRisk) {
+    if (chartInstances.rumourRisk) chartInstances.rumourRisk.destroy();
+    chartInstances.rumourRisk = new Chart(elRisk.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['High Risk', 'Moderate Risk', 'Low Risk'],
+        datasets: [{
+          data: [highCount, modCount, lowCount],
+          backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' }
+        },
+        cutout: '62%'
+      }
+    });
+  }
+
+  // Chart 2: Top Origins
+  const elOrigin = document.getElementById('chartRumourOrigin');
+  if (elOrigin) {
+    if (chartInstances.rumourOrigin) chartInstances.rumourOrigin.destroy();
+    const sortedOrigins = Object.entries(originMap).sort((a, b) => b[1] - a[1]).slice(0, 7);
+    chartInstances.rumourOrigin = new Chart(elOrigin.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sortedOrigins.map(e => e[0]),
+        datasets: [{
+          label: 'Rumours Logged',
+          data: sortedOrigins.map(e => e[1]),
+          backgroundColor: '#3b82f6',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // Chart 3: Settings
+  const elSetting = document.getElementById('chartRumourSetting');
+  if (elSetting) {
+    if (chartInstances.rumourSetting) chartInstances.rumourSetting.destroy();
+    const sortedSettings = Object.entries(settingMap).sort((a, b) => b[1] - a[1]).slice(0, 7);
+    chartInstances.rumourSetting = new Chart(elSetting.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sortedSettings.map(e => e[0]),
+        datasets: [{
+          label: 'Rumours Logged',
+          data: sortedSettings.map(e => e[1]),
+          backgroundColor: '#8b5cf6',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // Chart 4: District
+  const elDist = document.getElementById('chartRumourDistrict');
+  if (elDist) {
+    if (chartInstances.rumourDistrict) chartInstances.rumourDistrict.destroy();
+    const sortedDists = Object.entries(districtMap).sort((a, b) => b[1] - a[1]);
+    chartInstances.rumourDistrict = new Chart(elDist.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sortedDists.map(e => e[0]),
+        datasets: [{
+          label: 'Rumours Logged',
+          data: sortedDists.map(e => e[1]),
+          backgroundColor: '#f59e0b',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+}
+
+function populateRumourDropdowns(originMap, settingMap) {
+  const selOrigin = document.getElementById('filterRumourOrigin');
+  if (selOrigin && selOrigin.options.length <= 1) {
+    const curVal = selOrigin.value;
+    const origins = Object.keys(originMap).sort();
+    selOrigin.innerHTML = '<option value="ALL">All Origins</option>' + origins.map(o => `<option value="${o}">${o} (${originMap[o]})</option>`).join('');
+    if (origins.includes(curVal)) selOrigin.value = curVal;
+  }
+
+  const selSetting = document.getElementById('filterRumourSetting');
+  if (selSetting && selSetting.options.length <= 1) {
+    const curVal = selSetting.value;
+    const settings = Object.keys(settingMap).sort();
+    selSetting.innerHTML = '<option value="ALL">All Settings</option>' + settings.map(s => `<option value="${s}">${s} (${settingMap[s]})</option>`).join('');
+    if (settings.includes(curVal)) selSetting.value = curVal;
+  }
+}
+
+function renderRumourLogFiltered() {
+  const rumourRecords = getAllRumourRecords();
+  const riskFilter = document.getElementById('filterRumourRisk')?.value || 'ALL';
+  const originFilter = document.getElementById('filterRumourOrigin')?.value || 'ALL';
+  const settingFilter = document.getElementById('filterRumourSetting')?.value || 'ALL';
+  const searchFilter = (document.getElementById('filterRumourSearch')?.value || '').trim().toLowerCase();
+
+  const filtered = rumourRecords.filter(r => {
+    const risk = String(r.risk_level || 'Moderate').toLowerCase();
+    if (riskFilter === 'High' && !risk.includes('high')) return false;
+    if (riskFilter === 'Moderate' && !risk.includes('moderate')) return false;
+    if (riskFilter === 'Low' && !risk.includes('low')) return false;
+
+    const origin = cleanText(r.origin || r.source) || 'Community';
+    if (originFilter !== 'ALL' && origin !== originFilter) return false;
+
+    const setting = cleanText(r.setting) || 'School';
+    if (settingFilter !== 'ALL' && setting !== settingFilter) return false;
+
+    if (searchFilter) {
+      const match = (r.rumor && r.rumor.toLowerCase().includes(searchFilter)) ||
+                    (r.barrier && r.barrier.toLowerCase().includes(searchFilter)) ||
+                    (r.tactical_adaptation && r.tactical_adaptation.toLowerCase().includes(searchFilter)) ||
+                    (r.district && r.district.toLowerCase().includes(searchFilter)) ||
+                    (r.parish && r.parish.toLowerCase().includes(searchFilter));
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  safeSetText('rumourLogCountBadge', `${filtered.length} of ${rumourRecords.length} Entries`);
+
+  const tbody = document.getElementById('rumourLogTableBody');
+  if (!tbody) return;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:30px; font-style:italic;">No rumors match the active filter criteria.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const risk = cleanText(r.risk_level) || 'Moderate';
+    const riskLow = risk.toLowerCase();
+    let riskBadge = '<span class="badge-pill badge-warning">Moderate</span>';
+    if (riskLow.includes('high')) riskBadge = '<span class="badge-pill badge-danger">High Risk</span>';
+    else if (riskLow.includes('low')) riskBadge = '<span class="badge-pill badge-success">Low Risk</span>';
+
+    return `
+      <tr>
+        <td><strong>#${r.id}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">${r.date || ''}</span></td>
+        <td><strong>${cleanText(r.district)}</strong><br><span style="font-size:0.71rem; color:var(--text-muted);">${cleanText(r.parish)}</span></td>
+        <td><span class="badge-pill badge-primary">${cleanText(r.setting) || 'School'}</span></td>
+        <td><span class="badge-pill" style="background:#f1f5f9; color:#475569;">${cleanText(r.origin || r.source) || 'Community'}</span></td>
+        <td style="max-width:260px; font-weight:600; color:#991b1b; white-space:normal;">${cleanText(r.rumor) || '—'}</td>
+        <td style="max-width:220px; font-size:0.75rem; color:#475569; white-space:normal;">${cleanText(r.barrier) || '—'}</td>
+        <td style="text-align:center;">${riskBadge}</td>
+        <td style="max-width:280px; font-size:0.75rem; color:var(--primary); font-weight:600; white-space:normal;">${cleanText(r.tactical_adaptation) || '—'}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function resetRumourFilters() {
+  if (document.getElementById('filterRumourRisk')) document.getElementById('filterRumourRisk').value = 'ALL';
+  if (document.getElementById('filterRumourOrigin')) document.getElementById('filterRumourOrigin').value = 'ALL';
+  if (document.getElementById('filterRumourSetting')) document.getElementById('filterRumourSetting').value = 'ALL';
+  if (document.getElementById('filterRumourSearch')) document.getElementById('filterRumourSearch').value = '';
+  renderRumourLogFiltered();
+}
+
+function renderURecruitSection() {
+  const uRows = appData.filter(d => d.tool === 'U-Report Recruitment');
+  const totalRecruited = uRows.reduce((acc, r) => acc + (r.male || 0) + (r.female || 0) + (r.total || 0), 0);
+  const maleRecruited = uRows.reduce((acc, r) => acc + (r.male || 0), 0);
+  const femaleRecruited = uRows.reduce((acc, r) => acc + (r.female || 0), 0);
+  const settingsSet = new Set(uRows.map(r => r.location).filter(Boolean));
+
+  safeSetText('u_kpi_total', totalRecruited.toLocaleString());
+  safeSetText('u_kpi_total_sub', `Across ${uRows.length} mobilization sessions`);
+  safeSetText('u_kpi_male', maleRecruited.toLocaleString());
+  safeSetText('u_kpi_male_sub', `${totalRecruited > 0 ? ((maleRecruited/totalRecruited)*100).toFixed(1) : 0}% of cohort`);
+  safeSetText('u_kpi_female', femaleRecruited.toLocaleString());
+  safeSetText('u_kpi_female_sub', `${totalRecruited > 0 ? ((femaleRecruited/totalRecruited)*100).toFixed(1) : 0}% of cohort`);
+  safeSetText('u_kpi_locs', settingsSet.size);
+  safeSetText('tool11CountBadge', `${uRows.length} Sessions`);
+
+  const tbody = document.getElementById('tool11TableBody');
+  if (tbody) {
+    if (uRows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:30px; font-style:italic;">No U-Report recruitment sessions recorded in the active filter.</td></tr>`;
+    } else {
+      tbody.innerHTML = uRows.map(r => `
+        <tr>
+          <td><strong>#${r.id}</strong><br><span style="font-size:0.7rem; color:var(--text-muted);">${r.date || ''}</span></td>
+          <td>${cleanText(r.district)}</td>
+          <td>${cleanText(r.parish)}</td>
+          <td><span class="badge-pill badge-primary">${cleanText(r.location) || 'Community'}</span></td>
+          <td>${(r.male || 0).toLocaleString()}</td>
+          <td>${(r.female || 0).toLocaleString()}</td>
+          <td><strong style="color:var(--primary);">${((r.male || 0) + (r.female || 0) || r.total || 0).toLocaleString()}</strong></td>
+          <td>${cleanText(r.coordinator) || 'Field Lead'}</td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  // Render Chart
+  const locMap = {};
+  uRows.forEach(r => {
+    const loc = cleanText(r.location) || 'Community';
+    locMap[loc] = (locMap[loc] || 0) + ((r.male || 0) + (r.female || 0) || r.total || 0);
+  });
+  const ctx = document.getElementById('chartURecruitSetting')?.getContext('2d');
+  if (ctx && Object.keys(locMap).length > 0) {
+    if (chartInstances.uRecruitSetting) chartInstances.uRecruitSetting.destroy();
+    chartInstances.uRecruitSetting = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(locMap),
+        datasets: [{
+          label: 'U-Reporters Recruited',
+          data: Object.values(locMap),
+          backgroundColor: '#282c68',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+}
+
 // Attach functions to global window for HTML inline handlers
 window.processRawWorkbookRows = processRawWorkbookRows;
 window.recomputeAndRender = recomputeAndRender;
@@ -2535,6 +3082,9 @@ window.renderBarCharts = renderBarCharts;
 window.showTab = showTab;
 window.applyFilters = applyFilters;
 window.resetFilters = resetFilters;
+window.renderRumourLogFiltered = renderRumourLogFiltered;
+window.resetRumourFilters = resetRumourFilters;
+
 
 /**
  * Auto-fetch dashboard_data.json if running on HTTP/HTTPS (e.g. GitHub Pages)

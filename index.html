@@ -26,68 +26,79 @@
     <div class="brand">
       <div class="brand-text">
         <h2>PHE RCCE Tracker</h2>
-        <p>10 Integrated Tools Dashboard</p>
+        <p>11 Integrated Instruments Dashboard</p>
       </div>
       <button class="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="Close navigation menu">✕</button>
     </div>
     <div class="nav-tabs">
-      <div class="nav-section-title">Core Performance</div>
+      <div class="nav-section-title">Core Performance &amp; Intelligence</div>
       <button class="tab-btn active" onclick="showTab('overview')">
-        <span>Main Summary of Reach</span>
+        <span>Summary of Reach &amp; Engagement</span>
         <span class="tab-badge" id="badgeTotalReach">0</span>
       </button>
 
-      <div class="nav-section-title">Programmatic Tools (10 Instruments)</div>
+      <button class="tab-btn highlight-tab" onclick="showTab('rumours')">
+        <span>Weekly Rumour &amp; Listening Log</span>
+        <span class="tab-badge badge-alert" id="badgeRumours">0</span>
+      </button>
+
+      <div class="nav-section-title">Programmatic Tools (11 Instruments)</div>
       <button class="tab-btn" onclick="showTab('tool_9')">
-        <span>1. School 3-Visit Wheel Session Tracker</span>
+        <span>1. School 3-Visit Tracker</span>
         <span class="tab-badge" id="badgeTool1">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_7')">
-        <span>2. Community Gatekeeper Dialogue</span>
+        <span>2. Community Gatekeeper Engagements</span>
         <span class="tab-badge" id="badgeTool2">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_1')">
-        <span>3. Transect Walk &amp; Infrastructure Checklist</span>
+        <span>3. Transect Walk &amp; Audit</span>
         <span class="tab-badge" id="badgeTool3">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_2')">
-        <span>4. Rapid Audience Intercept Survey</span>
+        <span>4. Rapid Audience Intercept</span>
         <span class="tab-badge" id="badgeTool4">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_3')">
-        <span>5. 'Ask 5' Behavioral Verification Diagnostic</span>
+        <span>5. 'Ask 5' Behavioral Diagnostic</span>
         <span class="tab-badge" id="badgeTool5">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_4')">
-        <span>6. Most Significant Change Story Form</span>
+        <span>6. Most Significant Change Form</span>
         <span class="tab-badge" id="badgeTool6">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_5')">
-        <span>7. Social Network &amp; Influencer Mapping</span>
+        <span>7. Influencer Mapping Protocol</span>
         <span class="tab-badge" id="badgeTool7">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_6')">
-        <span>8. Photovoice Participatory Documentation</span>
+        <span>8. Photovoice Documentation</span>
         <span class="tab-badge" id="badgeTool8">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_10')">
-        <span>9. School Simulation Drill Protocol</span>
+        <span>9. Simulation Drill Protocol</span>
         <span class="tab-badge" id="badgeTool9">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_8')">
-        <span>10. Preparedness Assessment Tool (PAT)</span>
+        <span>10. Preparedness Assessment</span>
         <span class="tab-badge" id="badgeTool10">0</span>
       </button>
+
+      <button class="tab-btn" onclick="showTab('tool_11')">
+        <span>11. U-Report Recruitment</span>
+        <span class="tab-badge" id="badgeTool11">0</span>
+      </button>
     </div>
+
   </aside>
 
   <!-- Main Content Area -->
@@ -142,31 +153,71 @@
 
       <!-- ================= 0. MAIN SUMMARY OF REACH ================= -->
       <section id="tab-overview" class="tab-pane active">
+        <!-- TIER 1: CORE FIELD ENGAGEMENT & REACH KPIS (8 SCORECARDS) -->
         <div class="kpi-grid">
           <div class="kpi-card accent">
-            <div class="kpi-title">Total Learners Sensitised</div>
+            <div class="kpi-title">Schools Engaged</div>
+            <div class="kpi-value" id="kpiSchoolsEngaged">0</div>
+            <div class="kpi-subtitle" id="kpiSchoolsEngagedSub">Unique target schools reached</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Learners Reached</div>
             <div class="kpi-value" id="kpiLearners">0</div>
             <div class="kpi-subtitle" id="kpiLearnersSub">0 Boys | 0 Girls</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-title">Total Enrolment Monitored</div>
-            <div class="kpi-value" id="kpiEnrolment">0</div>
-            <div class="kpi-subtitle" id="kpiEnrolmentSub">Unique school population base (validated)</div>
+            <div class="kpi-title">Knowledge Wheel Sessions</div>
+            <div class="kpi-value" id="kpiWheelSessions">0</div>
+            <div class="kpi-subtitle" id="kpiWheelSessionsSub">School interactive delivery</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">U-Report Health Clubs Formed</div>
+            <div class="kpi-value" id="kpiHealthClubs">0</div>
+            <div class="kpi-subtitle" id="kpiHealthClubsSub">Active clubs with patrons</div>
           </div>
           <div class="kpi-card accent">
-            <div class="kpi-title">Gatekeepers & Teachers Oriented</div>
+            <div class="kpi-title">High-Risk Parishes Entered</div>
+            <div class="kpi-value" id="kpiParishesEntered">0</div>
+            <div class="kpi-subtitle" id="kpiParishesEnteredSub">High-risk epidemic hotspots</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Gatekeepers Oriented</div>
             <div class="kpi-value" id="kpiGatekeepers">0</div>
-            <div class="kpi-subtitle">Teachers, Patrons & Community Gatekeepers</div>
+            <div class="kpi-subtitle">Teachers, Patrons &amp; Leaders</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">New U-Reporters Recruited</div>
+            <div class="kpi-value" id="kpiUReporters">0</div>
+            <div class="kpi-subtitle" id="kpiUReportersSub">Youth feedback network</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">U-Reporter Tally Sheets</div>
+            <div class="kpi-value" id="kpiTallySheets">0</div>
+            <div class="kpi-subtitle" id="kpiTallySheetsSub">Verification sheets logged</div>
+          </div>
+        </div>
+
+        <!-- TIER 2: POPULATION BASE & DELIVERY MATERIALS -->
+        <div class="four-col-grid" style="margin-bottom: 22px;">
+          <div class="kpi-card">
+            <div class="kpi-title">Total Enrolment Monitored</div>
+            <div class="kpi-value" id="kpiEnrolment">0</div>
+            <div class="kpi-subtitle" id="kpiEnrolmentSub">Validated school population base</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">Board Games Distributed</div>
             <div class="kpi-value" id="kpiGames">0</div>
-            <div class="kpi-subtitle">Snakes & Ladders gamified PHE tools</div>
+            <div class="kpi-subtitle">Snakes &amp; Ladders gamified PHE tools</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">PHE Take-Home Cards</div>
+            <div class="kpi-value" id="kpiTakeHomeCards">0</div>
+            <div class="kpi-subtitle">Distributed to learners &amp; families</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">Active Program Districts</div>
             <div class="kpi-value" id="kpiDistricts">0</div>
-            <div class="kpi-subtitle">Geographical clusters</div>
+            <div class="kpi-subtitle">Operational cluster areas</div>
           </div>
         </div>
 
@@ -190,7 +241,7 @@
         <!-- ================= GEOSPATIAL MAP OF TARGET SCHOOLS & ACTIVITIES ================= -->
         <div class="card">
           <div class="card-title">
-            <span>Geospatial Map of Target Schools & Conducted Field Activities</span>
+            <span>Geospatial Map of Target Schools &amp; Conducted Field Activities</span>
             <span style="font-size:0.75rem; color:var(--text-muted);" id="mapSchoolCount">0 Schools Mapped</span>
           </div>
           <div id="schoolMap"></div>
@@ -205,15 +256,55 @@
           </div>
         </div>
 
-        <!-- Master Manifest of 10 Tools -->
-        <div class="card">
-          <div class="card-title">Programmatic Tools & Reach Overview (10 Operational Instruments)</div>
+        <!-- ================= SUMMARY OF REACH & ENGAGEMENT PER LOCATION (DISTRICT & PARISH MATRIX) ================= -->
+        <div class="card" style="margin-top: 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+            <div>
+              <div class="card-title" style="margin-bottom:2px;">Summary of Reach &amp; Engagement per Location (District &amp; Parish Matrix)</div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin:0;">Disaggregated location breakdown capturing Schools engaged, Learners (Boys/Girls), Wheel Sessions, Health Clubs, Gatekeepers, New U-Reporters, and Tally Sheets</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="badge-pill badge-primary" id="locTableCountBadge">0 Locations</span>
+              <input type="text" id="filterLocSearch" placeholder="Search district, parish, school..." class="filter-input" style="width:190px;" oninput="renderLocationSummaryTable()">
+              <select id="filterLocDistrict" class="filter-select" onchange="renderLocationSummaryTable()">
+                <option value="ALL">All Districts</option>
+              </select>
+              <button class="btn-action btn-outline" style="padding:4px 10px; font-size:0.75rem;" onclick="resetLocationTableFilters()">Reset</button>
+            </div>
+          </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Tool #</th>
-                  <th>Activity / Tool Scope</th>
+                  <th>District</th>
+                  <th>High-Risk Parish</th>
+                  <th>Schools Engaged</th>
+                  <th>Learners Reached</th>
+                  <th>Boys</th>
+                  <th>Girls</th>
+                  <th>Wheel Sessions</th>
+                  <th>Health Clubs Formed</th>
+                  <th>Gatekeepers Oriented</th>
+                  <th>New U-Reporters</th>
+                  <th>Tally Sheets</th>
+                  <th>Board Games</th>
+                </tr>
+              </thead>
+              <tbody id="locationSummaryTableBody"></tbody>
+              <tfoot id="locationSummaryTableFoot"></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Master Manifest of 11 Instruments -->
+        <div class="card">
+          <div class="card-title">Programmatic Instruments &amp; Reach Overview (11 Operational Instruments)</div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Activity / Instrument Scope</th>
                   <th>Questions Captured</th>
                   <th>Recorded Submissions</th>
                   <th>Primary Reach Target</th>
@@ -248,11 +339,168 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 9: SCHOOL 3-VISIT WHEEL SESSION TRACKER ================= -->
+      <!-- ================= WEEKLY COMMUNITY & SCHOOL LISTENING AND RUMOUR LOG ================= -->
+      <section id="tab-rumours" class="tab-pane">
+        <div class="scope-callout" style="border-left-color: #ef4444; background: #fff5f5;">
+          <strong style="color: #991b1b;">Scope — Weekly Community &amp; School Listening and Rumour Log:</strong> Standardized weekly monitoring instrument capturing community concerns, school rumours, misinformation, and recommended message adjustments for weekly RCCE synthesis.
+        </div>
+
+        <!-- 5-PILLAR RUMOUR INTELLIGENCE SCORECARDS -->
+        <div class="five-col-grid">
+          <div class="kpi-card" style="border-top-color: #ef4444;">
+            <div class="kpi-title">Rumours &amp; Concerns Flagged</div>
+            <div class="kpi-value" id="rumourKpiTotal">0</div>
+            <div class="kpi-subtitle" id="rumourKpiTotalSub">Active field alerts logged</div>
+          </div>
+          <div class="kpi-card" style="border-top-color: #dc2626;">
+            <div class="kpi-title">High Spread / Risk Alerts</div>
+            <div class="kpi-value" id="rumourKpiHigh" style="color: #b91c1c;">0</div>
+            <div class="kpi-subtitle" id="rumourKpiHighSub">0% of total rumours</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Primary Origin Channel</div>
+            <div class="kpi-value" id="rumourKpiOrigin" style="font-size: 1.15rem; font-weight: 700;">—</div>
+            <div class="kpi-subtitle" id="rumourKpiOriginSub">Top rumour transmission source</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Top Setting / Hotspot</div>
+            <div class="kpi-value" id="rumourKpiSetting" style="font-size: 1.15rem; font-weight: 700;">—</div>
+            <div class="kpi-subtitle" id="rumourKpiSettingSub">Setting with highest frequency</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Tactical Adaptations Logged</div>
+            <div class="kpi-value" id="rumourKpiTactical">0</div>
+            <div class="kpi-subtitle" id="rumourKpiTacticalSub">Actionable messaging adjustments</div>
+          </div>
+        </div>
+
+        <!-- HIGH RISK ALERT SPOTLIGHT CARDS -->
+        <div class="alert-spotlight" id="rumourHighRiskSpotlight">
+          <div class="alert-spotlight-title">
+            <span>⚠️ Priority RCCE Alerts: High Risk Misconceptions Requiring Counter-Messaging</span>
+          </div>
+          <div class="alert-spotlight-grid" id="rumourHighRiskCards"></div>
+        </div>
+
+        <!-- IN-TAB FILTER CONTROLS -->
+        <div class="rumour-filter-card">
+          <div class="rumour-filter-group">
+            <label for="filterRumourRisk">Risk Level:</label>
+            <select id="filterRumourRisk" onchange="renderRumourLogFiltered()">
+              <option value="ALL">All Risk Levels</option>
+              <option value="High">High Risk Only</option>
+              <option value="Moderate">Moderate Risk Only</option>
+              <option value="Low">Low Risk Only</option>
+            </select>
+          </div>
+          <div class="rumour-filter-group">
+            <label for="filterRumourOrigin">Origin / Channel:</label>
+            <select id="filterRumourOrigin" onchange="renderRumourLogFiltered()">
+              <option value="ALL">All Origins</option>
+            </select>
+          </div>
+          <div class="rumour-filter-group">
+            <label for="filterRumourSetting">Setting Type:</label>
+            <select id="filterRumourSetting" onchange="renderRumourLogFiltered()">
+              <option value="ALL">All Settings</option>
+            </select>
+          </div>
+          <div class="rumour-filter-group" style="flex: 2 1 240px;">
+            <label for="filterRumourSearch">Search:</label>
+            <input type="text" id="filterRumourSearch" placeholder="Filter rumours, barriers, adaptations..." oninput="renderRumourLogFiltered()">
+          </div>
+          <button class="btn-action btn-outline" onclick="resetRumourFilters()">Reset Log</button>
+        </div>
+
+        <!-- 4 ANALYTICAL CHARTS -->
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-title">Estimated Spread &amp; Risk Level Distribution</div>
+            <div class="chart-box"><canvas id="chartRumourRisk"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Top Origins of Rumours &amp; Concerns</div>
+            <div class="chart-box"><canvas id="chartRumourOrigin"></canvas></div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid" style="margin-top: 16px;">
+          <div class="card">
+            <div class="card-title">Rumour Frequency by Setting Type</div>
+            <div class="chart-box"><canvas id="chartRumourSetting"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Rumour Volume by District</div>
+            <div class="chart-box"><canvas id="chartRumourDistrict"></canvas></div>
+          </div>
+        </div>
+
+        <!-- FULL RUMOUR LOG MASTER REGISTRY TABLE -->
+        <div class="card" style="margin-top: 20px;">
+          <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Weekly Community &amp; School Listening &amp; Rumour Master Registry</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);" id="rumourLogCountBadge">0 Entries</span>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th style="min-width: 90px;"># / Date</th>
+                  <th style="min-width: 120px;">District / Parish</th>
+                  <th style="min-width: 110px;">Setting</th>
+                  <th style="min-width: 110px;">Origin</th>
+                  <th style="min-width: 200px;">Flagged Rumour / Question</th>
+                  <th style="min-width: 180px;">Local Barrier Identified</th>
+                  <th style="min-width: 95px;">Risk Level</th>
+                  <th style="min-width: 220px;">Recommended Tactical Adaptation</th>
+                </tr>
+              </thead>
+              <tbody id="rumourLogTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TOOL 9: SCHOOL 3-VISIT TRACKER ================= -->
       <section id="tab-tool_9" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 9 Scope (School 3-Visit Wheel Session Tracker):</strong> Operational tracking tool for school sessions across target schools, monitoring curriculum delivery, wheel participation, take-home cards, and health club activation.
+          <strong>Scope — School 3-Visit Tracker:</strong> Operational tracking tool for school sessions across target schools, monitoring curriculum delivery, wheel participation, take-home cards, and health club activation.
         </div>
+
+        <!-- 6-PILLAR AUDIT & PREPAREDNESS SCORECARDS -->
+        <div class="six-col-grid">
+          <div class="kpi-card accent">
+            <div class="kpi-title">1-Page PHE Protocol</div>
+            <div class="kpi-value" id="t9_kpi_protocol">0%</div>
+            <div class="kpi-subtitle">Shared &amp; displayed with Headteacher</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Dedicated Sick Bay</div>
+            <div class="kpi-value" id="t9_kpi_isolation">0%</div>
+            <div class="kpi-subtitle">Ventilated isolation space identified</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Headteacher Hotline</div>
+            <div class="kpi-value" id="t9_kpi_hotline">0%</div>
+            <div class="kpi-subtitle">Knows 0800-100-066 / 8500 verified</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">U-Report Health Club</div>
+            <div class="kpi-value" id="t9_kpi_club">0%</div>
+            <div class="kpi-subtitle">Newly formed or active club</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Take-Home Cards</div>
+            <div class="kpi-value" id="t9_kpi_cards">0</div>
+            <div class="kpi-subtitle">PHE cards distributed to learners</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Water &amp; Soap Points</div>
+            <div class="kpi-value" id="t9_kpi_wash">0%</div>
+            <div class="kpi-subtitle">Functional handwashing with soap</div>
+          </div>
+        </div>
+
         <div class="dashboard-grid">
           <div class="card">
             <div class="card-title">Can Name 3 Warning Signs of PHE (Crowd Response Count)</div>
@@ -280,7 +528,7 @@
         </div>
 
         <div class="card">
-          <div class="card-title">Tool 9 Registry: Multi-Visit School Session Breakdown (Visit 1, Visit 2, Visit 3)</div>
+          <div class="card-title">Multi-Visit School Session Breakdown (Visit 1, Visit 2, Visit 3)</div>
           <div class="table-responsive">
             <table>
               <thead>
@@ -302,10 +550,10 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 7: COMMUNITY GATEKEEPER DIALOGUE ================= -->
+      <!-- ================= TOOL 7: COMMUNITY GATEKEEPER ENGAGEMENTS ================= -->
       <section id="tab-tool_7" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 7 Scope (Community Gatekeeper Dialogue &amp; Commitment Log):</strong> Longitudinal engagement and institutional commitment tracker for key community decision-makers, school administrators, headteachers, teachers, market masters, and Village Health Teams (VHTs). Evaluates facilitation fidelity with MoH/KCCA standard scripts, diagnostic grasp of epidemic warning signs, toll-free reporting literacy, and local biosecurity barriers.
+          <strong>Scope — Community Gatekeeper Engagements:</strong> Longitudinal engagement and institutional commitment tracker for key community decision-makers, school administrators, headteachers, teachers, market masters, and Village Health Teams (VHTs). Evaluates facilitation fidelity with MoH/KCCA standard scripts, diagnostic grasp of epidemic warning signs, toll-free reporting literacy, and local biosecurity barriers.
         </div>
 
         <!-- 5-PILLAR GATEKEEPER ENGAGEMENT SCORECARDS -->
@@ -337,6 +585,31 @@
           </div>
         </div>
 
+        <!-- SECONDARY GATEKEEPER BIOSECURITY SCORECARDS -->
+        <div class="four-col-grid">
+          <div class="kpi-card">
+            <div class="kpi-title">Protocol Handed Over</div>
+            <div class="kpi-value" id="gk_kpi_protocol">0%</div>
+            <div class="kpi-subtitle">1-page PHE Protocol shared with venue lead</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Emergency Action Plan</div>
+            <div class="kpi-value" id="gk_kpi_plan">0%</div>
+            <div class="kpi-subtitle">Agreed on or started institutional plan</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Crowd Engaged on-site</div>
+            <div class="kpi-value" id="gk_kpi_crowd">0</div>
+            <div class="kpi-subtitle">Passersby / Community crowd engaged</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Destigmatization Attitude</div>
+            <div class="kpi-value" id="gk_kpi_destigma">0%</div>
+            <div class="kpi-subtitle">High receptivity to support suspect cases</div>
+          </div>
+        </div>
+
+
         <!-- 2 DEDICATED HORIZONTAL BAR CHARTS -->
         <div class="dashboard-grid">
           <div class="card">
@@ -352,7 +625,7 @@
         <!-- COMPREHENSIVE MASTER GATEKEEPER DIALOGUE REGISTRY TABLE -->
         <div class="card" style="margin-top:16px;">
           <div class="card-title">
-            <span>Community Gatekeeper Dialogue &amp; Commitment Master Registry</span>
+            <span>Community Gatekeeper Engagements Master Registry</span>
             <span style="font-size:0.75rem; color:var(--text-muted);" id="gkCountBadge">0 Sessions</span>
           </div>
           <div class="table-responsive">
@@ -378,7 +651,7 @@
       <!-- ================= TOOL 1: TRANSECT WALK & INFRASTRUCTURE CHECKLIST ================= -->
       <section id="tab-tool_1" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 1 Scope (Transect Walk Environmental & Infrastructure Checklist):</strong> Systematic physical audit protocol assessing environmental biosecurity, handwashing infrastructure, crowd congestion choke points, latrine stance ratios, poster currency with active MoH/KCCA toll-free hotlines, and dedicated isolation capacity across schools, markets, bus/taxi parks, and informal settlements.
+          <strong>Scope — Transect Walk Environmental &amp; Infrastructure Checklist:</strong> Systematic physical audit protocol assessing environmental biosecurity, handwashing infrastructure, crowd congestion choke points, latrine stance ratios, poster currency with active MoH/KCCA toll-free hotlines, and dedicated isolation capacity across schools, markets, bus/taxi parks, and informal settlements.
         </div>
 
         <!-- 5-PILLAR ENVIRONMENTAL & INFRASTRUCTURE SCORECARDS -->
@@ -436,7 +709,7 @@
         <!-- COMPREHENSIVE MASTER TRANSECT WALK REGISTRY TABLE -->
         <div class="card" style="margin-top:16px;">
           <div class="card-title">
-            <span>Tool 1: Environmental &amp; Physical Infrastructure Master Audit Registry</span>
+            <span>Environmental &amp; Physical Infrastructure Master Audit Registry</span>
             <span style="font-size:0.75rem; color:var(--text-muted);" id="twCountBadge">0 Audits</span>
           </div>
           <div class="table-responsive">
@@ -462,7 +735,7 @@
       <!-- ================= TOOL 2: RAPID AUDIENCE ASSESSMENT INTERCEPT SURVEY ================= -->
       <section id="tab-tool_2" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 2 Scope (Rapid Audience Assessment Intercept Survey):</strong> Rapid intercept diagnostic administered across informal settlements, markets, transit hubs, clinics, and school vicinities. Systematically measures <strong>5 Core RCCE Dimensions</strong>: (1) 7-day multi-channel campaign exposure, (2) unprompted clinical signs and protection recall, (3) post-declaration epidemic risk perception, (4) emergency first-action protocols for hemorrhagic symptoms, and (5) trusted community information brokers.
+          <strong>Scope — Rapid Audience Assessment Intercept Survey:</strong> Rapid intercept diagnostic administered across informal settlements, markets, transit hubs, clinics, and school vicinities. Systematically measures <strong>5 Core RCCE Dimensions</strong>: (1) 7-day multi-channel campaign exposure, (2) unprompted clinical signs and protection recall, (3) post-declaration epidemic risk perception, (4) emergency first-action protocols for hemorrhagic symptoms, and (5) trusted community information brokers.
         </div>
 
         <!-- 5-PILLAR RAPID AUDIENCE DIAGNOSTIC SCORECARDS -->
@@ -570,7 +843,7 @@
       <!-- ================= TOOL 3: 'ASK 5' BEHAVIORAL VERIFICATION DIAGNOSTIC ================= -->
       <section id="tab-tool_3" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 3 Scope ('Ask 5' Behavioral Verification Diagnostic):</strong> Rapid probing qualitative diagnostic administered across key community influencers (Pupil leaders, Teachers/patrons, Boda riders, VHTs, Taxi drivers, Market vendors). Rather than taking reported claims at face value, field auditors physically probe and inspect evidence across <strong>5 Core Claims</strong> to detect social desirability bias and verify genuine community-level behavior adoption.
+          <strong>Scope — 'Ask 5' Behavioral Verification Diagnostic:</strong> Rapid probing qualitative diagnostic administered across key community influencers (Pupil leaders, Teachers/patrons, Boda riders, VHTs, Taxi drivers, Market vendors). Rather than taking reported claims at face value, field auditors physically probe and inspect evidence across <strong>5 Core Claims</strong> to detect social desirability bias and verify genuine community-level behavior adoption.
         </div>
 
         <!-- 5-CLAIM DIAGNOSTIC VERIFICATION SCORECARDS -->
@@ -657,7 +930,7 @@
       <!-- ================= TOOL 4: MOST SIGNIFICANT CHANGE STORY FORM ================= -->
       <section id="tab-tool_4" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 4 Scope (Most Significant Change Story Collection Form):</strong> Systematic qualitative tool capturing human-interest impact stories from community members, head teachers, school patrons, pupils, and health workers.
+          <strong>Scope — Most Significant Change Story Collection Form:</strong> Systematic qualitative tool capturing human-interest impact stories from community members, head teachers, school patrons, pupils, and health workers.
         </div>
         <div class="card">
           <div class="card-title">Qualitative Impact Narrative Framework (Most Significant Change Stories)</div>
@@ -682,7 +955,7 @@
       <!-- ================= TOOL 5: SOCIAL NETWORK & INFLUENCER MAPPING ================= -->
       <section id="tab-tool_5" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 5 Scope (Social Network & Influencer Mapping Protocol):</strong> Participatory mapping guide used during parish entry, gatekeeper orientations, and school stakeholder mappings to identify trusted leaders and communication channels.
+          <strong>Scope — Social Network &amp; Influencer Mapping Protocol:</strong> Participatory mapping guide used during parish entry, gatekeeper orientations, and school stakeholder mappings to identify trusted leaders and communication channels.
         </div>
         <div class="card">
           <div class="card-title">Informal Trust Broker Mapping by Sector</div>
@@ -705,7 +978,7 @@
       <!-- ================= TOOL 6: PHOTOVOICE PARTICIPATORY DOCUMENTATION ================= -->
       <section id="tab-tool_6" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 6 Scope (Photovoice Participatory Documentation Guide & Caption Form):</strong> Protocol enabling community members, youth, and school health clubs to document daily realities, hygiene innovations, and behavioral challenges through photography.
+          <strong>Scope — Photovoice Participatory Documentation Guide &amp; Caption Form:</strong> Protocol enabling community members, youth, and school health clubs to document daily realities, hygiene innovations, and behavioral challenges through photography.
         </div>
         <div class="card">
           <div class="card-title">PHOTO Analysis Protocol (Youth &amp; Community Photographic Documentation)</div>
@@ -731,7 +1004,7 @@
       <!-- ================= TOOL 10: SCHOOL SIMULATION DRILL PROTOCOL ================= -->
       <section id="tab-tool_10" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 10 Scope (School Simulation Drill & Safeguarding Compliance Protocol):</strong> Mandatory pre-drill verification and performance evaluation tool to safely rehearse school-level detection, isolation, notification, and handover without causing panic or stigma.
+          <strong>Scope — School Simulation Drill &amp; Safeguarding Compliance Protocol:</strong> Mandatory pre-drill verification and performance evaluation tool to safely rehearse school-level detection, isolation, notification, and handover without causing panic or stigma.
         </div>
         <div class="kpi-grid">
           <div class="kpi-card accent"><div class="kpi-title">Stage 1: Identification</div><div class="kpi-value" id="t9_s1" style="font-size:1.3rem; color:#94a3b8;">Pending</div><div class="kpi-subtitle">No simulation drills recorded yet</div></div>
@@ -760,43 +1033,43 @@
         </div>
       </section>
 
-      <!-- ================= TOOL 8: PREPAREDNESS ASSESSMENT TOOL (PAT) ================= -->
+      <!-- ================= PREPAREDNESS ASSESSMENT TOOL ================= -->
       <section id="tab-tool_8" class="tab-pane">
         <div class="scope-callout">
-          <strong>Tool 8 Scope (Preparedness Assessment Tool - PAT):</strong> School Epidemic Preparedness Assessment Tool examining institutional response plans, isolation wards, WASH baselines, and leadership hotline recall.
+          <strong>Scope — Preparedness Assessment Tool:</strong> School Epidemic Preparedness Assessment Tool examining institutional response plans, isolation wards, WASH baselines, and leadership hotline recall.
         </div>
         
         <!-- 3-COLUMN 6-PILLAR 10-PUPIL LITERACY & BEHAVIORAL SCORECARD GRID -->
         <div class="three-col-grid">
           <div class="kpi-card accent">
             <div class="kpi-title">Pupil Symptom Recall</div>
-            <div class="kpi-value">80%</div>
-            <div class="kpi-subtitle"><strong>Prompt:</strong> How many can you name 3 major signs of Ebola or Mpox? <br><em>(Cohort Average across school interviews)</em></div>
+            <div class="kpi-value" id="patPupilSigns">0%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> How many can you name 3 major signs of Ebola or Mpox? <br><em id="patPupilSignsSub">(Cohort Average across school interviews)</em></div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">Spread Mechanism Grasp</div>
-            <div class="kpi-value">70%</div>
-            <div class="kpi-subtitle"><strong>Prompt:</strong> How do disease outbreaks spread from person to person? <br><em>(Cohort Average across school interviews)</em></div>
+            <div class="kpi-value" id="patPupilSpread">0%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> How do disease outbreaks spread from person to person? <br><em id="patPupilSpreadSub">(Cohort Average across school interviews)</em></div>
           </div>
           <div class="kpi-card accent">
             <div class="kpi-title">Post-Decl. Risk Awareness</div>
-            <div class="kpi-value">60%</div>
-            <div class="kpi-subtitle"><strong>Prompt:</strong> Since outbreak-free declaration, is the risk completely gone? <br><em>(Cohort Average across school interviews)</em></div>
+            <div class="kpi-value" id="patPupilRisk">0%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> Since outbreak-free declaration, is the risk completely gone? <br><em id="patPupilRiskSub">(Cohort Average across school interviews)</em></div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">Early Notification Intent</div>
-            <div class="kpi-value">90%</div>
-            <div class="kpi-subtitle"><strong>Prompt:</strong> If someone collapses/has fever &amp; bleeding, who should be notified first? <br><em>(Cohort Average across school interviews)</em></div>
+            <div class="kpi-value" id="patPupilNotify">0%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> If someone collapses/has fever &amp; bleeding, who should be notified first? <br><em id="patPupilNotifySub">(Cohort Average across school interviews)</em></div>
           </div>
           <div class="kpi-card accent">
             <div class="kpi-title">Survivor Reintegration</div>
-            <div class="kpi-value">60%</div>
-            <div class="kpi-subtitle"><strong>Prompt:</strong> How should a returning pupil discharged from isolation be treated? <br><em>(Cohort Average across school interviews)</em></div>
+            <div class="kpi-value" id="patPupilStigma">0%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> How should a returning pupil discharged from isolation be treated? <br><em id="patPupilStigmaSub">(Cohort Average across school interviews)</em></div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">Handwashing Technique</div>
-            <div class="kpi-value">60%</div>
-            <div class="kpi-subtitle"><strong>Prompt:</strong> Demonstrate how to wash your hands properly with water &amp; soap. <br><em>(Cohort Average across school interviews)</em></div>
+            <div class="kpi-value" id="patPupilHandwash">0%</div>
+            <div class="kpi-subtitle"><strong>Prompt:</strong> Demonstrate how to wash your hands properly with water &amp; soap. <br><em id="patPupilHandwashSub">(Cohort Average across school interviews)</em></div>
           </div>
         </div>
 
@@ -804,32 +1077,32 @@
         <div class="three-col-grid" style="margin-top: 16px;">
           <div class="kpi-card">
             <div class="kpi-title">Health Club Status</div>
-            <div class="kpi-value" id="patClubRate">75.0%</div>
+            <div class="kpi-value" id="patClubRate">0%</div>
             <div class="kpi-subtitle" id="patClubSub">Audited schools active</div>
           </div>
           <div class="kpi-card" style="border-top-color: var(--danger);">
             <div class="kpi-title">Formal Written Plan</div>
-            <div class="kpi-value" id="patPlanRate">0.0%</div>
-            <div class="kpi-subtitle">Informal procedures used</div>
+            <div class="kpi-value" id="patPlanRate">0%</div>
+            <div class="kpi-subtitle">Formal plan verified on-site</div>
           </div>
           <div class="kpi-card" style="border-top-color: var(--warning);">
             <div class="kpi-title">Designated Isolation Bay</div>
-            <div class="kpi-value" id="patIsoRate">75.0%</div>
-            <div class="kpi-subtitle">Makeshift or dedicated room</div>
+            <div class="kpi-value" id="patIsoRate">0%</div>
+            <div class="kpi-subtitle">Dedicated or makeshift space</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">Leadership Hotline Recall</div>
-            <div class="kpi-value">Partially Known</div>
-            <div class="kpi-subtitle">Knows VHT / official hotline</div>
+            <div class="kpi-value" id="patLeaderHotline">0%</div>
+            <div class="kpi-subtitle" id="patLeaderHotlineSub">Knows official reporting lines</div>
           </div>
           <div class="kpi-card accent">
             <div class="kpi-title">Up-to-Date MoH Posters</div>
-            <div class="kpi-value" id="patPosterRate">75.0%</div>
+            <div class="kpi-value" id="patPosterRate">0%</div>
             <div class="kpi-subtitle">Prominent IEC display verified</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">Hotline Legibility on Posters</div>
-            <div class="kpi-value" id="patHotlineRate">50.0%</div>
+            <div class="kpi-value" id="patHotlineRate">0%</div>
             <div class="kpi-subtitle">Clear toll-free line readable</div>
           </div>
         </div>
@@ -857,6 +1130,66 @@
           </div>
         </div>
       </section>
+
+      <!-- ================= TOOL 11: U-REPORT RECRUITMENT ================= -->
+      <section id="tab-tool_11" class="tab-pane">
+        <div class="scope-callout">
+          <strong>Scope — U-Report Recruitment:</strong> Tracking recruitment and mobilization of youth, learners, and community members as active U-Reporters for rapid feedback, rumour tracking, and epidemic surveillance.
+        </div>
+
+        <div class="four-col-grid">
+          <div class="kpi-card accent">
+            <div class="kpi-title">Total U-Reporters Recruited</div>
+            <div class="kpi-value" id="u_kpi_total">0</div>
+            <div class="kpi-subtitle" id="u_kpi_total_sub">Across all mobilization drives</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Male U-Reporters</div>
+            <div class="kpi-value" id="u_kpi_male">0</div>
+            <div class="kpi-subtitle" id="u_kpi_male_sub">0% of cohort</div>
+          </div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Female U-Reporters</div>
+            <div class="kpi-value" id="u_kpi_female">0</div>
+            <div class="kpi-subtitle" id="u_kpi_female_sub">0% of cohort</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Active Settings Mobilized</div>
+            <div class="kpi-value" id="u_kpi_locs">0</div>
+            <div class="kpi-subtitle">Schools, markets, stages, youth groups</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-title">Recruitment by Mobilization Location Setting</div>
+          <div class="chart-box" style="height: 280px;"><canvas id="chartURecruitSetting"></canvas></div>
+        </div>
+
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>U-Report Field Recruitment Drives Registry</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);" id="tool11CountBadge">0 Sessions</span>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID / Date</th>
+                  <th>District</th>
+                  <th>Parish</th>
+                  <th>Mobilization Location Setting</th>
+                  <th>Male Recruited</th>
+                  <th>Female Recruited</th>
+                  <th>Total Recruited</th>
+                  <th>Lead Coordinator</th>
+                </tr>
+              </thead>
+              <tbody id="tool11TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
 
     </main>
   </div>
