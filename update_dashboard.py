@@ -483,8 +483,11 @@ def parse_workbook(excel_path):
                 'school': s_name,
                 'name': s_name,
                 'level': get_col(row, 'School level') or 'Primary',
-                'boys': parse_num(get_col(row, 'total enrolment for boys')),
-                'girls': parse_num(get_col(row, 'Totla enrolement for girls', 'Total enrolment for girls')),
+                'boys': 0,
+                'girls': 0,
+                'boys_enrolment': parse_num(get_col(row, 'total enrolment for boys')),
+                'girls_enrolment': parse_num(get_col(row, 'Totla enrolement for girls', 'Total enrolment for girls')),
+                'enrolment': parse_num(get_col(row, 'total enrolment for boys')) + parse_num(get_col(row, 'Totla enrolement for girls', 'Total enrolment for girls')),
                 'maleStaff': parse_num(get_col(row, 'Total male teaching staff')),
                 'femaleStaff': parse_num(get_col(row, 'Total female teaching staff')),
                 'club': get_col(row, 'Presence of health club', 'School Health Club Status') or 'Active',
@@ -508,7 +511,7 @@ def parse_workbook(excel_path):
                 'p_notify': p_notify,
                 'p_stigma': p_stigma,
                 'p_handwash': p_handwash,
-                'enrolment': 0, 'teachers': 0, 'games': 0
+                'teachers': 0, 'games': 0
             })
             tool_counts['PAT Assessment'] = tool_counts.get('PAT Assessment', 0) + 1
             continue
@@ -908,9 +911,27 @@ def main():
             print(f"⚠️ Could not copy Excel file locally: {e}")
 
     # Summary Statistics
-    total_boys = sum(r.get('boys', 0) for r in records)
-    total_girls = sum(r.get('girls', 0) for r in records)
-    total_learners = total_boys + total_girls
+    # Calculate True Deduplicated School Reach (unique individuals)
+    school_unique_reach = {}
+    for r in records:
+        if r.get('tool') == 'School Activity':
+            s_name = (r.get('school') or '').strip().lower()
+            if s_name and s_name != 'site':
+                b = r.get('boys', 0)
+                g = r.get('girls', 0)
+                tot = b + g
+                enr = r.get('enrolment', 0)
+                if not school_unique_reach.get(s_name) or tot > school_unique_reach[s_name]['total']:
+                    school_unique_reach[s_name] = {'boys': b, 'girls': g, 'total': tot, 'enrolment': enr}
+                elif enr > school_unique_reach[s_name]['enrolment']:
+                    school_unique_reach[s_name]['enrolment'] = enr
+
+    unique_boys = sum(v['boys'] for v in school_unique_reach.values())
+    unique_girls = sum(v['girls'] for v in school_unique_reach.values())
+    unique_learners = unique_boys + unique_girls
+    total_contacts = sum(r.get('boys', 0) + r.get('girls', 0) for r in records if r.get('tool') == 'School Activity')
+    total_enrolment = sum(v['enrolment'] for v in school_unique_reach.values())
+
     total_teachers = sum(r.get('teachers', 0) for r in records)
     total_games = sum(r.get('games', 0) for r in records)
     total_crowd_male = sum(r.get('male_crowd', 0) for r in records)
@@ -927,7 +948,9 @@ def main():
     for t_name, count in tool_counts.items():
         print(f"   • {t_name}: {count} records")
     print("-" * 60)
-    print(f"👥 Total Learners Sensitised: {total_learners:,} ({total_boys:,} Boys | {total_girls:,} Girls)")
+    print(f"👥 Unique Learners Reached: {unique_learners:,} ({unique_boys:,} Boys | {unique_girls:,} Girls)")
+    print(f"   • Total Enrolment Monitored: {total_enrolment:,} (Coverage: {((unique_learners/total_enrolment)*100):.1f}%)")
+    print(f"   • Cumulative Session Contacts Delivered: {total_contacts:,}")
     print(f"🎓 Gatekeepers & Teachers Oriented: {total_teachers:,}")
     print(f"📣 Community Events Crowd Reached: {total_crowd:,} ({total_crowd_male:,} Male | {total_crowd_female:,} Female)")
     print(f"🎲 Board Games Distributed: {total_games:,}")

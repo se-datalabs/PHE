@@ -521,13 +521,13 @@ function recomputeAndRender() {
   });
 
   const distMap = {};
-  let totalBoys = 0, totalGirls = 0, totalTeachers = 0, totalGames = 0;
+  let totalTeachers = 0, totalGames = 0;
   let totalCrowd = 0, totalCrowdMale = 0, totalCrowdFemale = 0;
+  let totalLearnerContacts = 0;
 
-  const schoolUniqueEnrolment = {};
+  const schoolUniqueReach = {};
+
   appData.forEach(r => {
-    totalBoys += (r.boys || 0);
-    totalGirls += (r.girls || 0);
     totalTeachers += (r.teachers || 0);
     totalGames += (r.games || 0);
 
@@ -542,45 +542,86 @@ function recomputeAndRender() {
     const enr = r.enrolment || 0;
     const dName = r.district || 'Unassigned';
 
-    if (sName && sName !== 'site' && !sName.startsWith('gatekeeper') && r.tool === 'School Activity') {
-      if (!schoolUniqueEnrolment[sName] || enr > schoolUniqueEnrolment[sName].enr) {
-        schoolUniqueEnrolment[sName] = { enr: enr, district: dName };
-      }
-    }
-
     if (!distMap[dName]) {
-      distMap[dName] = { count: 0, enrolment: 0, boys: 0, girls: 0, teachers: 0, totalLearners: 0, totalReach: 0, games: 0, v1Reach: 0, v2Reach: 0, v3Reach: 0, crowd: 0, crowdMale: 0, crowdFemale: 0, schoolsSet: new Set() };
+      distMap[dName] = { 
+        count: 0, 
+        enrolment: 0, 
+        boys: 0, 
+        girls: 0, 
+        teachers: 0, 
+        uniqueBoys: 0,
+        uniqueGirls: 0,
+        uniqueLearners: 0,
+        totalLearners: 0, 
+        totalReach: 0, 
+        learnerContacts: 0,
+        games: 0, 
+        v1Reach: 0, 
+        v2Reach: 0, 
+        v3Reach: 0, 
+        crowd: 0, 
+        crowdMale: 0, 
+        crowdFemale: 0, 
+        schoolsSet: new Set() 
+      };
     }
     
-    if (sName && sName !== 'site' && !sName.startsWith('gatekeeper') && r.tool === 'School Activity') {
-      distMap[dName].schoolsSet.add(sName);
-    }
-
-    distMap[dName].boys += (r.boys || 0);
-    distMap[dName].girls += (r.girls || 0);
     distMap[dName].teachers += (r.teachers || 0);
     distMap[dName].crowd += cTot;
     distMap[dName].crowdMale += cm;
     distMap[dName].crowdFemale += cf;
-    distMap[dName].totalLearners += ((r.boys || 0) + (r.girls || 0));
-    distMap[dName].totalReach += ((r.boys || 0) + (r.girls || 0) + (r.teachers || 0) + cTot);
     distMap[dName].games += (r.games || 0);
 
     if (r.tool === 'School Activity') {
+      const b = (r.boys || 0);
+      const g = (r.girls || 0);
+      const tot = b + g;
+      totalLearnerContacts += tot;
+      distMap[dName].learnerContacts += tot;
+
+      if (sName && sName !== 'site' && !sName.startsWith('gatekeeper') && !CLEAN_EMPTY_WORDS.has(sName)) {
+        distMap[dName].schoolsSet.add(sName);
+        if (!schoolUniqueReach[sName] || tot > schoolUniqueReach[sName].total) {
+          schoolUniqueReach[sName] = { 
+            name: sName, 
+            district: dName, 
+            boys: b, 
+            girls: g, 
+            total: tot, 
+            enrolment: enr 
+          };
+        } else if (enr > schoolUniqueReach[sName].enrolment) {
+          schoolUniqueReach[sName].enrolment = enr;
+        }
+      }
+
       const vNum = String(r.visit_num || 'Visit 1').trim().toLowerCase();
-      const vReach = (r.boys || 0) + (r.girls || 0);
-      if (vNum.includes('visit 1') || vNum === '1') distMap[dName].v1Reach += vReach;
-      else if (vNum.includes('visit 2') || vNum === '2') distMap[dName].v2Reach += vReach;
-      else if (vNum.includes('visit 3') || vNum === '3') distMap[dName].v3Reach += vReach;
+      if (vNum.includes('visit 1') || vNum === '1') distMap[dName].v1Reach += tot;
+      else if (vNum.includes('visit 2') || vNum === '2') distMap[dName].v2Reach += tot;
+      else if (vNum.includes('visit 3') || vNum === '3') distMap[dName].v3Reach += tot;
     }
   });
 
-  let totalEnrolment = 0;
-  Object.values(schoolUniqueEnrolment).forEach(item => {
-    totalEnrolment += item.enr;
+  let uniqueBoys = 0, uniqueGirls = 0, uniqueLearners = 0, totalEnrolment = 0;
+  Object.values(schoolUniqueReach).forEach(item => {
+    uniqueBoys += item.boys;
+    uniqueGirls += item.girls;
+    uniqueLearners += item.total;
+    totalEnrolment += item.enrolment;
     if (distMap[item.district]) {
-      distMap[item.district].enrolment += item.enr;
+      distMap[item.district].uniqueBoys += item.boys;
+      distMap[item.district].uniqueGirls += item.girls;
+      distMap[item.district].uniqueLearners += item.total;
+      distMap[item.district].enrolment += item.enrolment;
     }
+  });
+
+  // Assign district summary metrics
+  Object.keys(distMap).forEach(d => {
+    distMap[d].boys = distMap[d].uniqueBoys;
+    distMap[d].girls = distMap[d].uniqueGirls;
+    distMap[d].totalLearners = distMap[d].uniqueLearners;
+    distMap[d].totalReach = distMap[d].uniqueLearners + distMap[d].teachers + distMap[d].crowd;
   });
 
   const distList = Object.keys(distMap).map(d => ({
@@ -589,8 +630,8 @@ function recomputeAndRender() {
     ...distMap[d]
   })).sort((a, b) => b.totalReach - a.totalReach);
 
-  const totalSensitised = totalBoys + totalGirls;
-  const totalLearners = totalSensitised;
+  const totalSensitised = uniqueLearners;
+  const totalLearners = uniqueLearners;
   const gatekeeperRowsFiltered = appData.filter(d => d.tool === 'Gatekeeper Session');
   const grandTotalGatekeepers = totalTeachers;
   const grandTotalReach = totalLearners + grandTotalGatekeepers + totalCrowd;
@@ -645,8 +686,9 @@ function recomputeAndRender() {
   safeSetText('kpiSchoolsEngaged', schoolsEngagedCount.toLocaleString());
   safeSetText('kpiSchoolsEngagedSub', `Unique target schools (${distList.length} districts)`);
 
+  const coveragePct = totalEnrolment > 0 ? ((totalLearners / totalEnrolment) * 100).toFixed(1) : 0;
   safeSetText('kpiLearners', totalLearners.toLocaleString());
-  safeSetText('kpiLearnersSub', `${totalBoys.toLocaleString()} Boys | ${totalGirls.toLocaleString()} Girls (${totalLearners > 0 ? ((totalGirls / totalLearners) * 100).toFixed(1) : 0}% F)`);
+  safeSetText('kpiLearnersSub', `${uniqueBoys.toLocaleString()} Boys | ${uniqueGirls.toLocaleString()} Girls (${coveragePct}% coverage) • ${totalLearnerContacts.toLocaleString()} Contacts`);
 
   safeSetText('kpiWheelSessions', wheelSessionsCount.toLocaleString());
   safeSetText('kpiWheelSessionsSub', `Across visits 1, 2 & 3 delivery`);
@@ -674,7 +716,7 @@ function recomputeAndRender() {
   safeSetText('kpiCommunityCrowdSub', commSubText);
 
   safeSetText('kpiEnrolment', totalEnrolment.toLocaleString());
-  safeSetText('kpiEnrolmentSub', `Unique school population base (validated)`);
+  safeSetText('kpiEnrolmentSub', `Unique school population base (${coveragePct}% covered)`);
   safeSetText('kpiGames', totalGames.toLocaleString());
   safeSetText('kpiTakeHomeCards', totalCards.toLocaleString());
   safeSetText('kpiDistricts', distList.length);
@@ -729,7 +771,7 @@ function recomputeAndRender() {
     { num: 5, name: "Photovoice Participatory Documentation Guide & Caption Form", q: 9, reach: t6Count > 0 ? `${t6Count} PHOTO Panels` : "0 Submissions (Pending)", active: t6Count > 0, tab: "tool_6" },
     { num: 6, name: "Community Gatekeeper Dialogue & Events", q: 13, reach: t7Count > 0 ? `${t7Count} Sessions Oriented` : "0 Submissions (Pending)", active: t7Count > 0, tab: "tool_7" },
     { num: 7, name: "Preparedness Assessment", q: 53, reach: patCount > 0 ? `${patCount} Institutional Audits Complete` : "0 Submissions (Pending)", active: patCount > 0, tab: "tool_8" },
-    { num: 8, name: "School 3-Visit Model & Knowledge Wheel Tracker", q: 26, reach: `${appData.filter(d => d.tool === 'School Activity').reduce((acc, r) => acc + (r.boys||0) + (r.girls||0), 0).toLocaleString()} Learners (${schoolActsCount} Schools)`, active: schoolActsCount > 0, tab: "tool_9" },
+    { num: 8, name: "School 3-Visit Model & Knowledge Wheel Tracker", q: 26, reach: `${uniqueLearners.toLocaleString()} Unique Learners (${totalLearnerContacts.toLocaleString()} Contacts)`, active: schoolActsCount > 0, tab: "tool_9" },
     { num: 9, name: "School Simulation Drill & Safeguarding Compliance Protocol", q: 19, reach: t10Count > 0 ? `${t10Count} Drills Evaluated` : "0 Submissions (Pending)", active: t10Count > 0, tab: "tool_10" },
     { num: 10, name: "U-Report Recruitment Tracker", q: 12, reach: t11Count > 0 ? `${t11Count} Drives Logged` : "0 Submissions (Pending)", active: t11Count > 0, tab: "tool_11" }
   ];
@@ -1250,7 +1292,7 @@ function recomputeAndRender() {
     <tr>
       <td><span style="font-weight:700; color:var(--primary); font-size:0.75rem;">#${p._index || p.id}</span> <strong>${cleanText(p.name)}</strong></td>
       <td>${cleanText(p.level)}</td>
-      <td>${p.boys} / ${p.girls}</td>
+      <td>${p.boys_enrolment || p.boys || 0} / ${p.girls_enrolment || p.girls || 0}</td>
       <td>${p.maleStaff} / ${p.femaleStaff}</td>
       <td><span class="badge-pill ${String(p.club).toLowerCase().includes('active') || String(p.club).toLowerCase().includes('yes') ? 'badge-success' : 'badge-danger'}">${cleanText(p.club) || '—'}</span></td>
       <td><span class="badge-pill badge-warning">${cleanText(p.plan) || '—'}</span></td>
@@ -3344,6 +3386,7 @@ function renderLocationSummaryTable() {
         district: dist,
         parish: parish,
         schoolsSet: new Set(),
+        schoolReach: {},
         learners: 0,
         boys: 0,
         girls: 0,
@@ -3360,12 +3403,16 @@ function renderLocationSummaryTable() {
 
     if (tool === 'School Activity') {
       const s = (r.school || '').trim();
-      if (s) loc.schoolsSet.add(s);
-      const b = r.boys || 0;
-      const g = r.girls || 0;
-      loc.learners += (b + g);
-      loc.boys += b;
-      loc.girls += g;
+      const sKey = s.toLowerCase();
+      if (s && !sKey.startsWith('site') && !sKey.startsWith('gatekeeper') && !CLEAN_EMPTY_WORDS.has(sKey)) {
+        loc.schoolsSet.add(s);
+        const b = r.boys || 0;
+        const g = r.girls || 0;
+        const tot = b + g;
+        if (!loc.schoolReach[sKey] || tot > loc.schoolReach[sKey].total) {
+          loc.schoolReach[sKey] = { boys: b, girls: g, total: tot };
+        }
+      }
       loc.wheelSessions += 1;
       const hcStatus = String(r.health_club || r.health_club_established || '').toLowerCase();
       if (hcStatus.includes('active') || hcStatus.includes('yes') || hcStatus.includes('form')) {
@@ -3387,7 +3434,17 @@ function renderLocationSummaryTable() {
       loc.tallySheets += 1;
     } else if (tool === 'PAT Assessment') {
       const s = (r.school || '').trim();
-      if (s) loc.schoolsSet.add(s);
+      if (s && !s.toLowerCase().startsWith('site') && !CLEAN_EMPTY_WORDS.has(s.toLowerCase())) loc.schoolsSet.add(s);
+    }
+  });
+
+  // Calculate deduplicated unique learners per location
+  Object.values(locMap).forEach(loc => {
+    const reachList = Object.values(loc.schoolReach || {});
+    if (reachList.length > 0) {
+      loc.boys = reachList.reduce((acc, x) => acc + x.boys, 0);
+      loc.girls = reachList.reduce((acc, x) => acc + x.girls, 0);
+      loc.learners = loc.boys + loc.girls;
     }
   });
 
