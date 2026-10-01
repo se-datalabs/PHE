@@ -389,7 +389,7 @@ function showTab(tabId) {
   if (activePane) activePane.classList.add('active');
 
   const titles = {
-    'overview': ['Main Summary of Reach', 'Cross-instrument reach aggregation, district performance, and programmatic coverage'],
+    'overview': ['Summary of Reach & Engagement', 'Cross-instrument reach aggregation, district performance, and programmatic coverage per location'],
     'rumours': ['Weekly Community & School Listening and Rumour Log', 'Standardized weekly RCCE monitoring capturing community concerns, school rumours, misinformation, and recommended message adjustments for weekly RCCE synthesis'],
     'tool_9': ['School 3-Visit Tracker', 'Detailed analysis of learner reach, visit number, health club, and wheel answers'],
     'tool_7': ['Community Gatekeeper Engagements', 'Tracking orientation sessions conducted with local leaders and community stakeholders'],
@@ -3075,6 +3075,177 @@ function renderURecruitSection() {
   }
 }
 
+/**
+ * Summary Matrix: Reach & Engagement per Location (District & Parish)
+ */
+function renderLocationSummaryTable() {
+  const tableBody = document.getElementById('locationSummaryTableBody');
+  const tableFoot = document.getElementById('locationSummaryTableFoot');
+  if (!tableBody) return;
+
+  const searchInput = document.getElementById('filterLocSearch');
+  const distSelect = document.getElementById('filterLocDistrict');
+  const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  const distVal = distSelect ? distSelect.value : 'ALL';
+
+  // Aggregate by district & parish
+  const locMap = {};
+  appData.forEach(r => {
+    const dist = (r.district || 'Central').trim();
+    const parish = (r.parish || 'General Parish').trim();
+    if (CLEAN_EMPTY_WORDS.has(parish.toLowerCase())) return;
+
+    const key = `${dist}|||${parish}`;
+    if (!locMap[key]) {
+      locMap[key] = {
+        district: dist,
+        parish: parish,
+        schoolsSet: new Set(),
+        learners: 0,
+        boys: 0,
+        girls: 0,
+        wheelSessions: 0,
+        healthClubs: 0,
+        gatekeepers: 0,
+        ureporters: 0,
+        tallySheets: 0,
+        games: 0
+      };
+    }
+    const loc = locMap[key];
+    const tool = r.tool;
+
+    if (tool === 'School Activity') {
+      const s = (r.school || '').trim();
+      if (s) loc.schoolsSet.add(s);
+      const b = r.boys || 0;
+      const g = r.girls || 0;
+      loc.learners += (b + g);
+      loc.boys += b;
+      loc.girls += g;
+      loc.wheelSessions += 1;
+      const hcStatus = String(r.health_club || r.health_club_established || '').toLowerCase();
+      if (hcStatus.includes('active') || hcStatus.includes('yes') || hcStatus.includes('form')) {
+        loc.healthClubs += 1;
+      }
+      loc.gatekeepers += (r.teachers || 0);
+      loc.games += (r.games || 0);
+      loc.ureporters += (r.active_ureporters || 0);
+    } else if (tool === 'Gatekeeper Session') {
+      loc.gatekeepers += (r.teachers || (r.male || 0) + (r.female || 0));
+    } else if (tool === 'U-Report Recruitment') {
+      loc.ureporters += ((r.male || 0) + (r.female || 0) + (r.total || 0));
+      loc.tallySheets += 1;
+    } else if (tool === 'PAT Assessment') {
+      const s = (r.school || '').trim();
+      if (s) loc.schoolsSet.add(s);
+    }
+  });
+
+  // Populate district dropdown options if needed
+  if (distSelect && distSelect.options.length <= 1) {
+    const allDistricts = Array.from(new Set(Object.values(locMap).map(l => l.district))).sort();
+    allDistricts.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.innerText = d;
+      distSelect.appendChild(opt);
+    });
+  }
+
+  // Filter rows
+  let rows = Object.values(locMap);
+  if (distVal !== 'ALL') {
+    rows = rows.filter(r => r.district.toLowerCase() === distVal.toLowerCase());
+  }
+  if (searchVal) {
+    rows = rows.filter(r => 
+      r.district.toLowerCase().includes(searchVal) ||
+      r.parish.toLowerCase().includes(searchVal) ||
+      Array.from(r.schoolsSet).some(s => s.toLowerCase().includes(searchVal))
+    );
+  }
+
+  // Sort by district, then parish
+  rows.sort((a, b) => {
+    if (a.district.localeCompare(b.district) !== 0) return a.district.localeCompare(b.district);
+    return a.parish.localeCompare(b.parish);
+  });
+
+  safeSetText('locTableCountBadge', `${rows.length} Locations`);
+
+  if (rows.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:#94a3b8; padding:24px;">No location records found matching active filter.</td></tr>`;
+    if (tableFoot) tableFoot.innerHTML = '';
+    return;
+  }
+
+  // Totals for footer
+  let totSchools = 0;
+  let totLearners = 0;
+  let totBoys = 0;
+  let totGirls = 0;
+  let totWheel = 0;
+  let totClubs = 0;
+  let totGks = 0;
+  let totURep = 0;
+  let totTally = 0;
+  let totGames = 0;
+
+  tableBody.innerHTML = rows.map(r => {
+    const schCount = r.schoolsSet.size;
+    totSchools += schCount;
+    totLearners += r.learners;
+    totBoys += r.boys;
+    totGirls += r.girls;
+    totWheel += r.wheelSessions;
+    totClubs += r.healthClubs;
+    totGks += r.gatekeepers;
+    totURep += r.ureporters;
+    totTally += r.tallySheets;
+    totGames += r.games;
+
+    return `<tr>
+      <td><strong>${r.district}</strong></td>
+      <td><span class="badge-pill" style="background:#e0f2fe; color:#0369a1;">${r.parish}</span></td>
+      <td><strong>${schCount > 0 ? schCount : '—'}</strong></td>
+      <td><strong style="color:var(--primary);">${r.learners > 0 ? r.learners.toLocaleString() : '—'}</strong></td>
+      <td>${r.boys > 0 ? r.boys.toLocaleString() : '—'}</td>
+      <td>${r.girls > 0 ? r.girls.toLocaleString() : '—'}</td>
+      <td><strong style="color:#0284c7;">${r.wheelSessions > 0 ? r.wheelSessions : '—'}</strong></td>
+      <td><span class="badge-pill ${r.healthClubs > 0 ? 'badge-success' : 'badge-warning'}">${r.healthClubs > 0 ? `${r.healthClubs} Formed` : 'None'}</span></td>
+      <td><strong style="color:var(--gatekeeper);">${r.gatekeepers > 0 ? r.gatekeepers.toLocaleString() : '—'}</strong></td>
+      <td><strong style="color:#059669;">${r.ureporters > 0 ? r.ureporters.toLocaleString() : '—'}</strong></td>
+      <td>${r.tallySheets > 0 ? `<span class="badge-pill badge-primary">${r.tallySheets} Sheets</span>` : '—'}</td>
+      <td>${r.games > 0 ? r.games.toLocaleString() : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  if (tableFoot) {
+    tableFoot.innerHTML = `<tr>
+      <td colspan="2"><strong>Total (${rows.length} Locations)</strong></td>
+      <td><strong>${totSchools}</strong></td>
+      <td><strong style="color:var(--primary);">${totLearners.toLocaleString()}</strong></td>
+      <td><strong>${totBoys.toLocaleString()}</strong></td>
+      <td><strong>${totGirls.toLocaleString()}</strong></td>
+      <td><strong style="color:#0284c7;">${totWheel.toLocaleString()}</strong></td>
+      <td><strong>${totClubs.toLocaleString()}</strong></td>
+      <td><strong style="color:var(--gatekeeper);">${totGks.toLocaleString()}</strong></td>
+      <td><strong style="color:#059669;">${totURep.toLocaleString()}</strong></td>
+      <td><strong>${totTally.toLocaleString()}</strong></td>
+      <td><strong>${totGames.toLocaleString()}</strong></td>
+    </tr>`;
+  }
+}
+
+function resetLocationTableFilters() {
+  const searchInput = document.getElementById('filterLocSearch');
+  const distSelect = document.getElementById('filterLocDistrict');
+  if (searchInput) searchInput.value = '';
+  if (distSelect) distSelect.value = 'ALL';
+  renderLocationSummaryTable();
+}
+
 // Attach functions to global window for HTML inline handlers
 window.processRawWorkbookRows = processRawWorkbookRows;
 window.recomputeAndRender = recomputeAndRender;
@@ -3084,6 +3255,8 @@ window.applyFilters = applyFilters;
 window.resetFilters = resetFilters;
 window.renderRumourLogFiltered = renderRumourLogFiltered;
 window.resetRumourFilters = resetRumourFilters;
+window.renderLocationSummaryTable = renderLocationSummaryTable;
+window.resetLocationTableFilters = resetLocationTableFilters;
 
 
 /**
