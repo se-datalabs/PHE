@@ -743,6 +743,12 @@ def parse_workbook(excel_path):
         if 'tool 4' in activity_type or 'significant change' in activity_type or 'msc' in activity_type:
             district = get_col(row, 'District') or 'Central'
             parish = get_col(row, 'Parish')
+            setting = get_col(row, 'Setting type') or 'Community'
+            baseline = get_col(row, 'Step 1: Baseline Situation (Before the Intervention)', 'Step 1: Baseline Situation')
+            event = get_col(row, 'Step 2: The Event / Turning Point', 'Step 2: Turning Point Event')
+            change = get_col(row, 'Step 3: The Concrete Change in Behavior or Norm', 'Step 3: Concrete Behavior Change')
+            significance = get_col(row, 'Step 4: Why is this Change Significant?')
+            participant = get_col(row, 'Participant name', 'Participant & Setting') or (f"{district} - {parish} ({setting})" if parish else f"{district} ({setting})")
             push_record({
                 'id': row_id,
                 'date': formatted_date,
@@ -750,12 +756,18 @@ def parse_workbook(excel_path):
                 'district': district,
                 'parish': parish,
                 'coordinator': coordinator,
-                'school': f"{district} - {parish}",
-                'participant': get_col(row, 'Participant name', 'Participant & Setting') or 'Participant',
-                'baseline': get_col(row, 'Step 1: Baseline Situation') or 'Baseline',
-                'event': get_col(row, 'Step 2: Turning Point Event') or 'Turning Point',
-                'change': get_col(row, 'Step 3: Concrete Behavior Change') or 'Behavior Change',
-                'significance': get_col(row, 'Step 4: Why is this Change Significant?') or 'Significance',
+                'school': f"{district} - {parish}" if parish else district,
+                'setting': setting,
+                'participant': participant,
+                'baseline': baseline or 'Baseline Situation',
+                'event': event or 'Turning Point Event',
+                'change': change or 'Concrete Behavior Change',
+                'significance': significance or 'Significance',
+                'rumor': get_col(row, 'Rumor, misinformation or question flagged'),
+                'barrier': get_col(row, 'Local barrier identified'),
+                'source': get_col(row, 'source of the rumor', 'Origin of rumor') or 'Community',
+                'risk_level': get_col(row, 'Estimated spread or risk level'),
+                'tactical_adaptation': get_col(row, 'Recommended tactical adaptation'),
                 'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
             })
             tool_counts['MSC Story'] = tool_counts.get('MSC Story', 0) + 1
