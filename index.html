@@ -41,12 +41,24 @@
         <span class="tab-badge badge-alert" id="badgeRumours">0</span>
       </button>
 
-      <div class="nav-section-title">Community &amp; Public Places</div>
-      <button class="tab-btn" onclick="showTab('tool_7')">
-        <span>Community &amp; Market Meetings</span>
-        <span class="tab-badge" id="badgeTool7">0</span>
+      <div class="nav-section-title main-section-heading">⭐ Main Data Collection Tools</div>
+      <button class="tab-btn main-tool-btn" onclick="showTab('tool_9')">
+        <span>🏫 School Visits &amp; Games</span>
+        <div style="display:flex; align-items:center; gap:5px;">
+          <span class="core-tag">MAIN</span>
+          <span class="tab-badge" id="badgeTool9">0</span>
+        </div>
       </button>
 
+      <button class="tab-btn main-tool-btn" onclick="showTab('tool_7')">
+        <span>👥 Community &amp; Market Meetings</span>
+        <div style="display:flex; align-items:center; gap:5px;">
+          <span class="core-tag">MAIN</span>
+          <span class="tab-badge" id="badgeTool7">0</span>
+        </div>
+      </button>
+
+      <div class="nav-section-title adhoc-section-heading">Ad-Hoc Field Tools (As Needed)</div>
       <button class="tab-btn" onclick="showTab('tool_1')">
         <span>Sanitation &amp; Venue Audits</span>
         <span class="tab-badge" id="badgeTool1">0</span>
@@ -62,12 +74,6 @@
         <span class="tab-badge" id="badgeTool3">0</span>
       </button>
 
-      <div class="nav-section-title">Schools &amp; Learning Centers</div>
-      <button class="tab-btn" onclick="showTab('tool_9')">
-        <span>School Visits &amp; Games</span>
-        <span class="tab-badge" id="badgeTool9">0</span>
-      </button>
-
       <button class="tab-btn" onclick="showTab('tool_8')">
         <span>School Safety Readiness</span>
         <span class="tab-badge" id="badgeTool8">0</span>
@@ -78,7 +84,6 @@
         <span class="tab-badge" id="badgeTool10">0</span>
       </button>
 
-      <div class="nav-section-title">Stories &amp; Youth</div>
       <button class="tab-btn" onclick="showTab('tool_4')">
         <span>Success Stories</span>
         <span class="tab-badge" id="badgeTool4">0</span>
@@ -191,7 +196,7 @@
           <div class="kpi-card accent">
             <div class="kpi-title">Community Gatekeepers Trained</div>
             <div class="kpi-value" id="kpiGatekeepers">0</div>
-            <div class="kpi-subtitle">Vendors, drivers, teachers &amp; reps</div>
+            <div class="kpi-subtitle" id="kpiGatekeepersSub">0 Male | 0 Female</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">New U-Reporters Recruited</div>
@@ -480,10 +485,10 @@
 
       <!-- ================= TOOL 9: SCHOOL 3-VISIT TRACKER ================= -->
       <section id="tab-tool_9" class="tab-pane">
-        <div class="scope-callout">
-          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 School Visits &amp; Games Tracker</div>
+        <div class="scope-callout" style="border-left-color: var(--accent); background: #fffdf5;">
+          <div style="font-weight:700; color:#92400e; font-size:0.85rem; margin-bottom:3px;">⭐ MAIN DATA TOOL — School Visits &amp; Games (3-Visit Model)</div>
           <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
-            <strong>What this shows:</strong> Progress of the 3-visit school health program, Snakes &amp; Ladders games, and student health clubs.<br>
+            <strong>Role:</strong> Primary routine data tool capturing multi-visit school reach, Knowledge Wheel sessions, board games, and student health clubs.<br>
             <strong>What to look for:</strong> How many schools have completed Visit 1, 2, or 3, and student recall of warning signs.
           </div>
         </div>
@@ -573,11 +578,11 @@
 
       <!-- ================= TOOL 7: COMMUNITY GATEKEEPER ENGAGEMENTS ================= -->
       <section id="tab-tool_7" class="tab-pane">
-        <div class="scope-callout">
-          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 Community &amp; Market Meetings</div>
+        <div class="scope-callout" style="border-left-color: var(--accent); background: #fffdf5;">
+          <div style="font-weight:700; color:#92400e; font-size:0.85rem; margin-bottom:3px;">⭐ MAIN DATA TOOL — Community &amp; Market Dialogues</div>
           <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
-            <strong>What this shows:</strong> Orientation sessions held with local market vendors, taxi drivers, teachers, and local representatives.<br>
-            <strong>What to look for:</strong> Are leaders using the official health scripts and committing to safe practices in their venues?
+            <strong>Role:</strong> Primary routine data tool capturing community meetings with market vendors, taxi drivers, boda stages, teachers, and local representatives.<br>
+            <strong>What to look for:</strong> Leader script fidelity and binding venue safety commitments made.
           </div>
         </div>
 

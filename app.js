@@ -816,7 +816,10 @@ function recomputeAndRender() {
   const totalSensitised = uniqueLearners;
   const totalLearners = uniqueLearners;
   const gatekeeperRowsFiltered = appData.filter(d => d.tool === 'Gatekeeper Session');
-  const grandTotalGatekeepers = totalTeachers;
+  const overviewGkMale = gatekeeperRowsFiltered.reduce((acc, r) => acc + (r.male || 0), 0);
+  const overviewGkFemale = gatekeeperRowsFiltered.reduce((acc, r) => acc + (r.female || 0), 0);
+  const overviewGkOrientedTotal = overviewGkMale + overviewGkFemale;
+  const grandTotalGatekeepers = overviewGkOrientedTotal > 0 ? overviewGkOrientedTotal : totalTeachers;
   const grandTotalReach = totalLearners + grandTotalGatekeepers + totalCrowd;
 
   // 1. Schools Engaged (Deduplicated unique target schools)
@@ -874,6 +877,7 @@ function recomputeAndRender() {
   safeSetText('kpiParishesEnteredSub', `High-risk epidemic hotspots`);
 
   safeSetText('kpiGatekeepers', grandTotalGatekeepers.toLocaleString());
+  safeSetText('kpiGatekeepersSub', `${overviewGkMale.toLocaleString()} Male | ${overviewGkFemale.toLocaleString()} Female`);
 
   safeSetText('kpiUReporters', totalUReporters.toLocaleString());
   safeSetText('kpiUReportersSub', uRecruitTotal > 0 ? `${uRecruitMale} M | ${uRecruitFemale} F recruits` : `Active youth & learner network`);
@@ -938,22 +942,25 @@ function recomputeAndRender() {
   const t11Count = appData.filter(d => d.tool === 'U-Report Recruitment').length;
 
   const toolDefs = [
-    { num: 1, name: "Transect Walk Environmental & Infrastructure Checklist", q: 14, reach: t1Count > 0 ? `${t1Count} Facility Audits Logged` : "0 Submissions (Pending)", active: t1Count > 0, tab: "tool_1" },
-    { num: 2, name: "Rapid Audience Assessment Intercept Survey", q: 15, reach: t2Count > 0 ? `${t2Count} Intercepts Audited` : "0 Submissions (Pending)", active: t2Count > 0, tab: "tool_2" },
-    { num: 3, name: "'Ask 5' Behavioral Verification Diagnostic Tool", q: 32, reach: t3Count > 0 ? `${t3Count} Claims Verified` : "0 Submissions (Pending)", active: t3Count > 0, tab: "tool_3" },
-    { num: 4, name: "Most Significant Change Story Collection Form", q: 5, reach: t4Count > 0 ? `${t4Count} Impact Narratives` : "0 Submissions (Pending)", active: t4Count > 0, tab: "tool_4" },
-    { num: 5, name: "Photovoice Participatory Documentation Guide & Caption Form", q: 9, reach: t6Count > 0 ? `${t6Count} PHOTO Panels` : "0 Submissions (Pending)", active: t6Count > 0, tab: "tool_6" },
-    { num: 6, name: "Community Gatekeeper Dialogue & Events", q: 13, reach: t7Count > 0 ? `${t7Count} Sessions Oriented` : "0 Submissions (Pending)", active: t7Count > 0, tab: "tool_7" },
-    { num: 7, name: "Preparedness Assessment", q: 53, reach: patCount > 0 ? `${patCount} Institutional Audits Complete` : "0 Submissions (Pending)", active: patCount > 0, tab: "tool_8" },
-    { num: 8, name: "School 3-Visit Model & Knowledge Wheel Tracker", q: 26, reach: `${uniqueLearners.toLocaleString()} Unique Learners (${totalLearnerContacts.toLocaleString()} Contacts)`, active: schoolActsCount > 0, tab: "tool_9" },
-    { num: 9, name: "School Simulation Drill & Safeguarding Compliance Protocol", q: 19, reach: t10Count > 0 ? `${t10Count} Drills Evaluated` : "0 Submissions (Pending)", active: t10Count > 0, tab: "tool_10" },
-    { num: 10, name: "U-Report Recruitment Tracker", q: 12, reach: t11Count > 0 ? `${t11Count} Drives Logged` : "0 Submissions (Pending)", active: t11Count > 0, tab: "tool_11" }
+    { num: 1, name: "School 3-Visit Model & Knowledge Wheel Tracker", type: "Main Tool", q: 26, reach: `${uniqueLearners.toLocaleString()} Unique Learners (${totalLearnerContacts.toLocaleString()} Contacts)`, active: schoolActsCount > 0, tab: "tool_9" },
+    { num: 2, name: "Community Gatekeeper Dialogue & Events", type: "Main Tool", q: 13, reach: t7Count > 0 ? `${t7Count} Sessions Oriented` : "0 Submissions (Pending)", active: t7Count > 0, tab: "tool_7" },
+    { num: 3, name: "Transect Walk Environmental & Infrastructure Checklist", type: "Ad-Hoc", q: 14, reach: t1Count > 0 ? `${t1Count} Facility Audits Logged` : "0 Submissions (Pending)", active: t1Count > 0, tab: "tool_1" },
+    { num: 4, name: "Rapid Audience Assessment Intercept Survey", type: "Ad-Hoc", q: 15, reach: t2Count > 0 ? `${t2Count} Intercepts Audited` : "0 Submissions (Pending)", active: t2Count > 0, tab: "tool_2" },
+    { num: 5, name: "'Ask 5' Behavioral Verification Diagnostic Tool", type: "Ad-Hoc", q: 32, reach: t3Count > 0 ? `${t3Count} Claims Verified` : "0 Submissions (Pending)", active: t3Count > 0, tab: "tool_3" },
+    { num: 6, name: "Preparedness Assessment", type: "Ad-Hoc", q: 53, reach: patCount > 0 ? `${patCount} Institutional Audits Complete` : "0 Submissions (Pending)", active: patCount > 0, tab: "tool_8" },
+    { num: 7, name: "School Simulation Drill & Safeguarding Compliance Protocol", type: "Ad-Hoc", q: 19, reach: t10Count > 0 ? `${t10Count} Drills Evaluated` : "0 Submissions (Pending)", active: t10Count > 0, tab: "tool_10" },
+    { num: 8, name: "Most Significant Change Story Collection Form", type: "Ad-Hoc", q: 5, reach: t4Count > 0 ? `${t4Count} Impact Narratives` : "0 Submissions (Pending)", active: t4Count > 0, tab: "tool_4" },
+    { num: 9, name: "Photovoice Participatory Documentation Guide & Caption Form", type: "Ad-Hoc", q: 9, reach: t6Count > 0 ? `${t6Count} PHOTO Panels` : "0 Submissions (Pending)", active: t6Count > 0, tab: "tool_6" },
+    { num: 10, name: "U-Report Recruitment Tracker", type: "Ad-Hoc", q: 12, reach: t11Count > 0 ? `${t11Count} Drives Logged` : "0 Submissions (Pending)", active: t11Count > 0, tab: "tool_11" }
   ];
 
   safeSetHtml('toolsManifestBody', toolDefs.map(t => `
     <tr>
       <td><span class="badge-pill badge-primary">#${t.num}</span></td>
-      <td><strong>${t.name}</strong></td>
+      <td>
+        <strong>${t.name}</strong>
+        ${t.type === 'Main Tool' ? '<span class="badge-pill badge-main-tool" style="margin-left:6px; font-size:0.62rem;">⭐ MAIN TOOL</span>' : '<span class="badge-pill badge-adhoc-tool" style="margin-left:6px; font-size:0.62rem;">AD-HOC</span>'}
+      </td>
       <td>${t.q} Questions</td>
       <td><strong style="color:${t.active ? 'var(--primary)' : 'var(--text-muted)'};">${t.reach}</strong></td>
       <td><span class="badge-pill ${t.active ? 'badge-success' : 'badge-warning'}">${t.active ? 'Active' : 'Pending Field Data'}</span></td>
