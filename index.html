@@ -124,13 +124,24 @@
         </div>
 
         <div class="filter-item">
+          <label for="filterQuickDate">Period:</label>
+          <select id="filterQuickDate" class="filter-select" onchange="handleQuickDateRange(this.value)">
+            <option value="ALL">All Dates</option>
+            <option value="OCT_2026">October 2026</option>
+            <option value="SEP_2026">September 2026</option>
+            <option value="PAST_7_DAYS">Last 7 Days</option>
+            <option value="PAST_14_DAYS">Last 14 Days</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
           <label for="filterStartDate">Start Date:</label>
-          <input type="date" id="filterStartDate" class="filter-input" onchange="applyFilters()">
+          <input type="date" id="filterStartDate" class="filter-input" onchange="applyFilters()" oninput="applyFilters()">
         </div>
 
         <div class="filter-item">
           <label for="filterEndDate">End Date:</label>
-          <input type="date" id="filterEndDate" class="filter-input" onchange="applyFilters()">
+          <input type="date" id="filterEndDate" class="filter-input" onchange="applyFilters()" oninput="applyFilters()">
         </div>
 
         <div class="filter-item">
@@ -139,6 +150,7 @@
         </div>
 
         <button class="btn-action btn-outline" onclick="resetFilters()">Reset Filters</button>
+        <span id="filterCountBadge" class="filter-count-badge">343 Records</span>
       </div>
     </header>
 

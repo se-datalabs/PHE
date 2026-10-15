@@ -472,6 +472,30 @@ header {
   background: rgba(40, 44, 104, 0.08);
 }
 
+.filter-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  transition: all 0.2s ease;
+}
+
+.filter-count-badge.is-filtered {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #93c5fd;
+  box-shadow: 0 1px 3px rgba(29, 78, 216, 0.12);
+}
+
 /* Content Area */
 .content-area {
   padding: 24px 28px;

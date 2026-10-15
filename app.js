@@ -461,16 +461,77 @@ function populateFilterOptions() {
 }
 
 /**
+ * Quick date presets handler (All, October 2026, September 2026, Last 7/14 Days)
+ */
+function handleQuickDateRange(val) {
+  const startInput = document.getElementById('filterStartDate');
+  const endInput = document.getElementById('filterEndDate');
+  if (!startInput || !endInput) return;
+
+  if (val === 'ALL') {
+    startInput.value = '';
+    endInput.value = '';
+    startInput.removeAttribute('max');
+    endInput.removeAttribute('min');
+  } else if (val === 'OCT_2026') {
+    startInput.value = '2026-10-01';
+    endInput.value = '2026-10-31';
+    endInput.min = '2026-10-01';
+    startInput.max = '2026-10-31';
+  } else if (val === 'SEP_2026') {
+    startInput.value = '2026-09-01';
+    endInput.value = '2026-09-30';
+    endInput.min = '2026-09-01';
+    startInput.max = '2026-09-30';
+  } else if (val === 'PAST_7_DAYS' || val === 'PAST_14_DAYS') {
+    const dates = rawMasterData.map(d => d.date).filter(Boolean).sort();
+    const maxDateStr = dates.length > 0 ? dates[dates.length - 1] : new Date().toISOString().substring(0, 10);
+    const maxDate = new Date(maxDateStr);
+    const daysBack = val === 'PAST_7_DAYS' ? 7 : 14;
+    const startDateObj = new Date(maxDate);
+    startDateObj.setDate(startDateObj.getDate() - daysBack);
+    
+    const y = startDateObj.getFullYear();
+    const m = String(startDateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(startDateObj.getDate()).padStart(2, '0');
+    const minDateStr = `${y}-${m}-${d}`;
+
+    startInput.value = minDateStr;
+    endInput.value = maxDateStr;
+    endInput.min = minDateStr;
+    startInput.max = maxDateStr;
+  }
+  applyFilters();
+}
+
+/**
  * Universal Start & End Date Range Filtering
  */
 function applyFilters() {
   const selectedDistrict = document.getElementById('filterDistrict')?.value || 'ALL';
   const searchText = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
-  let startDate = document.getElementById('filterStartDate')?.value || '';
-  let endDate = document.getElementById('filterEndDate')?.value || '';
+  const startInput = document.getElementById('filterStartDate');
+  const endInput = document.getElementById('filterEndDate');
+  let startDate = startInput?.value || '';
+  let endDate = endInput?.value || '';
 
+  // Synchronize calendar bounds
+  if (startDate && endInput) {
+    endInput.min = startDate;
+  } else if (endInput) {
+    endInput.removeAttribute('min');
+  }
+
+  if (endDate && startInput) {
+    startInput.max = endDate;
+  } else if (startInput) {
+    startInput.removeAttribute('max');
+  }
+
+  // If start is after end, sync end date to match start date
   if (startDate && endDate && startDate > endDate) {
-    endDate = '';
+    endDate = startDate;
+    if (endInput) endInput.value = startDate;
   }
 
   appData = rawMasterData.filter(d => {
@@ -501,13 +562,37 @@ function applyFilters() {
     return matchesDistrict && matchesSearch && matchesStart && matchesEnd;
   });
 
+  // Update record count badge in header
+  const countBadge = document.getElementById('filterCountBadge');
+  if (countBadge) {
+    const total = rawMasterData.length;
+    const count = appData.length;
+    const isFiltered = (count < total) || !!(startDate || endDate || (selectedDistrict !== 'ALL') || searchText);
+    if (!isFiltered) {
+      countBadge.textContent = `${total} Records`;
+      countBadge.classList.remove('is-filtered');
+    } else {
+      countBadge.textContent = `${count} of ${total} Records`;
+      countBadge.classList.add('is-filtered');
+    }
+  }
+
   recomputeAndRender();
 }
 
 function resetFilters() {
   if (document.getElementById('filterDistrict')) document.getElementById('filterDistrict').value = 'ALL';
-  if (document.getElementById('filterStartDate')) document.getElementById('filterStartDate').value = '';
-  if (document.getElementById('filterEndDate')) document.getElementById('filterEndDate').value = '';
+  if (document.getElementById('filterQuickDate')) document.getElementById('filterQuickDate').value = 'ALL';
+  const startEl = document.getElementById('filterStartDate');
+  const endEl = document.getElementById('filterEndDate');
+  if (startEl) {
+    startEl.value = '';
+    startEl.removeAttribute('max');
+  }
+  if (endEl) {
+    endEl.value = '';
+    endEl.removeAttribute('min');
+  }
   if (document.getElementById('filterSearch')) document.getElementById('filterSearch').value = '';
   applyFilters();
 }
@@ -3632,6 +3717,7 @@ window.renderRumourLogFiltered = renderRumourLogFiltered;
 window.resetRumourFilters = resetRumourFilters;
 window.renderLocationSummaryTable = renderLocationSummaryTable;
 window.resetLocationTableFilters = resetLocationTableFilters;
+window.handleQuickDateRange = handleQuickDateRange;
 
 
 /**
