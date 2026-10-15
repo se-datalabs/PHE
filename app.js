@@ -639,6 +639,26 @@ function cleanSchoolName(raw) {
   return CANONICAL_SCHOOLS[sLow] || s;
 }
 
+function canonicalizeGatekeeperTitle(raw) {
+  if (!raw) return 'Gatekeeper';
+  const s = String(raw).trim().toLowerCase();
+  if (s.includes('market')) return 'Market Vendors';
+  if (s.includes('taxi')) return 'Taxi Drivers';
+  if (s.includes('boda')) return 'Boda Boda Stages';
+  if (s.includes('factory')) return 'Factory Managers';
+  if (s.includes('parish')) return 'Parish Representatives';
+  if (s.includes('teacher') || s.includes('patron')) return 'School Teachers';
+  if (s.includes('lc') || s.includes('chairperson')) return 'LC Chairpersons';
+  if (s.includes('truck')) return 'Truck Drivers';
+  if (s.includes('resturant') || s.includes('restaurant')) return 'Restaurant Owners';
+  if (s.includes('sex worker') || s.includes('commercial')) return 'Commercial Sex Workers';
+  if (s.includes('religious') || s.includes('faith') || s.includes('pastor') || s.includes('sheikh') || s.includes('reverend')) return 'Faith & Religious Groups';
+  if (s.includes('drug shop') || s.includes('pharmacy')) return 'Drug Shop Operators';
+  if (s.includes('vht')) return 'VHTs';
+  const cleaned = cleanText(raw).replace(/\b(leadership|leaders|leader)\b/gi, '').replace(/\s+/g, ' ').trim();
+  return cleaned || 'Gatekeeper';
+}
+
 function recomputeAndRender() {
   Object.keys(chartInstances).forEach(k => {
     if (chartInstances[k]) {
@@ -1141,15 +1161,16 @@ function recomputeAndRender() {
 
   safeSetHtml('tool7GatekeeperTableBody', gatekeeperRowsFiltered.length === 0 ? `<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:20px;">No gatekeeper dialogue records found in active filter.</td></tr>` : gatekeeperRowsFiltered.map(g => {
     const totOriented = (g.male || 0) + (g.female || 0);
-    const roleText = cleanText(g.role) || 'Gatekeeper';
-    const specifyText = cleanText(g.role_specify);
+    const titleText = canonicalizeGatekeeperTitle(g.role) || cleanText(g.role) || 'Gatekeeper';
     
     // Role styling
     let roleBadgeClass = 'badge-primary';
-    const roleLower = roleText.toLowerCase();
-    if (roleLower.includes('headteacher')) roleBadgeClass = 'badge-primary';
-    else if (roleLower.includes('teacher')) roleBadgeClass = 'badge-info';
+    const roleLower = titleText.toLowerCase();
+    if (roleLower.includes('teacher') || roleLower.includes('headteacher')) roleBadgeClass = 'badge-info';
+    else if (roleLower.includes('market')) roleBadgeClass = 'badge-warning';
     else if (roleLower.includes('vht')) roleBadgeClass = 'badge-success';
+    else if (roleLower.includes('parish') || roleLower.includes('lc')) roleBadgeClass = 'badge-success';
+    else if (roleLower.includes('boda') || roleLower.includes('taxi') || roleLower.includes('truck')) roleBadgeClass = 'badge-primary';
     else roleBadgeClass = 'badge-warning';
 
     // Crowd reach
@@ -1237,8 +1258,7 @@ function recomputeAndRender() {
           <span style="font-size:0.75rem; color:var(--text-muted);">${cleanText(g.district) || 'Central'} / ${cleanText(g.parish) || '—'}</span>
         </td>
         <td>
-          <span class="badge-pill ${roleBadgeClass}">${roleText}</span>
-          ${specifyText && specifyText.toLowerCase() !== roleText.toLowerCase() ? `<br><span style="font-size:0.70rem; color:var(--text-muted); font-style:italic;">${specifyText}</span>` : ''}
+          <span class="badge-pill ${roleBadgeClass}">${titleText}</span>
         </td>
         <td>
           <strong style="color:var(--primary);">${totOriented.toLocaleString()} Gatekeeper${totOriented === 1 ? '' : 's'}</strong><br>
@@ -2814,79 +2834,126 @@ function renderBarCharts(distList) {
     }
   }
 
+
   // Tool 7 Charts: Community Gatekeeper Dialogue & Commitment Log
   const gkData = appData.filter(d => d.tool === 'Gatekeeper Session');
   const elGkRoles = document.getElementById('chartGkRolesT7');
   const elGkCapacity = document.getElementById('chartGkCapacityT7');
 
   if (elGkRoles) {
-    const roleStats = {};
-    gkData.forEach(d => {
-      let rName = cleanText(d.role_specify) || cleanText(d.role) || 'Community Gatekeeper';
-      const rLower = rName.toLowerCase();
-      if (rLower.includes('headteacher')) rName = 'Headteachers';
-      else if (rLower.includes('teacher')) rName = 'School Teachers';
-      else if (rLower.includes('vht') && rLower.includes('ureport')) rName = 'VHTs & U-Reporters';
-      else if (rLower.includes('vht')) rName = 'VHTs';
-      else if (rLower.includes('market')) rName = 'Market Leaders';
+    const titleStats = {};
+    let totalAllGk = 0;
 
-      if (!roleStats[rName]) {
-        roleStats[rName] = { total: 0, male: 0, female: 0, sessions: 0 };
-      }
+    gkData.forEach(d => {
+      const rawRole = d.role || d.gk_category || 'Other Gatekeeper';
+      const title = canonicalizeGatekeeperTitle(rawRole);
       const m = d.male || 0;
       const f = d.female || 0;
-      roleStats[rName].male += m;
-      roleStats[rName].female += f;
-      roleStats[rName].total += (m + f);
-      roleStats[rName].sessions += 1;
+      const tot = m + f;
+      totalAllGk += tot;
+
+      if (!titleStats[title]) {
+        titleStats[title] = { name: title, male: 0, female: 0, total: 0, sessions: 0 };
+      }
+      titleStats[title].male += m;
+      titleStats[title].female += f;
+      titleStats[title].total += tot;
+      titleStats[title].sessions += 1;
     });
 
-    const sortedRoles = Object.entries(roleStats).sort((a, b) => b[1].total - a[1].total);
-    const roleLabels = sortedRoles.map(x => x[0]);
-    const roleCounts = sortedRoles.map(x => x[1].total);
-    const roleColors = ['#282c68', '#f1bc1b', '#10b981', '#3b82f6', '#8b5cf6'];
+    safeSetText('gkGenderTotalBadge', `${totalAllGk.toLocaleString()} Gatekeepers`);
+
+    // Sort titles by total reach descending
+    const sortedTitles = Object.values(titleStats).sort((a, b) => b.total - a.total);
+    const titleLabels = sortedTitles.map(t => t.name);
+    const maleData = sortedTitles.map(t => t.male);
+    const femaleData = sortedTitles.map(t => t.female);
 
     chartInstances.gkRolesT7 = new Chart(elGkRoles.getContext('2d'), {
       type: 'bar',
       data: {
-        labels: roleLabels,
-        datasets: [{
-          label: 'Gatekeepers Oriented',
-          data: roleCounts,
-          backgroundColor: roleLabels.map((_, i) => roleColors[i % roleColors.length]),
-          borderRadius: 4,
-          datalabels: {
-            anchor: 'end',
-            align: 'right',
-            formatter: (val, ctx) => {
-              const item = sortedRoles[ctx.dataIndex][1];
-              return `${val} (${item.sessions} session${item.sessions > 1 ? 's' : ''})`;
-            },
-            color: '#282c68',
-            font: { weight: 'bold', size: 10 }
+        labels: titleLabels,
+        datasets: [
+          {
+            label: 'Male Gatekeepers',
+            data: maleData,
+            backgroundColor: '#282c68',
+            borderRadius: 4,
+            stack: 'gkGenderStack',
+            datalabels: {
+              display: false
+            }
+          },
+          {
+            label: 'Female Gatekeepers',
+            data: femaleData,
+            backgroundColor: '#f1bc1b',
+            borderRadius: 4,
+            stack: 'gkGenderStack',
+            datalabels: {
+              anchor: 'end',
+              align: 'right',
+              formatter: (val, ctx) => {
+                const item = sortedTitles[ctx.dataIndex];
+                if (item.total === 0) return '';
+                return `${item.total.toLocaleString()} (${item.male}M | ${item.female}F)`;
+              },
+              color: '#1e293b',
+              font: { weight: 'bold', size: 10 }
+            }
           }
-        }]
+        ]
       },
       options: {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              font: { weight: 'bold', size: 11 },
+              color: '#334155'
+            }
+          },
           tooltip: {
             callbacks: {
+              title: (items) => sortedTitles[items[0].dataIndex].name,
+              label: (item) => {
+                const isMale = item.datasetIndex === 0;
+                const itemData = sortedTitles[item.dataIndex];
+                const count = isMale ? itemData.male : itemData.female;
+                const pct = itemData.total > 0 ? ((count / itemData.total) * 100).toFixed(1) : 0;
+                return `${item.dataset.label}: ${count.toLocaleString()} (${pct}%)`;
+              },
               afterBody: (items) => {
-                const idx = items[0].dataIndex;
-                const item = sortedRoles[idx][1];
-                return `Breakdown: ${item.male} Male, ${item.female} Female across ${item.sessions} session(s)`;
+                const itemData = sortedTitles[items[0].dataIndex];
+                const pctOverall = totalAllGk > 0 ? ((itemData.total / totalAllGk) * 100).toFixed(1) : 0;
+                return [
+                  `Total Reached: ${itemData.total.toLocaleString()} (${pctOverall}% of all Gatekeepers)`,
+                  `Engagement Sessions: ${itemData.sessions} session${itemData.sessions > 1 ? 's' : ''}`
+                ];
               }
             }
           }
         },
         scales: {
           x: {
+            stacked: true,
             beginAtZero: true,
-            grace: '25%'
+            grace: '28%',
+            ticks: {
+              callback: (val) => Number.isInteger(val) ? val.toLocaleString() : null
+            }
+          },
+          y: {
+            stacked: true,
+            ticks: {
+              font: { weight: '600', size: 11 },
+              color: '#1e293b'
+            }
           }
         }
       }

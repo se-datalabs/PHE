@@ -623,12 +623,15 @@
         <!-- 2 DEDICATED HORIZONTAL BAR CHARTS -->
         <div class="dashboard-grid">
           <div class="card">
-            <div class="card-title">Gatekeeper Reach by Influencer Category (Cadre)</div>
-            <div class="chart-box"><canvas id="chartGkRolesT7"></canvas></div>
+            <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>Gatekeeper Reach by Title &amp; Gender</span>
+              <span class="badge-pill badge-primary" id="gkGenderTotalBadge">0 Gatekeepers</span>
+            </div>
+            <div class="chart-box" style="height:380px;"><canvas id="chartGkRolesT7"></canvas></div>
           </div>
           <div class="card">
             <div class="card-title">Gatekeeper Knowledge Grasp &amp; Venue Compliance</div>
-            <div class="chart-box"><canvas id="chartGkCapacityT7"></canvas></div>
+            <div class="chart-box" style="height:380px;"><canvas id="chartGkCapacityT7"></canvas></div>
           </div>
         </div>
 
@@ -655,7 +658,7 @@
               <thead>
                 <tr>
                   <th>Date &amp; Location</th>
-                  <th>Cadre &amp; Target Group</th>
+                  <th>Gatekeeper Title</th>
                   <th>Gatekeepers (M / F)</th>
                   <th>Community Reached (M / F)</th>
                   <th>Fidelity &amp; Venue WASH</th>
