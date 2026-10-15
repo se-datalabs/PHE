@@ -30,64 +30,67 @@
       <button class="sidebar-close-btn" onclick="toggleSidebar(false)" aria-label="Close navigation menu">✕</button>
     </div>
     <div class="nav-tabs">
-      <div class="nav-section-title">Core Performance &amp; Intelligence</div>
+      <div class="nav-section-title">Overview &amp; Feedback</div>
       <button class="tab-btn active" onclick="showTab('overview')">
-        <span>Summary of Reach &amp; Engagement</span>
+        <span>Overview &amp; Key Metrics</span>
         <span class="tab-badge" id="badgeTotalReach">0</span>
       </button>
 
       <button class="tab-btn highlight-tab" onclick="showTab('rumours')">
-        <span>Weekly Rumour &amp; Listening Log</span>
+        <span>Rumours &amp; Concerns</span>
         <span class="tab-badge badge-alert" id="badgeRumours">0</span>
       </button>
 
+      <div class="nav-section-title">Community &amp; Public Places</div>
+      <button class="tab-btn" onclick="showTab('tool_7')">
+        <span>Community &amp; Market Meetings</span>
+        <span class="tab-badge" id="badgeTool7">0</span>
+      </button>
+
       <button class="tab-btn" onclick="showTab('tool_1')">
-        <span>Transect Walk &amp; Audit</span>
+        <span>Sanitation &amp; Venue Audits</span>
         <span class="tab-badge" id="badgeTool1">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_2')">
-        <span>Rapid Audience Intercept</span>
+        <span>Quick Community Surveys</span>
         <span class="tab-badge" id="badgeTool2">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_3')">
-        <span>'Ask 5' Behavioral Diagnostic</span>
+        <span>Fact-Check Interviews ('Ask 5')</span>
         <span class="tab-badge" id="badgeTool3">0</span>
       </button>
 
+      <div class="nav-section-title">Schools &amp; Learning Centers</div>
+      <button class="tab-btn" onclick="showTab('tool_9')">
+        <span>School Visits &amp; Games</span>
+        <span class="tab-badge" id="badgeTool9">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_8')">
+        <span>School Safety Readiness</span>
+        <span class="tab-badge" id="badgeTool8">0</span>
+      </button>
+
+      <button class="tab-btn" onclick="showTab('tool_10')">
+        <span>School Safety Drills</span>
+        <span class="tab-badge" id="badgeTool10">0</span>
+      </button>
+
+      <div class="nav-section-title">Stories &amp; Youth</div>
       <button class="tab-btn" onclick="showTab('tool_4')">
-        <span>Most Significant Change (MSC)</span>
+        <span>Success Stories</span>
         <span class="tab-badge" id="badgeTool4">0</span>
       </button>
 
       <button class="tab-btn" onclick="showTab('tool_6')">
-        <span>Photovoice Documentation</span>
+        <span>Photo Evidence</span>
         <span class="tab-badge" id="badgeTool6">0</span>
       </button>
 
-      <button class="tab-btn" onclick="showTab('tool_7')">
-        <span>Community Gatekeeper Dialogue</span>
-        <span class="tab-badge" id="badgeTool7">0</span>
-      </button>
-
-      <button class="tab-btn" onclick="showTab('tool_8')">
-        <span>Preparedness Assessment</span>
-        <span class="tab-badge" id="badgeTool8">0</span>
-      </button>
-
-      <button class="tab-btn" onclick="showTab('tool_9')">
-        <span>School 3-Visit Tracker</span>
-        <span class="tab-badge" id="badgeTool9">0</span>
-      </button>
-
-      <button class="tab-btn" onclick="showTab('tool_10')">
-        <span>Simulation Drill Protocol</span>
-        <span class="tab-badge" id="badgeTool10">0</span>
-      </button>
-
       <button class="tab-btn" onclick="showTab('tool_11')">
-        <span>U-Report Recruitment Tracker</span>
+        <span>U-Report Sign-ups</span>
         <span class="tab-badge" id="badgeTool11">0</span>
       </button>
     </div>
@@ -104,8 +107,8 @@
         </button>
 
         <div class="header-title">
-          <h1 id="screenTitle">Summary of Reach &amp; Engagement</h1>
-          <p id="screenSubtitle">Cross-instrument reach aggregation, district performance, and programmatic coverage per location</p>
+          <h1 id="screenTitle">Overview &amp; Key Metrics</h1>
+          <p id="screenSubtitle">Overall summary of reach across districts, schools, and community locations</p>
         </div>
 
         <button id="filterToggleBtn" class="filter-toggle-btn" onclick="toggleFilterBar()" aria-label="Toggle filter controls">
@@ -161,34 +164,34 @@
         <!-- TIER 1: CORE FIELD ENGAGEMENT & REACH KPIS (8 SCORECARDS) -->
         <div class="kpi-grid">
           <div class="kpi-card accent">
-            <div class="kpi-title">Schools Engaged</div>
+            <div class="kpi-title">Schools Reached</div>
             <div class="kpi-value" id="kpiSchoolsEngaged">0</div>
             <div class="kpi-subtitle" id="kpiSchoolsEngagedSub">Unique target schools reached</div>
           </div>
           <div class="kpi-card accent">
-            <div class="kpi-title">Unique Learners Reached</div>
+            <div class="kpi-title">Students Reached</div>
             <div class="kpi-value" id="kpiLearners">0</div>
             <div class="kpi-subtitle" id="kpiLearnersSub">0 Boys | 0 Girls</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-title">Knowledge Wheel Sessions</div>
+            <div class="kpi-title">Interactive School Sessions</div>
             <div class="kpi-value" id="kpiWheelSessions">0</div>
-            <div class="kpi-subtitle" id="kpiWheelSessionsSub">School interactive delivery</div>
+            <div class="kpi-subtitle" id="kpiWheelSessionsSub">Knowledge wheel delivery</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-title">U-Report Health Clubs Formed</div>
+            <div class="kpi-title">Student Health Clubs Formed</div>
             <div class="kpi-value" id="kpiHealthClubs">0</div>
-            <div class="kpi-subtitle" id="kpiHealthClubsSub">Active clubs with patrons</div>
+            <div class="kpi-subtitle" id="kpiHealthClubsSub">Active clubs with teacher patrons</div>
           </div>
           <div class="kpi-card accent">
-            <div class="kpi-title">High-Risk Parishes Entered</div>
+            <div class="kpi-title">Target Parishes Covered</div>
             <div class="kpi-value" id="kpiParishesEntered">0</div>
             <div class="kpi-subtitle" id="kpiParishesEnteredSub">High-risk epidemic hotspots</div>
           </div>
           <div class="kpi-card accent">
-            <div class="kpi-title">Gatekeepers Oriented</div>
+            <div class="kpi-title">Community Gatekeepers Trained</div>
             <div class="kpi-value" id="kpiGatekeepers">0</div>
-            <div class="kpi-subtitle">Teachers, Patrons &amp; Leaders</div>
+            <div class="kpi-subtitle">Vendors, drivers, teachers &amp; reps</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-title">New U-Reporters Recruited</div>
@@ -205,22 +208,22 @@
         <!-- TIER 2: POPULATION BASE & DELIVERY MATERIALS -->
         <div class="five-col-grid" style="margin-bottom: 22px;">
           <div class="kpi-card accent">
-            <div class="kpi-title">Community Events Reach</div>
+            <div class="kpi-title">Community Members Reached</div>
             <div class="kpi-value" id="kpiCommunityCrowd">0</div>
             <div class="kpi-subtitle" id="kpiCommunityCrowdSub">0 Male | 0 Female</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-title">Total Enrolment Monitored</div>
+            <div class="kpi-title">Total Students Monitored</div>
             <div class="kpi-value" id="kpiEnrolment">0</div>
             <div class="kpi-subtitle" id="kpiEnrolmentSub">Validated school population base</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-title">Board Games Distributed</div>
+            <div class="kpi-title">Board Games Delivered</div>
             <div class="kpi-value" id="kpiGames">0</div>
-            <div class="kpi-subtitle">Snakes &amp; Ladders gamified PHE tools</div>
+            <div class="kpi-subtitle">Snakes &amp; Ladders learning games</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-title">PHE Take-Home Cards</div>
+            <div class="kpi-title">Take-Home Health Cards</div>
             <div class="kpi-value" id="kpiTakeHomeCards">0</div>
             <div class="kpi-subtitle">Distributed to learners &amp; families</div>
           </div>
@@ -270,8 +273,8 @@
         <div class="card" style="margin-top: 20px;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
             <div>
-              <div class="card-title" style="margin-bottom:2px;">Summary of Reach &amp; Engagement per Location (District &amp; Parish Matrix)</div>
-              <p style="font-size:0.75rem; color:var(--text-muted); margin:0;">Disaggregated location breakdown capturing Schools engaged, Learners (Boys/Girls), Wheel Sessions, Health Clubs, Gatekeepers, New U-Reporters, and Tally Sheets</p>
+              <div class="card-title" style="margin-bottom:2px;">Summary of Reach &amp; Engagement by Location (District &amp; Parish)</div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin:0;">Detailed location breakdown: Schools reached, Students (Boys/Girls), Interactive Sessions, Health Clubs, Gatekeepers, and U-Reporters</p>
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               <span class="badge-pill badge-primary" id="locTableCountBadge">0 Locations</span>
@@ -287,14 +290,14 @@
               <thead>
                 <tr>
                   <th>District</th>
-                  <th>High-Risk Parish</th>
-                  <th>Schools Engaged</th>
-                  <th>Learners Reached</th>
+                  <th>Target Parish</th>
+                  <th>Schools Reached</th>
+                  <th>Students Reached</th>
                   <th>Boys</th>
                   <th>Girls</th>
-                  <th>Wheel Sessions</th>
-                  <th>Health Clubs Formed</th>
-                  <th>Gatekeepers Oriented</th>
+                  <th>Interactive Sessions</th>
+                  <th>Health Clubs</th>
+                  <th>Gatekeepers Trained</th>
                   <th>New U-Reporters</th>
                   <th>Tally Sheets</th>
                   <th>Board Games</th>
@@ -308,17 +311,17 @@
 
         <!-- Master Manifest of Instruments -->
         <div class="card">
-          <div class="card-title">Instruments &amp; Reach Overview</div>
+          <div class="card-title">Tools &amp; Activities Overview</div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Activity / Instrument Scope</th>
-                  <th>Questions Captured</th>
-                  <th>Recorded Submissions</th>
-                  <th>Primary Reach Target</th>
-                  <th>Direct Action</th>
+                  <th>Activity / Tool Name</th>
+                  <th>Questions Checked</th>
+                  <th>Records Logged</th>
+                  <th>Primary Group</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="toolsManifestBody"></tbody>
@@ -327,20 +330,20 @@
         </div>
 
         <div class="card">
-          <div class="card-title">District Reach Matrix Summary (With Multi-Visit Reach Breakdown: Visit 1, 2 &amp; 3)</div>
+          <div class="card-title">District Reach Summary (Multi-Visit Breakdown: Visit 1, 2 &amp; 3)</div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
                   <th>District</th>
                   <th>Schools</th>
-                  <th>Unique Enrolment</th>
+                  <th>Total Enrolment</th>
                   <th>Visit 1 Reach</th>
                   <th>Visit 2 Reach</th>
                   <th>Visit 3 Reach</th>
-                  <th>Gatekeepers / Teachers</th>
-                  <th>Total Unique Reach</th>
-                  <th>Games Distributed</th>
+                  <th>Gatekeepers Trained</th>
+                  <th>Total Students Reached</th>
+                  <th>Games Delivered</th>
                 </tr>
               </thead>
               <tbody id="districtSummaryTableBody"></tbody>
@@ -352,7 +355,11 @@
       <!-- ================= WEEKLY COMMUNITY & SCHOOL LISTENING AND RUMOUR LOG ================= -->
       <section id="tab-rumours" class="tab-pane">
         <div class="scope-callout" style="border-left-color: #ef4444; background: #fff5f5;">
-          <strong style="color: #991b1b;">Scope — Weekly Community &amp; School Listening and Rumour Log:</strong> Standardized weekly monitoring instrument capturing community concerns, school rumours, misinformation, and recommended message adjustments for weekly RCCE synthesis.
+          <div style="font-weight:700; color:#991b1b; font-size:0.85rem; margin-bottom:3px;">📌 Rumours &amp; Community Feedback</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Common questions, false claims, and fears heard across communities.<br>
+            <strong>What to look for:</strong> High-risk rumours that require urgent clarification and message adjustments.
+          </div>
         </div>
 
         <!-- 5-PILLAR RUMOUR INTELLIGENCE SCORECARDS -->
@@ -474,7 +481,11 @@
       <!-- ================= TOOL 9: SCHOOL 3-VISIT TRACKER ================= -->
       <section id="tab-tool_9" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — School 3-Visit Tracker:</strong> Operational tracking tool for school sessions across target schools, monitoring curriculum delivery, wheel participation, take-home cards, and health club activation.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 School Visits &amp; Games Tracker</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Progress of the 3-visit school health program, Snakes &amp; Ladders games, and student health clubs.<br>
+            <strong>What to look for:</strong> How many schools have completed Visit 1, 2, or 3, and student recall of warning signs.
+          </div>
         </div>
 
         <!-- 6-PILLAR AUDIT & PREPAREDNESS SCORECARDS -->
@@ -563,7 +574,11 @@
       <!-- ================= TOOL 7: COMMUNITY GATEKEEPER ENGAGEMENTS ================= -->
       <section id="tab-tool_7" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — Community Gatekeeper Engagements:</strong> Longitudinal engagement and institutional commitment tracker for key community decision-makers, school administrators, headteachers, teachers, market masters, and Village Health Teams (VHTs). Evaluates facilitation fidelity with MoH/KCCA standard scripts, diagnostic grasp of epidemic warning signs, toll-free reporting literacy, and local biosecurity barriers.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 Community &amp; Market Meetings</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Orientation sessions held with local market vendors, taxi drivers, teachers, and local representatives.<br>
+            <strong>What to look for:</strong> Are leaders using the official health scripts and committing to safe practices in their venues?
+          </div>
         </div>
 
         <!-- 5-PILLAR GATEKEEPER ENGAGEMENT SCORECARDS -->
@@ -677,7 +692,11 @@
       <!-- ================= TOOL 1: TRANSECT WALK & INFRASTRUCTURE CHECKLIST ================= -->
       <section id="tab-tool_1" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — Transect Walk Environmental &amp; Infrastructure Checklist:</strong> Systematic physical audit protocol assessing environmental biosecurity, handwashing infrastructure, crowd congestion choke points, latrine stance ratios, poster currency with active MoH/KCCA toll-free hotlines, and dedicated isolation capacity across schools, markets, bus/taxi parks, and informal settlements.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 Sanitation &amp; Venue Audits</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Physical inspections of water, soap, latrines, crowding, and hotline posters in schools and public places.<br>
+            <strong>What to look for:</strong> Sites lacking handwashing points, soap, or emergency posters.
+          </div>
         </div>
 
         <!-- 5-PILLAR ENVIRONMENTAL & INFRASTRUCTURE SCORECARDS -->
@@ -735,21 +754,21 @@
         <!-- COMPREHENSIVE MASTER TRANSECT WALK REGISTRY TABLE -->
         <div class="card" style="margin-top:16px;">
           <div class="card-title">
-            <span>Environmental &amp; Physical Infrastructure Master Audit Registry</span>
+            <span>Sanitation &amp; Venue Audits Master Registry</span>
             <span style="font-size:0.75rem; color:var(--text-muted);" id="twCountBadge">0 Audits</span>
           </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Audit ID &amp; Date</th>
-                  <th>Setting &amp; Location</th>
-                  <th>Population &amp; Stations Ratio</th>
-                  <th>WASH &amp; Latrine Sanitation</th>
-                  <th>Drainage, Vectors &amp; Choke Points</th>
-                  <th>Posters &amp; Hotline Verification</th>
-                  <th>Isolation / Separation Protocol</th>
-                  <th>Staff Orientation &amp; Action</th>
+                  <th># / Date</th>
+                  <th>Location &amp; Setting</th>
+                  <th>People &amp; Handwash Stations</th>
+                  <th>Water, Soap &amp; Latrines</th>
+                  <th>Drainage &amp; Crowding Points</th>
+                  <th>Health Posters &amp; Hotline</th>
+                  <th>Isolation Space Ready</th>
+                  <th>Staff Actions &amp; Notes</th>
                 </tr>
               </thead>
               <tbody id="tool3TableBody"></tbody>
@@ -761,7 +780,11 @@
       <!-- ================= TOOL 2: RAPID AUDIENCE ASSESSMENT INTERCEPT SURVEY ================= -->
       <section id="tab-tool_2" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — Rapid Audience Assessment Intercept Survey:</strong> Rapid intercept diagnostic administered across informal settlements, markets, transit hubs, clinics, and school vicinities. Systematically measures <strong>5 Core RCCE Dimensions</strong>: (1) 7-day multi-channel campaign exposure, (2) unprompted clinical signs and protection recall, (3) post-declaration epidemic risk perception, (4) emergency first-action protocols for hemorrhagic symptoms, and (5) trusted community information brokers.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 Quick Community Surveys</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Short on-the-street interviews testing if people have heard health messages, know symptoms, and who they trust.<br>
+            <strong>What to look for:</strong> Whether community members know what to do if someone falls sick and who their trusted sources are.
+          </div>
         </div>
 
         <!-- 5-PILLAR RAPID AUDIENCE DIAGNOSTIC SCORECARDS -->
@@ -843,21 +866,21 @@
         <!-- COMPREHENSIVE MASTER INTERCEPT REGISTRY TABLE -->
         <div class="card" style="margin-top:16px;">
           <div class="card-title">
-            <span>Rapid Audience Intercept Survey: Master Diagnostic Registry (All Tool Questions &amp; Intelligence)</span>
+            <span>Quick Community Surveys Master Registry</span>
             <span style="font-size:0.75rem; color:var(--text-muted);" id="tool2CountBadge">0 Audits</span>
           </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Resp ID &amp; Date</th>
-                  <th>Target Setting &amp; Location</th>
-                  <th>Q1: 7-Day Campaign Channel</th>
-                  <th>Q2: Signs &amp; Protection Recalled</th>
-                  <th>Q3: Post-Decl. Risk Perception</th>
-                  <th>Q4: Emergency Action Protocol</th>
-                  <th>Q5: Most Trusted Source</th>
-                  <th>RCCE Intelligence &amp; Risk Level</th>
+                  <th># / Date</th>
+                  <th>Location &amp; Setting</th>
+                  <th>Where They Heard Message</th>
+                  <th>Signs &amp; Protection Recalled</th>
+                  <th>Outbreak Risk Felt</th>
+                  <th>First Action if Sick</th>
+                  <th>Most Trusted Source</th>
+                  <th>Key Insight &amp; Risk Level</th>
                 </tr>
               </thead>
               <tbody id="tool4TableBody"></tbody>
@@ -869,7 +892,11 @@
       <!-- ================= TOOL 3: 'ASK 5' BEHAVIORAL VERIFICATION DIAGNOSTIC ================= -->
       <section id="tab-tool_3" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — 'Ask 5' Behavioral Verification Diagnostic:</strong> Rapid probing qualitative diagnostic administered across key community influencers (Pupil leaders, Teachers/patrons, Boda riders, VHTs, Taxi drivers, Market vendors). Rather than taking reported claims at face value, field auditors physically probe and inspect evidence across <strong>5 Core Claims</strong> to detect social desirability bias and verify genuine community-level behavior adoption.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 Fact-Check Interviews ('Ask 5')</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> In-depth verification of 5 key behaviors (handwashing, symptom recall, hotline reporting, anti-stigma, and household talks).<br>
+            <strong>What to look for:</strong> The gap between people saying they know the rules vs. actually practicing them on site.
+          </div>
         </div>
 
         <!-- 5-CLAIM DIAGNOSTIC VERIFICATION SCORECARDS -->
@@ -928,23 +955,23 @@
         <!-- COMPREHENSIVE 'ASK 5' FIELD AUDIT MASTER REGISTRY TABLE -->
         <div class="card">
           <div class="card-title">
-            <span>'Ask 5' Behavioral Verification Diagnostic Registry (All Tool Questions &amp; Findings)</span>
+            <span>'Ask 5' Fact-Check Interviews Registry</span>
             <span style="font-size:0.75rem; color:var(--text-muted);" id="ask5CountBadge">0 Audits</span>
           </div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Diag ID &amp; Date</th>
+                  <th># / Date</th>
                   <th>Target Group &amp; Setting</th>
-                  <th>District / Parish</th>
-                  <th>Core Claims Heard</th>
-                  <th>Claim 1: Handwash Probe &amp; Station Audit</th>
-                  <th>Claim 2: Early Warning Signs &amp; No-Contact</th>
-                  <th>Claim 3: Reporting &amp; Hotline Recall</th>
-                  <th>Claim 4: Anti-Stigma &amp; Survivor Reintegration</th>
-                  <th>Claim 5: Household Agreement &amp; Multiplier</th>
-                  <th>Flagged Misconception &amp; Action</th>
+                  <th>District &amp; Parish</th>
+                  <th>Key Claims Heard</th>
+                  <th>1. Handwashing Verified</th>
+                  <th>2. Warning Signs Recalled</th>
+                  <th>3. Hotline Recalled</th>
+                  <th>4. Anti-Stigma Attitude</th>
+                  <th>5. Household Health Talks</th>
+                  <th>Misconception &amp; Action</th>
                 </tr>
               </thead>
               <tbody id="tool5TableBody"></tbody>
@@ -956,7 +983,11 @@
       <!-- ================= TOOL 4: MOST SIGNIFICANT CHANGE STORY FORM ================= -->
       <section id="tab-tool_4" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — Most Significant Change Story Collection Form:</strong> Systematic qualitative tool capturing human-interest impact stories from community members, head teachers, school patrons, pupils, and health workers.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 Success Stories &amp; Impact</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Real-life stories from students, teachers, and community members showing before-and-after behavior changes.<br>
+            <strong>What to look for:</strong> Clear examples of how the program changed daily habits or solved local health challenges.
+          </div>
         </div>
         <div class="card">
           <div class="card-title">Qualitative Impact Narrative Framework (Most Significant Change Stories)</div>
@@ -982,7 +1013,11 @@
       <!-- ================= TOOL 6: PHOTOVOICE PARTICIPATORY DOCUMENTATION ================= -->
       <section id="tab-tool_6" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — Photovoice Participatory Documentation Guide &amp; Caption Form:</strong> Protocol enabling community members, youth, and school health clubs to document daily realities, hygiene innovations, and behavioral challenges through photography.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 Photo Field Evidence</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Photos and captions taken by youth and community members documenting local sanitation, innovations, and risks.<br>
+            <strong>What to look for:</strong> Community-identified issues and visual proof of local solutions.
+          </div>
         </div>
         <div class="card">
           <div class="card-title">PHOTO Analysis Protocol (Youth &amp; Community Photographic Documentation)</div>
@@ -1008,7 +1043,11 @@
       <!-- ================= TOOL 10: SCHOOL SIMULATION DRILL PROTOCOL ================= -->
       <section id="tab-tool_10" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — School Simulation Drill &amp; Safeguarding Compliance Protocol:</strong> Mandatory pre-drill verification and performance evaluation tool to safely rehearse school-level detection, isolation, notification, and handover without causing panic or stigma.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 School Safety Drills</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Practice rehearsals in schools testing how fast and safely teachers handle a suspected illness without panic or stigma.<br>
+            <strong>What to look for:</strong> Response times, safe sick bay setup, and calling the official hotline.
+          </div>
         </div>
         <div class="kpi-grid">
           <div class="kpi-card accent"><div class="kpi-title">Stage 1: Identification</div><div class="kpi-value" id="t9_s1" style="font-size:1.3rem; color:#94a3b8;">Pending</div><div class="kpi-subtitle">No simulation drills recorded yet</div></div>
@@ -1040,7 +1079,11 @@
       <!-- ================= PREPAREDNESS ASSESSMENT TOOL ================= -->
       <section id="tab-tool_8" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — Preparedness Assessment Tool:</strong> School Epidemic Preparedness Assessment Tool examining institutional response plans, isolation wards, WASH baselines, and leadership hotline recall.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 School Safety Readiness</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Assessment of school preparedness plans, sick bay isolation spaces, student knowledge, and latrine/water facilities.<br>
+            <strong>What to look for:</strong> Schools missing written emergency plans or functional handwashing stations.
+          </div>
         </div>
         
         <!-- 3-COLUMN 6-PILLAR 10-PUPIL LITERACY & BEHAVIORAL SCORECARD GRID -->
@@ -1138,7 +1181,11 @@
       <!-- ================= TOOL 11: U-REPORT RECRUITMENT ================= -->
       <section id="tab-tool_11" class="tab-pane">
         <div class="scope-callout">
-          <strong>Scope — U-Report Recruitment:</strong> Tracking recruitment and mobilization of youth, learners, and community members as active U-Reporters for rapid feedback, rumour tracking, and epidemic surveillance.
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 U-Report Sign-ups</div>
+          <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
+            <strong>What this shows:</strong> Recruitment numbers of youth, students, and community members joining the free SMS feedback network.<br>
+            <strong>What to look for:</strong> Sign-up numbers across schools, markets, and communities split by gender.
+          </div>
         </div>
 
         <div class="four-col-grid">

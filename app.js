@@ -392,18 +392,18 @@ function showTab(tabId) {
   if (activePane) activePane.classList.add('active');
 
   const titles = {
-    'overview': ['Summary of Reach & Engagement', 'Cross-instrument reach aggregation, district performance, and programmatic coverage per location'],
-    'rumours': ['Weekly Community & School Listening and Rumour Log', 'Standardized weekly RCCE monitoring capturing community concerns, school rumours, misinformation, and recommended message adjustments for weekly RCCE synthesis'],
-    'tool_1': ['Transect Walk Environmental & Infrastructure Checklist', 'Environmental sanitation, setting type, functional stations, and stance ratios'],
-    'tool_2': ['Rapid Audience Assessment Intercept Survey', 'Full questionnaire capture: 7-day recall, 2+ symptoms, risk perception, and notification intent'],
-    'tool_3': ['"Ask 5" Behavioral Verification Diagnostic Tool', 'Full 5-claim diagnostic audit for gatekeepers, teachers, vendors, and transport operators'],
-    'tool_4': ['Most Significant Change Story Collection Form', 'Systematic qualitative narrative tracking of the Most Significant Change'],
-    'tool_6': ['Photovoice Participatory Documentation Guide & Caption Form', 'PHOTO protocol analysis of youth-led hygiene challenges and community solutions'],
-    'tool_7': ['Community Gatekeeper Dialogue & Events', 'Tracking orientation sessions conducted with local leaders and community stakeholders'],
-    'tool_8': ['Preparedness Assessment', 'School Epidemic Preparedness Assessment examining institutional response plans and isolation wards'],
-    'tool_9': ['School 3-Visit Tracker & Knowledge Wheel', 'Detailed analysis of learner reach, visit number, health club, and wheel answers'],
-    'tool_10': ['School Simulation Drill & Safeguarding Compliance Protocol', 'Mandatory pre-drill verification and performance rehearsal evaluation'],
-    'tool_11': ['U-Report Recruitment Tracker', 'Tracking recruitment and mobilization of youth, learners, and community members as active U-Reporters']
+    'overview': ['Overview & Key Metrics', 'Overall numbers reached across all districts, schools, and community locations'],
+    'rumours': ['Rumours & Community Concerns', 'What people are saying in communities, common misconceptions, and recommended actions'],
+    'tool_7': ['Community & Market Meetings', 'Meetings with market vendors, taxi drivers, boda riders, teachers, and local representatives'],
+    'tool_1': ['Sanitation & Venue Audits', 'Checks on handwashing stations, latrines, waste, and posters at public venues'],
+    'tool_2': ['Quick Community Surveys', 'Short interviews testing what community members know about disease signs and reporting'],
+    'tool_3': ['Fact-Check Interviews ("Ask 5")', 'In-person checks on whether key people actually practice the recommended health habits'],
+    'tool_9': ['School Visits & Games', 'School interactive sessions, snakes & ladders board games, and health clubs'],
+    'tool_8': ['School Safety Readiness', 'Checklist of school isolation spaces, clean water access, and emergency plans'],
+    'tool_10': ['School Safety Drills', 'Practice drills helping schools rehearse what to do if a pupil falls sick'],
+    'tool_4': ['Success Stories & Impact', 'Real personal stories and positive changes shared by community members and students'],
+    'tool_6': ['Photo Field Evidence', 'Photos taken by youth and community groups documenting hygiene conditions and solutions'],
+    'tool_11': ['U-Report Sign-ups', 'Tracking youth and community members registered as active U-Reporters']
   };
 
   if (titles[tabId]) {

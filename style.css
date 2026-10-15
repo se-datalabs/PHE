@@ -219,6 +219,74 @@ body {
   color: #ffffff !important;
 }
 
+/* Main Data Collection Tools Navigation & Badges */
+.main-section-heading {
+  color: var(--accent) !important;
+  font-weight: 800 !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-bottom: 6px;
+}
+
+.main-tool-btn {
+  background: rgba(241, 188, 27, 0.09) !important;
+  border-left: 3px solid var(--accent) !important;
+  margin-bottom: 4px;
+}
+
+.main-tool-btn:hover {
+  background: rgba(241, 188, 27, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.main-tool-btn.active {
+  background: var(--accent) !important;
+  color: #1e2252 !important;
+  font-weight: 700 !important;
+}
+
+.core-tag {
+  background: var(--accent);
+  color: #1e2252;
+  font-size: 0.60rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  line-height: 1.2;
+}
+
+.tab-btn.active .core-tag {
+  background: #1e2252;
+  color: #ffffff;
+}
+
+.adhoc-section-heading {
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 0.68rem;
+  margin-top: 10px;
+}
+
+.badge-main-tool {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+  font-weight: 700 !important;
+}
+
+.badge-adhoc-tool {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px solid #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
 /* Dedicated Rumour Section Custom Toolbars & Cards */
 .rumour-filter-card {
   background: var(--card-bg);
