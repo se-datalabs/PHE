@@ -1,6 +1,6 @@
 /**
  * Auto-generated PHE dataset from update_dashboard script.
- * Updated: 2026-10-15 11:38:50
+ * Updated: 2026-10-16 08:47:01
  */
 window.PHE_DATA = [
   {
@@ -14874,5 +14874,49 @@ window.PHE_DATA = [
     "index": 343,
     "_id": 343,
     "_uuid": "2b42a5e1-9b80-4b46-ae76-5caed6c14ba7"
+  },
+  {
+    "id": 344,
+    "date": "2026-10-15",
+    "tool": "Gatekeeper Session",
+    "district": "Kawempe",
+    "parish": "Bwaise III",
+    "coordinator": "Muganwa Peter",
+    "school": "Gatekeeper Session (Boda boda stage leader.)",
+    "role": "Boda boda stage leader.",
+    "role_specify": "Muganwa Peter",
+    "gk_category": "Transport (Boda/Taxi)",
+    "hotspot_setting": "Boda Boda Stage",
+    "protocol_handed_over": "No",
+    "action_plan_started": "No",
+    "commitments": "Sharing of the emergency number with other people met",
+    "manual_used": "Yes",
+    "signs_ability": "Half (50%)",
+    "hotline_ability": "Half (50%)",
+    "destigmatization": "Moderate",
+    "venue_wash": "No",
+    "wheel_sessions": 3,
+    "wheel_score": "Easily",
+    "crowd_engaged": 134,
+    "male_crowd": 78,
+    "female_crowd": 56,
+    "crowd_male": 78,
+    "crowd_female": 56,
+    "rumor": "Ebola is like cholera",
+    "barrier": "Misinformation in the community",
+    "source": "Social Media",
+    "risk_level": "Low",
+    "tactical_adaptation": "More sensitization in the community should be carried out",
+    "male": 2,
+    "female": 3,
+    "boys": 0,
+    "girls": 0,
+    "enrolment": 0,
+    "teachers": 5,
+    "games": 0,
+    "_index": 344,
+    "index": 344,
+    "_id": 344,
+    "_uuid": "360f1409-1a71-47af-950c-1c7e9b08ae52"
   }
 ];
