@@ -123,6 +123,10 @@ CANONICAL_SCHOOLS = {
     'uganda youth aid primary school': 'Uganda Youth Aid Primary School',
     'uganda youth aid school': 'Uganda Youth Aid Primary School',
     'uganda youth primary school': 'Uganda Youth Aid Primary School',
+    'mamtaz secondary school': 'Mamtaz Secondary School',
+    'kasubi church of uganda prinary school': 'Kasubi Church of Uganda Primary School',
+    'kasubi church of uganda primary school': 'Kasubi Church of Uganda Primary School',
+    'mengo primary school': 'Mengo Primary School',
 }
 
 def clean_school_name(raw):
@@ -400,7 +404,7 @@ def parse_workbook(excel_path):
         # --- 3. Transect Walk (Tool 1) ---
         if 'transect' in activity_type or 'walk' in activity_type or 'environmental' in activity_type:
             stations = parse_num(get_col(row, 'Record number of functional stations', 'Record number of functional stations '))
-            pop = parse_num(get_col(row, 'Population count of the site'))
+            pop = parse_num(get_col(row, 'Population count of the site', 'Estimated Passersby / Community Crowd Engaged'))
             stance_ratio = f'{(pop / stations):.1f}:1 ({pop} : {stations})' if stations > 0 else f'Critical Gap: {pop} Persons with 0 Stations'
             setting = get_col(row, 'Setting type', 'specify3') or 'School'
             district = get_col(row, 'District') or 'Central'
@@ -410,7 +414,7 @@ def parse_workbook(excel_path):
             refuse_val = get_col(row, 'Open refuse heaps, stagnant water, overflowing drainage channels near classrooms, food stalls, or passenger bays.') or 'Maintained'
             choke_val = get_col(row, 'Choke points where physical distancing is impossible (school gates, market aisles, taxi boarding bays).') or 'Moderate Congestion'
             poster_val = get_col(row, 'Presence, legibility, and currency of MoH/KCCA posters on Ebola, Mpox, and Marburg with active toll-free lines.') or 'Observed'
-            hotline_conf = get_col(row, 'Confirm if these IEC materials have presence of hotlines (0800-100-066 / 8500).')
+            hotline_conf = get_col(row, 'Confirm if these IEC materials have presence of hotlines (0800-100-066 / 8500).', 'Confirm presence of hotlines (0800-100-066 / 8500).')
             latrine_val = get_col(row, 'Cleanliness, separation of facilities, water availability, and handwash basins at latrines/toilets.') or 'Clean & Supplied'
             stance_notes = get_col(row, 'Note student-to-stance ratio or market vendor access.')
             holding_val = get_col(row, 'Designated space, ventilation, clean bedding, and written separation protocol for suspected symptomatic cases.') or 'Makeshift Only'
@@ -506,14 +510,14 @@ def parse_workbook(excel_path):
             continue
 
         # --- 6. PAT Assessment (Preparedness Assessment Tool) ---
-        if 'preparedness' in activity_type or 'pat' in activity_type or get_col(row, 'Does the school have a Epidemic Preparedness Plan'):
+        if ((('preparedness' in activity_type or 'pat assessment' in activity_type or re.search(r'\bpat\b', activity_type)) and 'photovoice' not in activity_type and 'photo' not in activity_type and 'drill' not in activity_type and 'simulation' not in activity_type) or (get_col(row, 'Does the school have a Epidemic Preparedness Plan') and 'photovoice' not in activity_type)):
             s_name = clean_school_name(get_col(row, 'Name of the school', 'School Name') or 'Assessed Facility')
-            p_signs = parse_num(get_col(row, 'How many can you name three major signs or warning symptoms of a public health emergency like Ebola or Mpox?', 'How many can you name three major signs or warning symptoms of a public health emergency like Ebola or Mpox?13'))
-            p_spread = parse_num(get_col(row, 'How many Can you tell me how disease outbreaks spread from one person to another?', 'How many Can you tell me how disease outbreaks spread from one person to another?14'))
-            p_risk = parse_num(get_col(row, 'Since Uganda was declared free from the last outbreak, is the risk completely gone?', 'Since Uganda was declared free from the last outbreak, is the risk completely gone?15'))
-            p_notify = parse_num(get_col(row, 'If a classmate or family member collapses or has high fever and bleeding, who should be notified first?', 'If a classmate or family member collapses or has high fever and bleeding, who should be notified first?16'))
-            p_stigma = parse_num(get_col(row, 'If a pupil returns to school after being discharged from an isolation treatment unit, how should they be treated?', 'If a pupil returns to school after being discharged from an isolation treatment unit, how should they be treated?17'))
-            p_handwash = parse_num(get_col(row, 'Demonstrate how to wash your hands properly using running water and soap.', 'Demonstrate how to wash your hands properly using running water and soap.18'))
+            p_signs = parse_num(get_col(row, 'How many can you name three major signs or warning symptoms of a public health emergency like Ebola or Mpox?21', 'How many can you name three major signs or warning symptoms of a public health emergency like Ebola or Mpox?', 'How many can you name three major signs or warning symptoms of a public health emergency like Ebola or Mpox?13'))
+            p_spread = parse_num(get_col(row, 'How many Can you tell me how disease outbreaks spread from one person to another?22', 'How many Can you tell me how disease outbreaks spread from one person to another?', 'How many Can you tell me how disease outbreaks spread from one person to another?14'))
+            p_risk = parse_num(get_col(row, 'Since Uganda was declared free from the last outbreak, is the risk completely gone?23', 'Since Uganda was declared free from the last outbreak, is the risk completely gone?', 'Since Uganda was declared free from the last outbreak, is the risk completely gone?15'))
+            p_notify = parse_num(get_col(row, 'If a classmate or family member collapses or has high fever and bleeding, who should be notified first?24', 'If a classmate or family member collapses or has high fever and bleeding, who should be notified first?', 'If a classmate or family member collapses or has high fever and bleeding, who should be notified first?16'))
+            p_stigma = parse_num(get_col(row, 'If a pupil returns to school after being discharged from an isolation treatment unit, how should they be treated?25', 'If a pupil returns to school after being discharged from an isolation treatment unit, how should they be treated?', 'If a pupil returns to school after being discharged from an isolation treatment unit, how should they be treated?17'))
+            p_handwash = parse_num(get_col(row, 'Demonstrate how to wash your hands properly using running water and soap.26', 'Demonstrate how to wash your hands properly using running water and soap.', 'Demonstrate how to wash your hands properly using running water and soap.18'))
             lead_hotline = get_col(row, 'Can the school leadership state the official toll-free reporting lines (e.g., MoH/KCCA hotlines: 0800-100-066 / 8500) and the focal Division Health Officer/VHT contact without checking notes?')
 
             push_record({
@@ -672,17 +676,17 @@ def parse_workbook(excel_path):
             # Claim 3: Toll-free Hotline & Reporting
             c3_hotline = get_col(row, 'Without checking your phone, what is the exact emergency toll-free number or school/parish focal person contact?')
             c3_fear = get_col(row, 'What specific fear would make you hesitate to call ')
-            c3_status = get_col(row, 'Verification Status5')
+            c3_status = get_col(row, 'Verification Status7', 'Verification Status5')
 
             # Claim 4: Anti-Stigma & Reintegration
             c4_reintegrate = get_col(row, 'If a pupil or vendor returns after being discharged from an isolation unit, how will you and others interact with them?')
             c4_allow_back = get_col(row, 'Would you allow them back in your study group, buy food from them, or sit next to them?')
-            c4_status = get_col(row, 'Verification Status6')
+            c4_status = get_col(row, 'Verification Status8', 'Verification Status6')
 
             # Claim 5: Preparedness Multiplier
             c5_agreement = get_col(row, 'What specific agreement did your family or health club members establish after you spoke with them?')
             c5_tough_q = get_col(row, 'Who asked the most difficult question about disease outbreaks, and what was your exact answer?')
-            c5_status = get_col(row, 'Verification Status7')
+            c5_status = get_col(row, 'Verification Status9')
 
             # Primary status summary
             primary_status = c1_status or c2_status or c3_status or c4_status or c5_status or 'Verified'
@@ -797,6 +801,14 @@ def parse_workbook(excel_path):
         if 'tool 6' in activity_type or 'photovoice' in activity_type or 'photo' in activity_type:
             district = get_col(row, 'District') or 'Central'
             parish = get_col(row, 'Parish')
+            part_name = get_col(row, 'Participant name') or 'Participant'
+            part_cat = get_col(row, 'Category') or 'Community Member'
+            photo_p = get_col(row, 'P — Picture: What people, objects, or actions are in the photo?')
+            photo_h = get_col(row, 'H — Happening: What is the background story or context here?')
+            photo_o = get_col(row, 'O — Our Lives: How does this connect to daily health or hygiene challenges?')
+            photo_t = get_col(row, 'T — The Cause: Why does this issue exist (e.g., cost, lack of water, habit)?')
+            photo_opp = get_col(row, 'O — Opportunities: What can the community or local leaders do to fix it?')
+
             push_record({
                 'id': row_id,
                 'date': formatted_date,
@@ -805,8 +817,21 @@ def parse_workbook(excel_path):
                 'parish': parish,
                 'coordinator': coordinator,
                 'school': f"{district} - {parish}",
+                'author': f"{part_name} ({part_cat})" if part_cat else part_name,
+                'participant': part_name,
+                'age': parse_num(get_col(row, 'Age')),
+                'category': part_cat,
+                'p': photo_p or '—',
+                'h': photo_h or '—',
+                'o': photo_o or '—',
+                't': photo_t or '—',
+                'opp': photo_opp or '—',
                 'theme': get_col(row, 'PHOTO Theme', 'Theme') or 'Hygiene Barrier',
-                'caption': get_col(row, 'H — Happening: What is the background story or context here?') or 'PHOTO Observation',
+                'caption': photo_h or 'PHOTO Observation',
+                'rumor': get_col(row, 'Rumor, misinformation or question flagged'),
+                'barrier': get_col(row, 'Local barrier identified'),
+                'risk_level': get_col(row, 'Estimated spread or risk level') or 'Moderate',
+                'tactical_adaptation': get_col(row, 'Recommended tactical adaptation'),
                 'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
             })
             tool_counts['Photovoice'] = tool_counts.get('Photovoice', 0) + 1
@@ -816,7 +841,22 @@ def parse_workbook(excel_path):
         if 'tool 10' in activity_type or 'simulation' in activity_type or 'drill' in activity_type:
             district = get_col(row, 'District') or 'Central'
             parish = get_col(row, 'Parish')
-            s_name = get_col(row, 'Name of the school', 'School Name') or f"{district} - {parish}"
+            raw_s_name = get_col(row, 'Name of the venue or school', 'Name of the school', 'School Name')
+            s_name = clean_school_name(raw_s_name) if raw_s_name else f"{district} - {parish}"
+            
+            # Drill participants breakdown
+            m_learners = parse_num(get_col(row, '<span style="display:none">row-Male</span>', 'Learners-Male'))
+            f_learners = parse_num(get_col(row, '<span style="display:none">row-Female</span>', 'Learners-Female'))
+            m_leaders = parse_num(get_col(row, '<span style="display:none">row_1-Male</span>', 'School leaders-Male'))
+            f_leaders = parse_num(get_col(row, '<span style="display:none">row_1-Female</span>', 'School leaders-Female'))
+            m_comm = parse_num(get_col(row, '<span style="display:none">row_2-Male</span>', '<span style="display:none">row_3-Male</span>'))
+            f_comm = parse_num(get_col(row, '<span style="display:none">row_2-Female</span>', '<span style="display:none">row_3-Female</span>'))
+
+            det_val = get_col(row, 'Did the people spotting the case keep a safe distance?', 'No-Contact Detection')
+            hold_val = get_col(row, 'Is the temporary isolation space ready?', 'Holding Area Setup')
+            time_val = parse_num(get_col(row, 'How many minutes did it take to place the call after isolation in minutes?', 'How many minutes did it take to spot the signs and react in minutes', 'Time to Call (Mins)'))
+            debrief_val = get_col(row, 'Was an immediate talk (debrief) held on-site with learners and the community?', 'Handover & Debrief Status')
+
             push_record({
                 'id': row_id,
                 'date': formatted_date,
@@ -825,11 +865,31 @@ def parse_workbook(excel_path):
                 'parish': parish,
                 'coordinator': coordinator,
                 'school': s_name,
-                'detection': get_col(row, 'No-Contact Detection') or 'Verified',
-                'holding': get_col(row, 'Holding Area Setup') or 'Active',
-                'time': parse_num(get_col(row, 'Time to Call (Mins)')),
-                'handover': get_col(row, 'Handover & Debrief Status') or 'Completed',
-                'boys': 0, 'girls': 0, 'enrolment': 0, 'teachers': 0, 'games': 0
+                'facility': s_name,
+                'venue': s_name,
+                'setting': get_col(row, 'Where is the drill happening?') or 'School',
+                'emergency': get_col(row, 'Which outbreak emergency is the team acting out today?') or 'Emergency Drill',
+                'identification': det_val or 'Compliant',
+                'detection': det_val or 'Verified',
+                'holding': hold_val or 'Active',
+                'holdingArea': hold_val or 'Active',
+                'time': f"{int(time_val)} mins" if time_val else 'Prompt',
+                'time_minutes': time_val,
+                'handover': get_col(row, 'Was the handover to the response team smooth?') or 'Smooth',
+                'debrief': debrief_val or 'Completed',
+                'problem': get_col(row, 'What was the biggest problem seen during this drill?'),
+                'fix_promised': get_col(row, 'What immediate fix did the leader promise to make?'),
+                'contact_first': get_col(row, 'Who did the school head or leader contact first?'),
+                'rumor': get_col(row, 'Rumor, misinformation or question flagged'),
+                'barrier': get_col(row, 'Local barrier identified'),
+                'risk_level': get_col(row, 'Estimated spread or risk level') or 'Low',
+                'tactical_adaptation': get_col(row, 'Recommended tactical adaptation'),
+                'boys': m_learners,
+                'girls': f_learners,
+                'enrolment': m_learners + f_learners,
+                'teachers': m_leaders + f_leaders,
+                'crowd': m_comm + f_comm,
+                'games': 0
             })
             tool_counts['Simulation Drill'] = tool_counts.get('Simulation Drill', 0) + 1
             continue
