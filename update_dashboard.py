@@ -852,10 +852,43 @@ def parse_workbook(excel_path):
             m_comm = parse_num(get_col(row, '<span style="display:none">row_2-Male</span>', '<span style="display:none">row_3-Male</span>'))
             f_comm = parse_num(get_col(row, '<span style="display:none">row_2-Female</span>', '<span style="display:none">row_3-Female</span>'))
 
-            det_val = get_col(row, 'Did the people spotting the case keep a safe distance?', 'No-Contact Detection')
-            hold_val = get_col(row, 'Is the temporary isolation space ready?', 'Holding Area Setup')
-            time_val = parse_num(get_col(row, 'How many minutes did it take to place the call after isolation in minutes?', 'How many minutes did it take to spot the signs and react in minutes', 'Time to Call (Mins)'))
-            debrief_val = get_col(row, 'Was an immediate talk (debrief) held on-site with learners and the community?', 'Handover & Debrief Status')
+            total_learners = m_learners + f_learners
+            total_leaders = m_leaders + f_leaders
+            total_observers = m_comm + f_comm
+            total_participants = total_learners + total_leaders + total_observers
+
+            # Stage 1: Identification & Early Spotting
+            s1_safe_dist = get_col(row, 'Did the people spotting the case keep a safe distance?', 'No-Contact Detection')
+            s1_time_spot = parse_num(get_col(row, 'How many minutes did it take to spot the signs and react in minutes'))
+            s1_behavior = get_col(row, 'How did the person who spotted the case behave?')
+            s1_behavior_spec = get_col(row, 'Specify11')
+            s1_notes = get_col(row, 'Stage 1 Observation Notes')
+
+            # Stage 2: Safe Transit & Isolation Sick Bay
+            s2_isolation_ready = get_col(row, 'Is the temporary isolation space ready?', 'Holding Area Setup')
+            s2_ready_det = get_col(row, 'Ready')
+            s2_not_ready_det = get_col(row, 'Not ready')
+            s2_crowd_handling = get_col(row, 'How was the crowd handled while moving the sick person?')
+            s2_time_isolate = parse_num(get_col(row, 'How many minutes did it take to move the person into isolation minutes?'))
+
+            # Stage 3: Notification & Communication
+            s3_contact_first = get_col(row, 'Who did the school head or leader contact first?')
+            s3_details_clear = get_col(row, 'Were the details given over the phone clear and correct?')
+            s3_details_provided = get_col(row, 'What details did the caller provide?')
+            s3_caller_panicked = get_col(row, 'What details did the caller provide?15')
+            s3_time_call = parse_num(get_col(row, 'How many minutes did it take to place the call after isolation in minutes?', 'Time to Call (Mins)'))
+            s3_notes = get_col(row, 'Stage 3 Observation Notes')
+
+            # Stage 4: Handover, Infection Control & Anti-Stigma Debrief
+            s4_handover_smooth = get_col(row, 'Was the handover to the response team smooth?')
+            s4_handwash_done = get_col(row, 'Did everyone who guided the person wash hands with running water and soap immediately?')
+            s4_cleaning_simulated = get_col(row, 'Was the holding area cordoned off or simulated for surface wiping/cleaning after handover?')
+            s4_debrief_held = get_col(row, 'Was an immediate talk (debrief) held on-site with learners and the community?', 'Handover & Debrief Status')
+            s4_notes = get_col(row, 'Stage 4 Observation Notes')
+
+            # Overall Evaluation & Actions
+            problem_val = get_col(row, 'What was the biggest problem seen during this drill?')
+            fix_val = get_col(row, 'What immediate fix did the leader promise to make?')
 
             push_record({
                 'id': row_id,
@@ -869,27 +902,64 @@ def parse_workbook(excel_path):
                 'venue': s_name,
                 'setting': get_col(row, 'Where is the drill happening?') or 'School',
                 'emergency': get_col(row, 'Which outbreak emergency is the team acting out today?') or 'Emergency Drill',
-                'identification': det_val or 'Compliant',
-                'detection': det_val or 'Verified',
-                'holding': hold_val or 'Active',
-                'holdingArea': hold_val or 'Active',
-                'time': f"{int(time_val)} mins" if time_val else 'Prompt',
-                'time_minutes': time_val,
-                'handover': get_col(row, 'Was the handover to the response team smooth?') or 'Smooth',
-                'debrief': debrief_val or 'Completed',
-                'problem': get_col(row, 'What was the biggest problem seen during this drill?'),
-                'fix_promised': get_col(row, 'What immediate fix did the leader promise to make?'),
-                'contact_first': get_col(row, 'Who did the school head or leader contact first?'),
+                # Stage 1
+                's1_safe_distance': s1_safe_dist or 'Safe Distance Kept',
+                's1_time_spot': s1_time_spot,
+                's1_behavior': s1_behavior_spec if (s1_behavior.lower() == 'other' and s1_behavior_spec) else (s1_behavior or 'Calm and clear'),
+                's1_notes': s1_notes or '—',
+                # Stage 2
+                's2_isolation_ready': s2_isolation_ready or 'Ready',
+                's2_ready_details': s2_ready_det or s2_not_ready_det or '—',
+                's2_crowd_handling': s2_crowd_handling or 'Route Kept Clear',
+                's2_time_isolate': s2_time_isolate,
+                # Stage 3
+                's3_contact_first': s3_contact_first or 'Official Toll-Free Hotline (0800-100-066)',
+                's3_details_clear': s3_details_clear or 'Clear',
+                's3_details_provided': s3_details_provided or '—',
+                's3_caller_panicked': s3_caller_panicked or '—',
+                's3_time_call': s3_time_call,
+                's3_notes': s3_notes or '—',
+                # Stage 4
+                's4_handover_smooth': s4_handover_smooth or 'Yes',
+                's4_handwash_done': s4_handwash_done or 'Yes',
+                's4_cleaning_simulated': s4_cleaning_simulated or 'No',
+                's4_debrief_held': s4_debrief_held or 'Yes',
+                's4_notes': s4_notes or '—',
+                # Safeguarding & Corrective Actions
+                'problem': problem_val or 'None',
+                'fix_promised': fix_val or 'Continue adherence to protocol',
+                # Backward-compatibility mappings
+                'identification': s1_safe_dist or 'Compliant',
+                'detection': s1_safe_dist or 'Verified',
+                'holding': s2_isolation_ready or 'Active',
+                'holdingArea': s2_isolation_ready or 'Active',
+                'time': f"{int(s3_time_call)} mins" if s3_time_call else (f"{int(s1_time_spot)} mins" if s1_time_spot else 'Prompt'),
+                'time_minutes': s3_time_call or s1_time_spot or 0,
+                'handover': s4_handover_smooth or 'Smooth',
+                'debrief': s4_debrief_held or 'Completed',
+                'contact_first': s3_contact_first,
+                # Reach breakdown
+                'learners_male': m_learners,
+                'learners_female': f_learners,
+                'total_learners': total_learners,
+                'leaders_male': m_leaders,
+                'leaders_female': f_leaders,
+                'total_leaders': total_leaders,
+                'observers_male': m_comm,
+                'observers_female': f_comm,
+                'total_observers': total_observers,
+                'total_participants': total_participants,
+                'boys': m_learners,
+                'girls': f_learners,
+                'enrolment': total_learners,
+                'teachers': total_leaders,
+                'crowd': total_observers,
+                'games': 0,
+                # Contextual rumors / barriers
                 'rumor': get_col(row, 'Rumor, misinformation or question flagged'),
                 'barrier': get_col(row, 'Local barrier identified'),
                 'risk_level': get_col(row, 'Estimated spread or risk level') or 'Low',
-                'tactical_adaptation': get_col(row, 'Recommended tactical adaptation'),
-                'boys': m_learners,
-                'girls': f_learners,
-                'enrolment': m_learners + f_learners,
-                'teachers': m_leaders + f_leaders,
-                'crowd': m_comm + f_comm,
-                'games': 0
+                'tactical_adaptation': get_col(row, 'Recommended tactical adaptation')
             })
             tool_counts['Simulation Drill'] = tool_counts.get('Simulation Drill', 0) + 1
             continue

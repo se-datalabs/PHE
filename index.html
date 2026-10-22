@@ -1048,31 +1048,94 @@
       <!-- ================= TOOL 10: SCHOOL SIMULATION DRILL PROTOCOL ================= -->
       <section id="tab-tool_10" class="tab-pane">
         <div class="scope-callout">
-          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 School Safety Drills</div>
+          <div style="font-weight:700; color:var(--primary); font-size:0.85rem; margin-bottom:3px;">📌 Tool 10: School Outbreak Simulation Drill &amp; Safeguarding Compliance Protocol</div>
           <div style="font-size:0.79rem; color:#475569; line-height:1.4;">
-            <strong>What this shows:</strong> Practice rehearsals in schools testing how fast and safely teachers handle a suspected illness without panic or stigma.<br>
-            <strong>What to look for:</strong> Response times, safe sick bay setup, and calling the official hotline.
+            <strong>Purpose &amp; Scope:</strong> Practice rehearsals evaluating school &amp; community preparedness to identify suspect cases without physical contact, isolate into ventilated sick bays, notify official toll-free surveillance lines, and lead same-day anti-stigma debriefs.<br>
+            <strong>Standard Protocol (4 Stages):</strong> (1) Safe Detection &amp; Distance &rarr; (2) Transit to Isolation Sick Bay &rarr; (3) Official Hotline / VHT Notification &rarr; (4) Safe Handover, Immediate Handwashing &amp; Anti-Stigma Debrief.
           </div>
         </div>
+
+        <!-- KPI SUMMARY GRID -->
         <div class="kpi-grid">
-          <div class="kpi-card accent"><div class="kpi-title">Stage 1: Identification</div><div class="kpi-value" id="t9_s1" style="font-size:1.3rem; color:#94a3b8;">Pending</div><div class="kpi-subtitle">No simulation drills recorded yet</div></div>
-          <div class="kpi-card"><div class="kpi-title">Stage 2: Escort to Bay</div><div class="kpi-value" id="t9_s2" style="font-size:1.3rem; color:#94a3b8;">Pending</div><div class="kpi-subtitle">No simulation drills recorded yet</div></div>
-          <div class="kpi-card"><div class="kpi-title">Stage 3: Notification</div><div class="kpi-value" id="t9_s3" style="font-size:1.3rem; color:#94a3b8;">Pending</div><div class="kpi-subtitle">No simulation drills recorded yet</div></div>
-          <div class="kpi-card"><div class="kpi-title">Stage 4: Handover</div><div class="kpi-value" id="t9_s4" style="font-size:1.3rem; color:#94a3b8;">Pending</div><div class="kpi-subtitle">No simulation drills recorded yet</div></div>
+          <div class="kpi-card accent">
+            <div class="kpi-title">Drills Rehearsed</div>
+            <div class="kpi-value" id="t10TotalDrills">0</div>
+            <div class="kpi-subtitle" id="t10EmergenciesSub">Exercises conducted</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Rehearsal Reach</div>
+            <div class="kpi-value" id="t10TotalReach">0</div>
+            <div class="kpi-subtitle" id="t10ReachSub">Learners &amp; leaders engaged</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Stage 1: Safe Distance</div>
+            <div class="kpi-value" id="t9_s1">0%</div>
+            <div class="kpi-subtitle" id="t10_s1_sub">Stayed &ge;2m, no touch</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Stage 2: Sick Bay Ready</div>
+            <div class="kpi-value" id="t9_s2">0%</div>
+            <div class="kpi-subtitle" id="t10_s2_sub">Private room with water &amp; soap</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Stage 3: Official Hotline</div>
+            <div class="kpi-value" id="t9_s3">0%</div>
+            <div class="kpi-subtitle" id="t10_s3_sub">Called 0800-100-066 / VHT lead</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">Stage 4: Anti-Stigma Debrief</div>
+            <div class="kpi-value" id="t9_s4">0%</div>
+            <div class="kpi-subtitle" id="t10_s4_sub">On-site community debrief held</div>
+          </div>
         </div>
 
-        <div class="card">
-          <div class="card-title">School Outbreak Simulation Drill Evaluation Log</div>
+        <!-- 4-STAGE DRILL PROTOCOL EVALUATION CARDS -->
+        <div class="dashboard-grid" style="margin-top:1rem; gap:1rem;">
+          <!-- Stage 1 & 2 Card -->
+          <div class="card">
+            <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>🚨 Stage 1 &amp; 2: Detection, Distance &amp; Safe Isolation</span>
+              <span class="badge-pill badge-primary">Detection &amp; Isolation</span>
+            </div>
+            <div id="t10Stage12Details" style="font-size:0.83rem; color:#334155; line-height:1.5;"></div>
+          </div>
+
+          <!-- Stage 3 & 4 Card -->
+          <div class="card">
+            <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>📞 Stage 3 &amp; 4: Reporting, Handover &amp; Anti-Stigma</span>
+              <span class="badge-pill badge-success">Response &amp; Safeguarding</span>
+            </div>
+            <div id="t10Stage34Details" style="font-size:0.83rem; color:#334155; line-height:1.5;"></div>
+          </div>
+        </div>
+
+        <!-- PROBLEMS & CORRECTIVE FIXES CARD -->
+        <div class="card" style="margin-top:1rem;">
+          <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>⚠️ Safeguarding Problems Identified &amp; Immediate Corrective Commitments</span>
+            <span class="badge-pill badge-warning" id="t10ProblemBadge">Corrective Action Log</span>
+          </div>
+          <div id="t10ActionLog" style="font-size:0.83rem; color:#334155;"></div>
+        </div>
+
+        <!-- DETAILED DRILL LOG TABLE -->
+        <div class="card" style="margin-top:1rem;">
+          <div class="card-title">Comprehensive School Outbreak Simulation Drill Evaluation Records</div>
           <div class="table-responsive">
             <table>
               <thead>
                 <tr>
-                  <th>Drill ID</th>
-                  <th>Facility Evaluated</th>
-                  <th>No-Contact Detection</th>
-                  <th>Holding Area Setup</th>
-                  <th>Time to Call (Mins)</th>
-                  <th>Handover &amp; Debrief Status</th>
+                  <th>Drill #</th>
+                  <th>Facility / Venue</th>
+                  <th>Location</th>
+                  <th>Simulated Emergency</th>
+                  <th>Participants</th>
+                  <th>Stage 1: Distance &amp; Spotting</th>
+                  <th>Stage 2: Isolation &amp; Transit</th>
+                  <th>Stage 3: Notification &amp; Call Time</th>
+                  <th>Stage 4: Handover &amp; Debrief</th>
+                  <th>Biggest Problem &amp; Corrective Commitment</th>
                 </tr>
               </thead>
               <tbody id="tool9TableBody"></tbody>

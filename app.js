@@ -1952,18 +1952,164 @@ function populateQualitativeTools() {
   // Tool 10: School Simulation Drill
   const tool10Body = document.getElementById('tool9TableBody');
   const t10Rows = appData.filter(d => d.tool === 'Simulation Drill');
-  if (tool10Body) {
-    if (t10Rows.length === 0) {
-      tool10Body.innerHTML = renderEmptyState(6, 'school simulation drills');
-    } else {
+  const t10Total = t10Rows.length;
+
+  if (t10Total === 0) {
+    safeSetText('t10TotalDrills', '0');
+    safeSetText('t10EmergenciesSub', 'No drills recorded in filter range');
+    safeSetText('t10TotalReach', '0');
+    safeSetText('t10ReachSub', '0 Learners, 0 Leaders');
+    safeSetText('t9_s1', '0%');
+    safeSetText('t10_s1_sub', 'Pending data');
+    safeSetText('t9_s2', '0%');
+    safeSetText('t10_s2_sub', 'Pending data');
+    safeSetText('t9_s3', '0%');
+    safeSetText('t10_s3_sub', 'Pending data');
+    safeSetText('t9_s4', '0%');
+    safeSetText('t10_s4_sub', 'Pending data');
+
+    const s12El = document.getElementById('t10Stage12Details');
+    if (s12El) s12El.innerHTML = '<div style="color:#94a3b8; font-style:italic;">No simulation drills recorded yet.</div>';
+    const s34El = document.getElementById('t10Stage34Details');
+    if (s34El) s34El.innerHTML = '<div style="color:#94a3b8; font-style:italic;">No simulation drills recorded yet.</div>';
+    const actEl = document.getElementById('t10ActionLog');
+    if (actEl) actEl.innerHTML = '<div style="color:#94a3b8; font-style:italic;">No safeguarding problems or corrective actions recorded.</div>';
+    if (tool10Body) tool10Body.innerHTML = renderEmptyState(10, 'school simulation drills');
+  } else {
+    // Aggregations
+    const t10Learners = t10Rows.reduce((acc, r) => acc + (r.total_learners || r.enrolment || 0), 0);
+    const t10Leaders = t10Rows.reduce((acc, r) => acc + (r.total_leaders || r.teachers || 0), 0);
+    const t10Observers = t10Rows.reduce((acc, r) => acc + (r.total_observers || r.crowd || 0), 0);
+    const t10Reach = t10Learners + t10Leaders + t10Observers;
+
+    // Unique emergencies
+    const emergencies = [...new Set(t10Rows.map(r => r.emergency).filter(Boolean))];
+    const emerCounts = emergencies.map(em => `${em} (${t10Rows.filter(r => r.emergency === em).length})`).join(', ');
+
+    // Stage 1: Safe Distance Kept
+    const s1Compliant = t10Rows.filter(r => (r.s1_safe_distance || r.identification || '').toLowerCase().includes('safe') || (r.s1_safe_distance || r.identification || '').toLowerCase().includes('compliant')).length;
+    const s1Pct = Math.round((s1Compliant / t10Total) * 100);
+    const validSpotTimes = t10Rows.map(r => r.s1_time_spot).filter(v => v !== undefined && v !== null && v > 0);
+    const avgSpotTime = validSpotTimes.length > 0 ? (validSpotTimes.reduce((a, b) => a + b, 0) / validSpotTimes.length).toFixed(1) : '2.0';
+
+    // Stage 2: Isolation Ready
+    const s2Ready = t10Rows.filter(r => (r.s2_isolation_ready || r.holdingArea || '').toLowerCase().includes('ready') && !(r.s2_isolation_ready || r.holdingArea || '').toLowerCase().includes('not ready')).length;
+    const s2Pct = Math.round((s2Ready / t10Total) * 100);
+    const validIsolateTimes = t10Rows.map(r => r.s2_time_isolate).filter(v => v !== undefined && v !== null && v > 0);
+    const avgIsolateTime = validIsolateTimes.length > 0 ? (validIsolateTimes.reduce((a, b) => a + b, 0) / validIsolateTimes.length).toFixed(1) : '8.0';
+
+    // Stage 3: Notification Route
+    const s3Hotline = t10Rows.filter(r => (r.s3_contact_first || r.contact_first || '').toLowerCase().includes('hotline') || (r.s3_contact_first || r.contact_first || '').toLowerCase().includes('0800')).length;
+    const s3Pct = Math.round((s3Hotline / t10Total) * 100);
+    const validCallTimes = t10Rows.map(r => r.s3_time_call || r.time_minutes).filter(v => v !== undefined && v !== null && v > 0);
+    const avgCallTime = validCallTimes.length > 0 ? (validCallTimes.reduce((a, b) => a + b, 0) / validCallTimes.length).toFixed(1) : '6.0';
+
+    // Stage 4: Debrief Held
+    const s4Debrief = t10Rows.filter(r => (r.s4_debrief_held || r.debrief || '').toLowerCase().includes('yes') || (r.s4_debrief_held || r.debrief || '').toLowerCase().includes('held') || (r.s4_debrief_held || r.debrief || '').toLowerCase().includes('completed')).length;
+    const s4Pct = Math.round((s4Debrief / t10Total) * 100);
+
+    // Update Scorecards
+    safeSetText('t10TotalDrills', t10Total);
+    safeSetText('t10EmergenciesSub', emerCounts || 'Simulation exercises');
+    safeSetText('t10TotalReach', t10Reach.toLocaleString());
+    safeSetText('t10ReachSub', `${t10Learners} Learners | ${t10Leaders} Leaders | ${t10Observers} Observers`);
+    safeSetText('t9_s1', `${s1Pct}%`);
+    safeSetText('t10_s1_sub', `Avg spot: ${avgSpotTime}m | ${s1Compliant}/${t10Total} safe distance`);
+    safeSetText('t9_s2', `${s2Pct}%`);
+    safeSetText('t10_s2_sub', `Avg transit: ${avgIsolateTime}m | ${s2Ready}/${t10Total} bays ready`);
+    safeSetText('t9_s3', `${s3Pct}%`);
+    safeSetText('t10_s3_sub', `Avg call: ${avgCallTime}m | ${s3Hotline}/${t10Total} called 0800 line`);
+    safeSetText('t9_s4', `${s4Pct}%`);
+    safeSetText('t10_s4_sub', `${s4Debrief}/${t10Total} anti-stigma debriefs held`);
+
+    // Populate Stage 1 & 2 Workflow Card
+    const s12El = document.getElementById('t10Stage12Details');
+    if (s12El) {
+      s12El.innerHTML = t10Rows.map(dr => `
+        <div style="padding:0.75rem; border-radius:6px; background:#f8fafc; border:1px solid #e2e8f0; margin-bottom:0.75rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+            <strong style="color:var(--primary); font-size:0.88rem;">#${dr._index || dr.id} ${dr.facility || dr.school} (${dr.district} - ${dr.parish})</strong>
+            <span class="badge-pill badge-primary">${dr.emergency || 'Emergency'}</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.4rem; font-size:0.78rem;">
+            <div><strong>Stage 1 Distance:</strong> <span style="color:${(dr.s1_safe_distance || '').includes('Yes') ? '#10b981' : '#f59e0b'}; font-weight:600;">${(dr.s1_safe_distance || '').split(':')[0] || 'Safe'}</span> (Reaction: ${dr.s1_time_spot || 0}m, Behavior: ${dr.s1_behavior || 'Normal'})</div>
+            <div><strong>Stage 2 Sick Bay:</strong> <span style="color:${(dr.s2_isolation_ready || '').includes('Ready') && !(dr.s2_isolation_ready || '').includes('Not') ? '#10b981' : '#ef4444'}; font-weight:600;">${dr.s2_isolation_ready || 'Ready'}</span> (Transit: ${dr.s2_time_isolate || 0}m, Crowd: ${(dr.s2_crowd_handling || '').split(':')[0] || 'Private'})</div>
+          </div>
+          <div style="font-size:0.76rem; color:#64748b; background:#fff; padding:0.4rem; border-radius:4px; border-left:3px solid var(--primary);">
+            <strong>Stage 1 Notes:</strong> ${dr.s1_notes || 'No qualitative observations recorded.'}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Populate Stage 3 & 4 Workflow Card
+    const s34El = document.getElementById('t10Stage34Details');
+    if (s34El) {
+      s34El.innerHTML = t10Rows.map(dr => `
+        <div style="padding:0.75rem; border-radius:6px; background:#f8fafc; border:1px solid #e2e8f0; margin-bottom:0.75rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+            <strong style="color:var(--primary); font-size:0.88rem;">#${dr._index || dr.id} ${dr.facility || dr.school}</strong>
+            <span class="badge-pill ${(dr.s3_contact_first || '').includes('0800') ? 'badge-success' : 'badge-warning'}">${(dr.s3_contact_first || '').split('(')[0].trim() || 'Notification'}</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.4rem; font-size:0.78rem;">
+            <div><strong>Stage 3 Hotline:</strong> ${dr.s3_contact_first || 'Hotline'} (Placed in ${dr.s3_time_call || dr.time_minutes || 0}m, Accuracy: ${dr.s3_details_clear || 'Clear'})</div>
+            <div><strong>Stage 4 Handover:</strong> Handover: ${(dr.s4_handover_smooth || '').split(':')[0] || 'Smooth'} | Debrief: ${(dr.s4_debrief_held || '').split(':')[0] || 'Held'}</div>
+          </div>
+          <div style="font-size:0.76rem; color:#64748b; background:#fff; padding:0.4rem; border-radius:4px; border-left:3px solid #10b981;">
+            <strong>Stage 4 Notes:</strong> ${dr.s4_notes || 'No qualitative observations recorded.'}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Populate Corrective Actions Card
+    const actEl = document.getElementById('t10ActionLog');
+    if (actEl) {
+      actEl.innerHTML = t10Rows.map(dr => `
+        <div style="padding:0.75rem; border-radius:6px; background:#fffbeb; border:1px solid #fef3c7; margin-bottom:0.75rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.3rem;">
+            <strong style="color:#b45309; font-size:0.85rem;">Drill #${dr._index || dr.id} — ${dr.facility || dr.school} (${dr.district})</strong>
+            <span style="font-size:0.75rem; color:#78350f;">Lead Coordinator: <strong>${dr.coordinator || 'Lead'}</strong></span>
+          </div>
+          <div style="font-size:0.8rem; margin-bottom:0.3rem;">
+            <span style="color:#dc2626; font-weight:700;">⚠️ Biggest Problem Seen:</span> ${dr.problem || 'None identified'}
+          </div>
+          <div style="font-size:0.8rem; color:#065f46; background:#ecfdf5; padding:0.4rem; border-radius:4px; border-left:3px solid #10b981;">
+            <span style="font-weight:700;">✅ Immediate Fix Promised by Leadership:</span> ${dr.fix_promised || 'Standard SOP compliance'}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Populate Comprehensive Log Table
+    if (tool10Body) {
       tool10Body.innerHTML = t10Rows.map(dr => `
         <tr>
-          <td><strong>#${dr._index || dr.id}</strong></td>
-          <td><strong>${dr.facility || dr.school || '—'}</strong></td>
-          <td><span class="badge-pill badge-success">${dr.identification || 'Compliant'}</span></td>
-          <td>${dr.holdingArea || '—'}</td>
-          <td><strong style="color:var(--primary);">${dr.time || '—'}</strong></td>
-          <td><span class="badge-pill badge-primary">${dr.debrief || '—'}</span></td>
+          <td><strong>#${dr._index || dr.id}</strong><div style="font-size:0.72rem; color:#64748b;">${dr.date || ''}</div></td>
+          <td><strong>${dr.facility || dr.school || '—'}</strong><div style="font-size:0.72rem; color:#64748b;">${dr.setting || 'School'}</div></td>
+          <td>${dr.district || '—'} / ${dr.parish || '—'}</td>
+          <td><span class="badge-pill badge-primary">${dr.emergency || 'Drill'}</span></td>
+          <td style="font-size:0.75rem;"><strong>${dr.total_participants || 0}</strong><br><span style="color:#64748b;">${dr.total_learners || 0}L, ${dr.total_leaders || 0}T, ${dr.total_observers || 0}O</span></td>
+          <td style="font-size:0.75rem;">
+            <span class="badge-pill ${(dr.s1_safe_distance || '').includes('Yes') ? 'badge-success' : 'badge-warning'}">${(dr.s1_safe_distance || '').includes('Yes') ? 'Safe Dist (>=2m)' : 'Contact Risk'}</span>
+            <div style="color:#64748b; margin-top:2px;">Reaction: ${dr.s1_time_spot || 0}m (${dr.s1_behavior || 'Calm'})</div>
+          </td>
+          <td style="font-size:0.75rem;">
+            <span class="badge-pill ${(dr.s2_isolation_ready || '').includes('Ready') && !(dr.s2_isolation_ready || '').includes('Not') ? 'badge-success' : 'badge-danger'}">${dr.s2_isolation_ready || 'Ready'}</span>
+            <div style="color:#64748b; margin-top:2px;">Transit: ${dr.s2_time_isolate || 0}m (${(dr.s2_crowd_handling || '').split(':')[0] || 'Private'})</div>
+          </td>
+          <td style="font-size:0.75rem;">
+            <strong>${(dr.s3_contact_first || '').split('(')[0].trim() || 'Hotline'}</strong>
+            <div style="color:var(--primary); font-weight:600; margin-top:2px;">Call: ${dr.s3_time_call || dr.time_minutes || 0}m</div>
+          </td>
+          <td style="font-size:0.75rem;">
+            <span class="badge-pill badge-success">${(dr.s4_handover_smooth || '').includes('Yes') ? 'Smooth Handover' : 'Handover Checked'}</span>
+            <div style="color:#10b981; font-weight:600; margin-top:2px;">Debrief: ${(dr.s4_debrief_held || '').includes('Yes') ? 'Held' : 'Pending'}</div>
+          </td>
+          <td style="font-size:0.75rem;">
+            <div style="color:#b45309; font-weight:600;">Issue: ${dr.problem || 'None'}</div>
+            <div style="color:#059669; font-style:italic; margin-top:2px;">Fix: ${dr.fix_promised || 'Standard SOP'}</div>
+          </td>
         </tr>
       `).join('');
     }
