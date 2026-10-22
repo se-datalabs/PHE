@@ -2081,34 +2081,206 @@ function populateQualitativeTools() {
       `).join('');
     }
 
-    // Populate Comprehensive Log Table
+    // Update table count badge
+    safeSetText('drillCountPill', `${t10Total} Drills Evaluated`);
+
+    // Populate Comprehensive Log Table Reflecting All Questions
     if (tool10Body) {
       tool10Body.innerHTML = t10Rows.map(dr => `
         <tr>
-          <td><strong>#${dr._index || dr.id}</strong><div style="font-size:0.72rem; color:#64748b;">${dr.date || ''}</div></td>
-          <td><strong>${dr.facility || dr.school || '—'}</strong><div style="font-size:0.72rem; color:#64748b;">${dr.setting || 'School'}</div></td>
-          <td>${dr.district || '—'} / ${dr.parish || '—'}</td>
-          <td><span class="badge-pill badge-primary">${dr.emergency || 'Drill'}</span></td>
-          <td style="font-size:0.75rem;"><strong>${dr.total_participants || 0}</strong><br><span style="color:#64748b;">${dr.total_learners || 0}L, ${dr.total_leaders || 0}T, ${dr.total_observers || 0}O</span></td>
-          <td style="font-size:0.75rem;">
-            <span class="badge-pill ${(dr.s1_safe_distance || '').includes('Yes') ? 'badge-success' : 'badge-warning'}">${(dr.s1_safe_distance || '').includes('Yes') ? 'Safe Dist (>=2m)' : 'Contact Risk'}</span>
-            <div style="color:#64748b; margin-top:2px;">Reaction: ${dr.s1_time_spot || 0}m (${dr.s1_behavior || 'Calm'})</div>
+          <!-- 1. Drill # & Date -->
+          <td>
+            <strong style="color:var(--primary); font-size:0.88rem;">#${dr._index || dr.id}</strong>
+            <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">${dr.date || ''}</div>
           </td>
-          <td style="font-size:0.75rem;">
-            <span class="badge-pill ${(dr.s2_isolation_ready || '').includes('Ready') && !(dr.s2_isolation_ready || '').includes('Not') ? 'badge-success' : 'badge-danger'}">${dr.s2_isolation_ready || 'Ready'}</span>
-            <div style="color:#64748b; margin-top:2px;">Transit: ${dr.s2_time_isolate || 0}m (${(dr.s2_crowd_handling || '').split(':')[0] || 'Private'})</div>
+
+          <!-- 2. Venue / School & Setting -->
+          <td>
+            <strong>${dr.facility || dr.school || '—'}</strong>
+            <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">Setting: <strong>${dr.setting || 'School'}</strong></div>
           </td>
-          <td style="font-size:0.75rem;">
-            <strong>${(dr.s3_contact_first || '').split('(')[0].trim() || 'Hotline'}</strong>
-            <div style="color:var(--primary); font-weight:600; margin-top:2px;">Call: ${dr.s3_time_call || dr.time_minutes || 0}m</div>
+
+          <!-- 3. District & Parish -->
+          <td>
+            <div>${dr.district || '—'} / ${dr.parish || '—'}</div>
+            <div style="font-size:0.72rem; color:#64748b; margin-top:2px;">Lead: ${dr.coordinator || '—'}</div>
           </td>
-          <td style="font-size:0.75rem;">
-            <span class="badge-pill badge-success">${(dr.s4_handover_smooth || '').includes('Yes') ? 'Smooth Handover' : 'Handover Checked'}</span>
-            <div style="color:#10b981; font-weight:600; margin-top:2px;">Debrief: ${(dr.s4_debrief_held || '').includes('Yes') ? 'Held' : 'Pending'}</div>
+
+          <!-- 4. Emergency Simulated -->
+          <td>
+            <span class="badge-pill badge-primary" style="font-size:0.76rem; font-weight:700;">${dr.emergency || 'Drill'}</span>
           </td>
-          <td style="font-size:0.75rem;">
-            <div style="color:#b45309; font-weight:600;">Issue: ${dr.problem || 'None'}</div>
-            <div style="color:#059669; font-style:italic; margin-top:2px;">Fix: ${dr.fix_promised || 'Standard SOP'}</div>
+
+          <!-- 5. Rehearsal Attendance -->
+          <td style="border-right:2px solid #cbd5e1;">
+            <strong style="font-size:0.86rem;">${dr.total_participants || 0} Total</strong>
+            <div style="font-size:0.72rem; color:#475569; margin-top:2px; line-height:1.3;">
+              Learners: <strong>${dr.total_learners || 0}</strong> (${dr.learners_male || 0}M / ${dr.learners_female || 0}F)<br>
+              Leaders: <strong>${dr.total_leaders || 0}</strong> (${dr.leaders_male || 0}M / ${dr.leaders_female || 0}F)<br>
+              Observers: <strong>${dr.total_observers || 0}</strong> (${dr.observers_male || 0}M / ${dr.observers_female || 0}F)
+            </div>
+          </td>
+
+          <!-- 6. Q1: Safe Distance Kept? -->
+          <td>
+            <span class="badge-pill ${(dr.s1_safe_distance || '').includes('Yes') ? 'badge-success' : 'badge-danger'}">
+              ${(dr.s1_safe_distance || '').includes('Yes') ? '✅ Yes — Safe Distance' : '⚠️ No — Physical Contact'}
+            </span>
+            <div style="font-size:0.72rem; color:#475569; margin-top:3px; white-space:normal; max-width:210px; line-height:1.25;">
+              ${(dr.s1_safe_distance || '').includes(':') ? (dr.s1_safe_distance.split(':')[1] || '').trim() : dr.s1_safe_distance || 'Compliant'}
+            </div>
+          </td>
+
+          <!-- 7. Q2: Spotting Reaction Time -->
+          <td>
+            <strong style="color:var(--primary); font-size:0.86rem;">${dr.s1_time_spot || 0} mins</strong>
+          </td>
+
+          <!-- 8. Q3: Spotter Demeanor / Behavior -->
+          <td>
+            <span class="badge-pill ${(dr.s1_behavior || '').toLowerCase().includes('panic') ? 'badge-warning' : 'badge-primary'}">
+              ${dr.s1_behavior || 'Calm and clear'}
+            </span>
+          </td>
+
+          <!-- 9. Stage 1 Notes -->
+          <td style="border-right:2px solid #cbd5e1;">
+            <div style="font-size:0.75rem; color:#334155; white-space:normal; max-width:250px; line-height:1.35; background:#f8fafc; padding:4px 6px; border-radius:4px; border-left:3px solid #0369a1;">
+              ${dr.s1_notes || '—'}
+            </div>
+          </td>
+
+          <!-- 10. Q4: Isolation Space Ready? -->
+          <td>
+            <span class="badge-pill ${(dr.s2_isolation_ready || '').includes('Ready') && !(dr.s2_isolation_ready || '').includes('Not') ? 'badge-success' : 'badge-danger'}">
+              ${(dr.s2_isolation_ready || '').includes('Ready') && !(dr.s2_isolation_ready || '').includes('Not') ? '✅ Ready' : '❌ Not Ready'}
+            </span>
+          </td>
+
+          <!-- 11. Q5: Holding Area Setup Details -->
+          <td>
+            <div style="font-size:0.75rem; color:#334155; white-space:normal; max-width:240px; line-height:1.35;">
+              ${dr.s2_ready_details || '—'}
+            </div>
+          </td>
+
+          <!-- 12. Q6: Crowd Handling During Transit -->
+          <td>
+            <span class="badge-pill ${(dr.s2_crowd_handling || '').toLowerCase().includes('good') ? 'badge-success' : 'badge-warning'}">
+              ${(dr.s2_crowd_handling || '').split(':')[0] || 'Private'}
+            </span>
+            <div style="font-size:0.72rem; color:#475569; margin-top:2px; white-space:normal; max-width:200px; line-height:1.25;">
+              ${(dr.s2_crowd_handling || '').includes(':') ? (dr.s2_crowd_handling.split(':')[1] || '').trim() : ''}
+            </div>
+          </td>
+
+          <!-- 13. Q7: Transit Time to Sick Bay -->
+          <td style="border-right:2px solid #cbd5e1;">
+            <strong style="color:var(--primary); font-size:0.86rem;">${dr.s2_time_isolate || 0} mins</strong>
+          </td>
+
+          <!-- 14. Q8: Who Was Contacted First? -->
+          <td>
+            <span class="badge-pill ${(dr.s3_contact_first || '').includes('0800') ? 'badge-success' : 'badge-primary'}">
+              ${(dr.s3_contact_first || '').split('(')[0].trim() || 'Hotline'}
+            </span>
+            <div style="font-size:0.72rem; color:#475569; margin-top:2px;">
+              ${(dr.s3_contact_first || '').includes('0800') ? 'Official Toll-Free 0800-100-066 / 8500' : 'Local Surveillance Link'}
+            </div>
+          </td>
+
+          <!-- 15. Q9: Phone Details Clear? -->
+          <td>
+            <span class="badge-pill ${(dr.s3_details_clear || '').toLowerCase().includes('clear') ? 'badge-success' : 'badge-warning'}">
+              ${dr.s3_details_clear || 'Clear'}
+            </span>
+          </td>
+
+          <!-- 16. Q10: Details Communicated on Phone -->
+          <td>
+            <div style="font-size:0.75rem; color:#334155; white-space:normal; max-width:230px; line-height:1.35;">
+              ${dr.s3_details_provided || '—'}
+              ${dr.s3_caller_panicked && dr.s3_caller_panicked !== '—' ? `<br><span style="color:#b45309; font-style:italic;">⚠️ Observation: ${dr.s3_caller_panicked}</span>` : ''}
+            </div>
+          </td>
+
+          <!-- 17. Q11: Time to Place Call -->
+          <td>
+            <strong style="color:var(--primary); font-size:0.86rem;">${dr.s3_time_call || dr.time_minutes || 0} mins</strong>
+          </td>
+
+          <!-- 18. Stage 3 Notes -->
+          <td style="border-right:2px solid #cbd5e1;">
+            <div style="font-size:0.75rem; color:#334155; white-space:normal; max-width:250px; line-height:1.35; background:#f8fafc; padding:4px 6px; border-radius:4px; border-left:3px solid #4338ca;">
+              ${dr.s3_notes || '—'}
+            </div>
+          </td>
+
+          <!-- 19. Q12: Handover Smooth? -->
+          <td>
+            <span class="badge-pill ${(dr.s4_handover_smooth || '').toLowerCase().includes('yes') ? 'badge-warning' : 'badge-warning'}">
+              ${(dr.s4_handover_smooth || '').split(':')[0] || 'Smooth Handover'}
+            </span>
+          </td>
+
+          <!-- 20. Q13: Immediate Handwashing Done? -->
+          <td>
+            <span class="badge-pill ${(dr.s4_handwash_done || '').toLowerCase().includes('yes') ? 'badge-success' : 'badge-danger'}">
+              ${(dr.s4_handwash_done || '').toLowerCase().includes('yes') ? '✅ Yes (Running Water + Soap)' : '❌ No Handwash'}
+            </span>
+          </td>
+
+          <!-- 21. Q14: Area Cordoned / Wiped? -->
+          <td>
+            <span class="badge-pill ${(dr.s4_cleaning_simulated || '').toLowerCase().includes('yes') ? 'badge-success' : 'badge-warning'}">
+              ${(dr.s4_cleaning_simulated || '').toLowerCase().includes('yes') ? '✅ Cordoned & Cleaned' : '⚠️ Not Cordoned'}
+            </span>
+          </td>
+
+          <!-- 22. Q15: Same-Day Anti-Stigma Debrief? -->
+          <td>
+            <span class="badge-pill ${(dr.s4_debrief_held || '').toLowerCase().includes('yes') ? 'badge-danger' : 'badge-danger'}">
+              ${(dr.s4_debrief_held || '').split(':')[0] || 'Debrief Held'}
+            </span>
+            <div style="font-size:0.72rem; color:#475569; margin-top:2px; white-space:normal; max-width:210px; line-height:1.25;">
+              ${(dr.s4_debrief_held || '').includes(':') ? (dr.s4_debrief_held.split(':')[1] || '').trim() : ''}
+            </div>
+          </td>
+
+          <!-- 23. Stage 4 Notes -->
+          <td style="border-right:2px solid #cbd5e1;">
+            <div style="font-size:0.75rem; color:#334155; white-space:normal; max-width:250px; line-height:1.35; background:#f8fafc; padding:4px 6px; border-radius:4px; border-left:3px solid #047857;">
+              ${dr.s4_notes || '—'}
+            </div>
+          </td>
+
+          <!-- 24. Q16: Biggest Problem Identified -->
+          <td>
+            <div style="font-size:0.77rem; color:#dc2626; font-weight:700; white-space:normal; max-width:240px; line-height:1.35;">
+              ${dr.problem || 'None identified'}
+            </div>
+          </td>
+
+          <!-- 25. Q17: Immediate Fix Promised by Leader -->
+          <td>
+            <div style="font-size:0.77rem; color:#065f46; font-weight:600; background:#ecfdf5; padding:4px 6px; border-radius:4px; border-left:3px solid #10b981; white-space:normal; max-width:260px; line-height:1.35;">
+              ${dr.fix_promised || 'Standard SOP compliance'}
+            </div>
+          </td>
+
+          <!-- 26. Rumor Flagged -->
+          <td>
+            <div style="font-size:0.75rem; color:#475569; white-space:normal; max-width:200px; line-height:1.3;">
+              ${dr.rumor || 'None reported'}
+            </div>
+          </td>
+
+          <!-- 27. Local Barrier & Tactical Adaptation -->
+          <td>
+            <div style="font-size:0.75rem; color:#475569; white-space:normal; max-width:220px; line-height:1.3;">
+              <div><strong>Barrier:</strong> ${dr.barrier || 'None'}</div>
+              <div style="margin-top:2px;"><strong>Adaptation:</strong> ${dr.tactical_adaptation || 'Standard SOP'}</div>
+            </div>
           </td>
         </tr>
       `).join('');

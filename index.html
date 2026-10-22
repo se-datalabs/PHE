@@ -1119,23 +1119,72 @@
           <div id="t10ActionLog" style="font-size:0.83rem; color:#334155;"></div>
         </div>
 
-        <!-- DETAILED DRILL LOG TABLE -->
+        <!-- COMPREHENSIVE DRILL QUESTION MATRIX TABLE -->
         <div class="card" style="margin-top:1rem;">
-          <div class="card-title">Comprehensive School Outbreak Simulation Drill Evaluation Records</div>
-          <div class="table-responsive">
-            <table>
+          <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <div>
+              <span style="font-weight:700;">Complete Simulation Drill Question-by-Question Evaluation Matrix</span>
+              <div style="font-size:0.75rem; color:#64748b; font-weight:normal; margin-top:2px;">
+                Reflecting all 17+ questions, response times, observation notes, and safeguarding actions asked across the 4 rehearsal stages.
+              </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <span class="badge-pill badge-primary" id="drillCountPill">2 Drills Evaluated</span>
+            </div>
+          </div>
+
+          <div class="table-responsive" style="max-height:720px;">
+            <table id="drillFullQuestionTable" style="min-width:3200px; border-collapse:collapse;">
               <thead>
-                <tr>
-                  <th>Drill #</th>
-                  <th>Facility / Venue</th>
-                  <th>Location</th>
-                  <th>Simulated Emergency</th>
-                  <th>Participants</th>
-                  <th>Stage 1: Distance &amp; Spotting</th>
-                  <th>Stage 2: Isolation &amp; Transit</th>
-                  <th>Stage 3: Notification &amp; Call Time</th>
-                  <th>Stage 4: Handover &amp; Debrief</th>
-                  <th>Biggest Problem &amp; Corrective Commitment</th>
+                <!-- Stage Category Headers -->
+                <tr style="text-transform:uppercase; font-size:0.72rem; letter-spacing:0.5px;">
+                  <th colspan="5" style="background:#1e293b; color:#fff; border-right:2px solid #64748b; text-align:center;">📋 Drill Profile &amp; Rehearsal Reach</th>
+                  <th colspan="4" style="background:#0369a1; color:#fff; border-right:2px solid #64748b; text-align:center;">🚨 Stage 1: Identification &amp; Early Spotting</th>
+                  <th colspan="4" style="background:#0f766e; color:#fff; border-right:2px solid #64748b; text-align:center;">🚪 Stage 2: Safe Transit &amp; Isolation Sick Bay</th>
+                  <th colspan="5" style="background:#4338ca; color:#fff; border-right:2px solid #64748b; text-align:center;">📞 Stage 3: Immediate Reporting &amp; Phone Protocol</th>
+                  <th colspan="5" style="background:#047857; color:#fff; border-right:2px solid #64748b; text-align:center;">🤝 Stage 4: Handover, Decontamination &amp; Debrief</th>
+                  <th colspan="4" style="background:#b45309; color:#fff; text-align:center;">⚠️ Action Review &amp; Corrective Commitments</th>
+                </tr>
+                <!-- Explicit Question Headers -->
+                <tr style="font-size:0.76rem; background:#334155; color:#fff;">
+                  <!-- Profile & Reach (5 cols) -->
+                  <th style="min-width:110px; background:#1e293b; color:#fff;">Drill # &amp; Date</th>
+                  <th style="min-width:180px; background:#1e293b; color:#fff;">Venue / School &amp; Setting</th>
+                  <th style="min-width:140px; background:#1e293b; color:#fff;">District &amp; Parish</th>
+                  <th style="min-width:130px; background:#1e293b; color:#fff;">Emergency Simulated</th>
+                  <th style="min-width:190px; background:#1e293b; color:#fff; border-right:2px solid #64748b;">Rehearsal Attendance</th>
+
+                  <!-- Stage 1 (4 cols) -->
+                  <th style="min-width:220px; background:#0369a1; color:#fff;">Q1: Safe Distance Kept (&ge;2m, No Touch)?</th>
+                  <th style="min-width:125px; background:#0369a1; color:#fff;">Q2: Spotting Reaction Time</th>
+                  <th style="min-width:160px; background:#0369a1; color:#fff;">Q3: Spotter Demeanor / Behavior</th>
+                  <th style="min-width:250px; background:#0369a1; color:#fff; border-right:2px solid #64748b;">Stage 1 Observation Notes</th>
+
+                  <!-- Stage 2 (4 cols) -->
+                  <th style="min-width:145px; background:#0f766e; color:#fff;">Q4: Isolation Space Ready?</th>
+                  <th style="min-width:240px; background:#0f766e; color:#fff;">Q5: Holding Area Setup Details</th>
+                  <th style="min-width:200px; background:#0f766e; color:#fff;">Q6: Crowd Handling During Transit</th>
+                  <th style="min-width:125px; background:#0f766e; color:#fff; border-right:2px solid #64748b;">Q7: Transit Time to Sick Bay</th>
+
+                  <!-- Stage 3 (5 cols) -->
+                  <th style="min-width:210px; background:#4338ca; color:#fff;">Q8: Who Was Contacted First?</th>
+                  <th style="min-width:135px; background:#4338ca; color:#fff;">Q9: Phone Details Clear?</th>
+                  <th style="min-width:230px; background:#4338ca; color:#fff;">Q10: Details Communicated on Phone</th>
+                  <th style="min-width:125px; background:#4338ca; color:#fff;">Q11: Time to Place Call</th>
+                  <th style="min-width:250px; background:#4338ca; color:#fff; border-right:2px solid #64748b;">Stage 3 Observation Notes</th>
+
+                  <!-- Stage 4 (5 cols) -->
+                  <th style="min-width:190px; background:#047857; color:#fff;">Q12: Handover to Response Smooth?</th>
+                  <th style="min-width:170px; background:#047857; color:#fff;">Q13: Immediate Handwashing Done?</th>
+                  <th style="min-width:170px; background:#047857; color:#fff;">Q14: Area Cordoned / Wiped?</th>
+                  <th style="min-width:220px; background:#047857; color:#fff;">Q15: Same-Day Anti-Stigma Debrief?</th>
+                  <th style="min-width:250px; background:#047857; color:#fff; border-right:2px solid #64748b;">Stage 4 Observation Notes</th>
+
+                  <!-- Review & Safeguarding (4 cols) -->
+                  <th style="min-width:240px; background:#b45309; color:#fff;">Q16: Biggest Problem Identified</th>
+                  <th style="min-width:260px; background:#b45309; color:#fff;">Q17: Immediate Fix Promised by Leader</th>
+                  <th style="min-width:200px; background:#b45309; color:#fff;">Rumor / Misinformation Flagged</th>
+                  <th style="min-width:220px; background:#b45309; color:#fff;">Local Barrier &amp; Adaptation</th>
                 </tr>
               </thead>
               <tbody id="tool9TableBody"></tbody>
